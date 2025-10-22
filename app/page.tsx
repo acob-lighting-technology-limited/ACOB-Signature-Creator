@@ -108,7 +108,7 @@ export default function SignatureGenerator() {
   <div style="border-top: 1px solid #e5e7eb; padding-top: 12px; font-size: 11px; color: #6b7280; line-height: 1.4;">
     <p style="margin: 0 0 8px 0; font-style: italic;">This email, including any attachments, contains confidential information intended solely for the recipient(s) named above. If you have received this email in error, please notify the sender immediately and delete the email from your system. Any unauthorized use, disclosure, distribution, or copying of this email is strictly prohibited and may be unlawful.</p>
     <p style="margin: 0 0 6px 0; font-weight: 600; color: #15803d;">ACOB Lighting Technology Limited is a renewable energy company registered under the Laws of the Federal Republic of Nigeria.</p>
-    <p style="margin: 0 0 4px 0; font-style: italic;">Acob is a Leading Solar Supplier of Solar Materials for Manufacturers, Installers & Contractors and Mini-Grid solutions.</p>
+    <p style="margin: 0 0 4px 0; font-style: italic;">We are a leading provider of solar and energy solutions for homes, businesses, and communities.</p>
     <p style="margin: 0; font-weight: 600;  font-style: italic;">Lighting up Nigeria!</p>
   </div>
 </div>`
