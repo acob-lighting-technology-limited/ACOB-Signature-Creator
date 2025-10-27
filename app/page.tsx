@@ -63,26 +63,26 @@ export default function SignatureGenerator() {
 
     return `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0; padding: 12px 0; line-height: 1.5;">
   <!-- Thin green line -->
-  <div style="color: #15803d;">&mdash;&mdash;</div>
+  <div style="color: #08903e;">&mdash;&mdash;</div>
   
   <!-- Greeting -->
   <p style="margin: 0 0 12px 0; font-size: 14px; color: #374151; font-style: italic;">Best Regards,</p>
 
   <!-- Name & Role -->
-  <div style="border-bottom: 1.5px solid #15803d; padding-bottom: 12px; margin-bottom: 12px;">
+  <div style="border-bottom: 1.5px solid #08903e; padding-bottom: 12px; margin-bottom: 12px;">
     <p style="margin: 0 0 2px 0; font-size: 18px; font-weight: bold; color: #1f2937; letter-spacing: -0.025em;">${fullName}</p>
-    <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: 500; color: #15803d; text-transform: uppercase; letter-spacing: 0.05em; font-style: italic;">${formData.companyRole}</p>
+    <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: 500; color: #08903e; text-transform: uppercase; letter-spacing: 0.05em; font-style: italic;">${formData.companyRole}</p>
     
     <!-- Contact details -->
     <div style="font-size: 14px; color: #374151; line-height: 1.6;">
       <div style="margin: 0 0 4px 0;">
-        <img src="https://www.acoblighting.com/wp-includes/images/signature/phone.png" width="14" height="14" style="vertical-align: middle; opacity: 0.8; margin-right: 6px; display: inline-block;" alt="Phone" /><a href="tel:${formData.phoneNumber.replace(/\s+/g, '')}" style="color: #15803d; text-decoration: none; vertical-align: middle;">${formattedPhone}</a>
+        <img src="https://www.acoblighting.com/wp-includes/images/signature/phone.png" width="14" height="14" style="vertical-align: middle; opacity: 0.8; margin-right: 6px; display: inline-block;" alt="Phone" /><a href="tel:${formData.phoneNumber.replace(/\s+/g, '')}" style="color: #08903e; text-decoration: none; vertical-align: middle;">${formattedPhone}</a>
       </div>
       <div style="margin: 0 0 4px 0;">
-        <img src="https://www.acoblighting.com/wp-includes/images/signature/mail.png" width="14" height="14" style="vertical-align: middle; opacity: 0.8; margin-right: 6px; display: inline-block;" alt="Email" /><a href="mailto:${formData.companyEmail}" style="color: #15803d; text-decoration: none; vertical-align: middle;">${formData.companyEmail}</a>
+        <img src="https://www.acoblighting.com/wp-includes/images/signature/mail.png" width="14" height="14" style="vertical-align: middle; opacity: 0.8; margin-right: 6px; display: inline-block;" alt="Email" /><a href="mailto:${formData.companyEmail}" style="color: #08903e; text-decoration: none; vertical-align: middle;">${formData.companyEmail}</a>
       </div>
       <div>
-        <img src="https://www.acoblighting.com/wp-includes/images/signature/web.png" width="14" height="14" style="vertical-align: middle; opacity: 0.8; margin-right: 6px; display: inline-block;" alt="Website" /><a href="http://www.acoblighting.com" style="color: #15803d; text-decoration: none; vertical-align: middle;">www.acoblighting.com</a>
+        <img src="https://www.acoblighting.com/wp-includes/images/signature/web.png" width="14" height="14" style="vertical-align: middle; opacity: 0.8; margin-right: 6px; display: inline-block;" alt="Website" /><a href="http://www.acoblighting.com" style="color: #08903e; text-decoration: none; vertical-align: middle;">www.acoblighting.com</a>
       </div>
     </div>
   </div>
@@ -107,7 +107,7 @@ export default function SignatureGenerator() {
   <!-- Footer -->
   <div style="border-top: 2px solid #e5e7eb; padding-top: 10px; font-size: 11px; color: #6b7280; line-height: 1.4;">
     <p style="margin: 0 0 6px 0; font-style: italic;">This email, including any attachments, contains confidential information intended solely for the recipient(s) named above. If you have received this email in error, please notify the sender immediately and delete the email from your system. Any unauthorized use, disclosure, distribution, or copying of this email is strictly prohibited and may be unlawful.</p>
-    <p style="margin: 0 0 4px 0; font-weight: 600; color: #15803d;">ACOB Lighting Technology Limited is a renewable energy company registered under the Laws of the Federal Republic of Nigeria.</p>
+    <p style="margin: 0 0 4px 0; font-weight: 600; color: #08903e;">ACOB Lighting Technology Limited is a renewable energy company registered under the Laws of the Federal Republic of Nigeria.</p>
     <p style="margin: 0 0 2px 0; font-style: italic;">We are a leading provider of solar and energy solutions for homes, businesses, and communities.</p>
     <p style="margin: 0; font-weight: 600; font-style: italic;">Lighting up Nigeria!</p>
   </div>

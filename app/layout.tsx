@@ -12,7 +12,6 @@ import "./globals.css"
 export const metadata: Metadata = {
   title: "ACOB Lighting Technology Limited Signature Creator",
   description: "Create professional email signatures for ACOB Lighting Technology Limited",
-  generator: "v0.app",
 }
 
 export default function RootLayout({
