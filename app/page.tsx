@@ -81,7 +81,7 @@ export default function SignatureGenerator() {
   <p style="margin: 0 0 4px 0; font-size: 14px; color: #374151; font-style: italic;">Best Regards,</p>
 
   <!-- Name & Role -->
-  <div style="border-bottom: 1.5px solid #08903e; padding-bottom: 6px; margin-bottom: 6px;">
+  <div style="border-bottom: 1.5px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 6px;">
     <p style="margin: 0 0 0 0; line-height: 1; font-size: 18px; font-weight: bold; color: #1f2937; letter-spacing: -0.025em;">${fullName}</p>
     <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: 500; color: #1f2937; text-transform: uppercase; letter-spacing: 0.05em; ">${
       formData.companyRole
@@ -121,7 +121,7 @@ export default function SignatureGenerator() {
   </div>
   
   <!-- Footer -->
-  <div style="border-top: 2px solid #e5e7eb; padding-top: 6px; font-size: 11px; color: #6b7280; line-height: 1.4;">
+  <div style="border-top: 1.5px solid #e5e7eb; padding-top: 6px; font-size: 11px; color: #6b7280; line-height: 1.4;">
     <p style="margin: 0 0 6px 0; font-style: italic;">This email, including any attachments, contains confidential information intended solely for the recipient(s) named above. If you have received this email in error, please notify the sender immediately and delete the email from your system. Any unauthorized use, disclosure, distribution, or copying of this email is strictly prohibited and may be unlawful.</p>
     <p style="margin: 0 0 4px 0; font-weight: 600; font-style: italic;">ACOB Lighting Technology Limited is a renewable energy company registered under the Laws of the Federal Republic of Nigeria.</p>
     <p style="margin: 0 0 2px 0; font-weight: 600; font-style: italic;">We are a leading provider of solar and energy solutions for homes, businesses, and communities.</p>
