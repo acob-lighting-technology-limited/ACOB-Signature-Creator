@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { Suspense } from "react"
 import "./globals.css"
 
+
 export const metadata: Metadata = {
   title: "ACOB Lighting Technology Limited Signature Creator",
   description: "Create professional email signatures for ACOB Lighting Technology Limited",
