@@ -1,74 +1,352 @@
-import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { AdminDashboard } from "@/components/admin-dashboard"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import Link from "next/link"
+import {
+  Users,
+  Laptop,
+  ClipboardList,
+  FileText,
+  MessageSquare,
+  ScrollText,
+  Briefcase,
+  TrendingUp,
+  ArrowRight,
+  Shield,
+} from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
-export default async function AdminPage() {
+export default async function AdminDashboardPage() {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  const { data, error } = await supabase.auth.getUser()
-  if (error || !data?.user) {
-    redirect("/auth/login")
-  }
-
-  const { data: profile, error: profileError } = await supabase
+  // Fetch user profile with role
+  const { data: profile } = await supabase
     .from("profiles")
-    .select("is_admin")
-    .eq("id", data.user.id)
+    .select("*")
+    .eq("id", user?.id)
     .single()
 
-  if (profileError || !profile) {
-    const { error: insertError } = await supabase.from("profiles").insert({
-      id: data.user.id,
-      company_email: data.user.email,
-      first_name: "",
-      last_name: "",
-      other_names: "",
-      department: "",
-      company_role: "",
-      phone_number: "",
-      additional_phone: "",
-      residential_address: "",
-      current_work_location: "",
-      site_name: "",
-      site_state: "",
-      device_allocated: "",
-      device_type: "",
-      device_model: "",
-      is_admin: false,
-    })
+  // Fetch stats
+  const [
+    { count: staffCount },
+    { count: deviceCount },
+    { count: taskCount },
+    { count: docCount },
+    { count: feedbackCount },
+  ] = await Promise.all([
+    supabase.from("profiles").select("*", { count: "exact", head: true }),
+    supabase.from("devices").select("*", { count: "exact", head: true }),
+    supabase.from("tasks").select("*", { count: "exact", head: true }),
+    supabase.from("user_documentation").select("*", { count: "exact", head: true }),
+    supabase.from("feedback").select("*", { count: "exact", head: true }),
+  ])
 
-    if (!insertError) {
-      redirect("/dashboard")
+  // Recent activity
+  const { data: recentTasks } = await supabase
+    .from("tasks")
+    .select(`
+      id,
+      title,
+      status,
+      priority,
+      created_at,
+      assigned_to_user:profiles!tasks_assigned_to_fkey(first_name, last_name)
+    `)
+    .order("created_at", { ascending: false })
+    .limit(5)
+
+  const { data: recentFeedback } = await supabase
+    .from("feedback")
+    .select(`
+      id,
+      title,
+      category,
+      status,
+      created_at,
+      user:profiles!feedback_user_id_fkey(first_name, last_name)
+    `)
+    .order("created_at", { ascending: false })
+    .limit(5)
+
+  const quickActions = [
+    {
+      title: "Staff Management",
+      description: "View and manage all staff members",
+      href: "/admin/staff",
+      icon: Users,
+      color: "bg-blue-500",
+      roles: ["super_admin", "admin"],
+    },
+    {
+      title: "Device Management",
+      description: "Manage device inventory and assignments",
+      href: "/admin/devices",
+      icon: Laptop,
+      color: "bg-purple-500",
+      roles: ["super_admin", "admin"],
+    },
+    {
+      title: "Task Management",
+      description: "Create and assign tasks to staff",
+      href: "/admin/tasks",
+      icon: ClipboardList,
+      color: "bg-green-500",
+      roles: ["super_admin", "admin", "lead"],
+    },
+    {
+      title: "Documentation",
+      description: "View all staff documentation",
+      href: "/admin/documentation",
+      icon: FileText,
+      color: "bg-orange-500",
+      roles: ["super_admin", "admin", "lead"],
+    },
+    {
+      title: "Job Descriptions",
+      description: "View staff job descriptions",
+      href: "/admin/job-descriptions",
+      icon: Briefcase,
+      color: "bg-pink-500",
+      roles: ["super_admin", "admin", "lead"],
+    },
+    {
+      title: "Feedback Management",
+      description: "Review and respond to feedback",
+      href: "/admin/feedback",
+      icon: MessageSquare,
+      color: "bg-cyan-500",
+      roles: ["super_admin", "admin", "lead"],
+    },
+    {
+      title: "Audit Logs",
+      description: "View system activity logs",
+      href: "/admin/audit-logs",
+      icon: ScrollText,
+      color: "bg-red-500",
+      roles: ["super_admin", "admin", "lead"],
+    },
+  ]
+
+  const canAccessAction = (requiredRoles: string[]) => {
+    return profile?.role && requiredRoles.includes(profile.role)
+  }
+
+  const filteredActions = quickActions.filter((action) => canAccessAction(action.roles))
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "completed":
+      case "resolved":
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+      case "in_progress":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
     }
   }
 
-  if (!profile?.is_admin) {
-    redirect("/dashboard")
-  }
-
-  const { data: users } = await supabase.from("profiles").select("*").order("created_at", { ascending: false })
-
-  // Fetch all feedback to derive indicators and details per user
-  const { data: allFeedback } = await supabase
-    .from("feedback")
-    .select("id, user_id, feedback_type, title, description, created_at")
-    .order("created_at", { ascending: false })
-
-  const feedbackByUserId: Record<string, any[]> = {}
-  ;(allFeedback || []).forEach((f) => {
-    if (!feedbackByUserId[f.user_id]) feedbackByUserId[f.user_id] = []
-    feedbackByUserId[f.user_id].push(f)
-  })
-
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl p-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage staff members and view system data</p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        {/* Header */}
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <Shield className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground">Admin Dashboard</h1>
+          </div>
+          <p className="text-muted-foreground text-lg">
+            Welcome back, {profile?.first_name || "Admin"}! Manage your organization from here.
+          </p>
         </div>
 
-        <AdminDashboard users={users || []} currentUserId={data.user.id} feedbackByUserId={feedbackByUserId} />
+        {/* Stats Grid */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          <Card className="border-2">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground font-medium">Total Staff</p>
+                  <p className="text-3xl font-bold text-foreground mt-2">{staffCount || 0}</p>
+                </div>
+                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground font-medium">Devices</p>
+                  <p className="text-3xl font-bold text-foreground mt-2">{deviceCount || 0}</p>
+                </div>
+                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                  <Laptop className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground font-medium">Active Tasks</p>
+                  <p className="text-3xl font-bold text-foreground mt-2">{taskCount || 0}</p>
+                </div>
+                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                  <ClipboardList className="h-6 w-6 text-green-600 dark:text-green-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground font-medium">Documents</p>
+                  <p className="text-3xl font-bold text-foreground mt-2">{docCount || 0}</p>
+                </div>
+                <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                  <FileText className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground font-medium">Feedback</p>
+                  <p className="text-3xl font-bold text-foreground mt-2">{feedbackCount || 0}</p>
+                </div>
+                <div className="p-3 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg">
+                  <MessageSquare className="h-6 w-6 text-cyan-600 dark:text-cyan-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <div>
+          <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredActions.map((action) => (
+              <Link key={action.href} href={action.href}>
+                <Card className="border-2 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className={`${action.color} p-3 rounded-lg text-white`}>
+                        <action.icon className="h-6 w-6" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-foreground mb-1">{action.title}</h3>
+                        <p className="text-sm text-muted-foreground">{action.description}</p>
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Recent Tasks */}
+          <Card className="border-2">
+            <CardHeader className="border-b bg-muted/30">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <ClipboardList className="h-5 w-5" />
+                  Recent Tasks
+                </CardTitle>
+                <Link href="/admin/tasks">
+                  <Badge variant="outline" className="cursor-pointer hover:bg-accent">
+                    View All
+                  </Badge>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              {recentTasks && recentTasks.length > 0 ? (
+                <div className="space-y-4">
+                  {recentTasks.map((task: any) => (
+                    <div key={task.id} className="flex items-start justify-between pb-4 border-b last:border-0">
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">{task.title}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge className={getStatusColor(task.status)} variant="outline">
+                            {task.status}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">{formatDate(task.created_at)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-8">No recent tasks</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Recent Feedback */}
+          <Card className="border-2">
+            <CardHeader className="border-b bg-muted/30">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  Recent Feedback
+                </CardTitle>
+                <Link href="/admin/feedback">
+                  <Badge variant="outline" className="cursor-pointer hover:bg-accent">
+                    View All
+                  </Badge>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              {recentFeedback && recentFeedback.length > 0 ? (
+                <div className="space-y-4">
+                  {recentFeedback.map((feedback: any) => (
+                    <div key={feedback.id} className="flex items-start justify-between pb-4 border-b last:border-0">
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">{feedback.title}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="outline">{feedback.category}</Badge>
+                          <Badge className={getStatusColor(feedback.status)} variant="outline">
+                            {feedback.status}
+                          </Badge>
+                        </div>
+                        <span className="text-xs text-muted-foreground">{formatDate(feedback.created_at)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-8">No recent feedback</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )

@@ -6,7 +6,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { Suspense } from "react"
-import { Navbar } from "@/components/navbar"
+// import { HeaderWrapper } from "@/components/header-wrapper"
 import { createClient } from "@/lib/supabase/server"
 import { NProgressProvider } from "@/components/nprogress-provider"
 import { NProgressHandler } from "@/components/nprogress-handler"
@@ -17,24 +17,32 @@ export const metadata: Metadata = {
   description: "Create professional email signatures for ACOB Lighting Technology Limited",
 }
 
-async function NavbarWrapper() {
-  const supabase = await createClient()
-  const { data } = await supabase.auth.getUser()
+// async function HeaderWrapperWithData() {
+//   const supabase = await createClient()
+//   const { data } = await supabase.auth.getUser()
 
-  // Fetch admin status from profile
-  let isAdmin = false
-  if (data?.user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", data.user.id)
-      .single()
+//   // Fetch admin status from profile
+//   let isAdmin = false
+//   if (data?.user) {
+//     const { data: profile } = await supabase
+//       .from("profiles")
+//       .select("is_admin")
+//       .eq("id", data.user.id)
+//       .single()
 
-    isAdmin = profile?.is_admin === true
-  }
+//     isAdmin = profile?.is_admin === true
+//   }
 
-  return <Navbar user={data?.user ?? undefined} isAdmin={isAdmin} />
-}
+//   // Serialize only the necessary user data to avoid hydration issues
+//   const userData = data?.user
+//     ? {
+//         email: data.user.email,
+//         user_metadata: data.user.user_metadata,
+//       }
+//     : undefined
+
+//   return <HeaderWrapper user={userData} isAdmin={isAdmin} />
+// }
 
 export default function RootLayout({
   children,
@@ -48,7 +56,7 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             <NProgressProvider />
             <NProgressHandler />
-            <NavbarWrapper />
+            {/* <HeaderWrapperWithData /> */}
             {children}
             <Toaster />
           </ThemeProvider>
