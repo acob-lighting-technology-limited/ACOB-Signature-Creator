@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { AppLayout } from "@/components/app-layout"
 
 export const metadata: Metadata = {
   title: "Email Signature Creator | ACOB Lighting Technology Limited",
@@ -10,5 +11,5 @@ export default function SignatureLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <>{children}</>
+  return <AppLayout>{children}</AppLayout>
 }

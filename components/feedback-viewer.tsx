@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { toast } from "sonner"
-import { Eye } from "lucide-react"
+import { Eye, List, LayoutGrid, MessageSquare } from "lucide-react"
 
 interface FeedbackViewerProps {
   feedback: any[]
@@ -21,6 +21,7 @@ export function FeedbackViewer({ feedback }: FeedbackViewerProps) {
   const [filteredFeedback, setFilteredFeedback] = useState(feedback)
   const [selectedType, setSelectedType] = useState("all")
   const [selectedStatus, setSelectedStatus] = useState("all")
+  const [viewMode, setViewMode] = useState<"list" | "card">("list")
   const [selectedFeedback, setSelectedFeedback] = useState<any | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
@@ -115,7 +116,29 @@ export function FeedbackViewer({ feedback }: FeedbackViewerProps) {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Filters</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Filters</CardTitle>
+            <div className="flex items-center border rounded-lg p-1">
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className="gap-2"
+              >
+                <List className="h-4 w-4" />
+                List
+              </Button>
+              <Button
+                variant={viewMode === "card" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("card")}
+                className="gap-2"
+              >
+                <LayoutGrid className="h-4 w-4" />
+                Card
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-3">
@@ -153,66 +176,138 @@ export function FeedbackViewer({ feedback }: FeedbackViewerProps) {
         </CardContent>
       </Card>
 
-      {/* Feedback Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Feedback Items</CardTitle>
-          <CardDescription>Total: {filteredFeedback.length} items</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredFeedback.map((item) => (
-                  <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50">
-                    <TableCell>
-                      <div className="text-sm">
-                        <p className="font-medium">
-                          {item.profiles?.first_name} {item.profiles?.last_name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{item.profiles?.company_email}</p>
+      {/* Feedback List */}
+      {filteredFeedback.length > 0 ? (
+        viewMode === "list" ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Feedback Items</CardTitle>
+              <CardDescription>Total: {filteredFeedback.length} items</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">#</TableHead>
+                      <TableHead>User</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredFeedback.map((item, index) => (
+                      <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50">
+                        <TableCell className="text-muted-foreground font-medium">{index + 1}</TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            <p className="font-medium">
+                              {item.profiles?.first_name} {item.profiles?.last_name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{item.profiles?.company_email}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getTypeColor(item.feedback_type)}>{item.feedback_type}</Badge>
+                        </TableCell>
+                        <TableCell className="max-w-xs truncate">{item.title}</TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(item.status)}>{item.status}</Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {new Date(item.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleViewDetails(item)
+                            }}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredFeedback.map((item) => (
+              <Card key={item.id} className="border-2 hover:shadow-lg transition-shadow">
+                <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-background">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3 flex-1">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <MessageSquare className="h-5 w-5 text-primary" />
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getTypeColor(item.feedback_type)}>{item.feedback_type}</Badge>
-                    </TableCell>
-                    <TableCell className="max-w-xs truncate">{item.title}</TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(item.status)}>{item.status}</Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-lg line-clamp-2">{item.title}</CardTitle>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge className={getTypeColor(item.feedback_type)}>
+                            {item.feedback_type}
+                          </Badge>
+                          <Badge className={getStatusColor(item.status)}>
+                            {item.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 space-y-3">
+                  <div className="text-sm">
+                    <p className="font-medium">
+                      {item.profiles?.first_name} {item.profiles?.last_name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{item.profiles?.company_email}</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {item.description || "No description provided."}
+                  </p>
+                  <div className="flex items-center justify-between pt-2">
+                    <span className="text-xs text-muted-foreground">
                       {new Date(item.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleViewDetails(item)
-                        }}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewDetails(item)}
+                      className="gap-2"
+                    >
+                      <Eye className="h-4 w-4" />
+                      View
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        )
+      ) : (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <MessageSquare className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-foreground mb-2">
+              No Feedback Found
+            </h3>
+            <p className="text-muted-foreground">
+              {selectedType !== "all" || selectedStatus !== "all"
+                ? "No feedback matches your filters"
+                : "No feedback has been submitted yet"}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       <Link href="/admin">
         <Button variant="outline">Back to Admin Dashboard</Button>
@@ -282,23 +377,42 @@ export function FeedbackViewer({ feedback }: FeedbackViewerProps) {
               </div>
 
               {/* Update Status */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label className="text-sm font-semibold">Update Status</Label>
-                <Select
-                  value={selectedFeedback.status}
-                  onValueChange={handleUpdateStatus}
-                  disabled={isUpdating}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="open">Open</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="resolved">Resolved</SelectItem>
-                    <SelectItem value="closed">Closed</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    variant={selectedFeedback.status === "open" ? "default" : "outline"}
+                    onClick={() => handleUpdateStatus("open")}
+                    disabled={isUpdating}
+                    className="w-full border-2 hover:shadow-md transition-all"
+                  >
+                    Open
+                  </Button>
+                  <Button
+                    variant={selectedFeedback.status === "in_progress" ? "default" : "outline"}
+                    onClick={() => handleUpdateStatus("in_progress")}
+                    disabled={isUpdating}
+                    className="w-full border-2 hover:shadow-md transition-all"
+                  >
+                    In Progress
+                  </Button>
+                  <Button
+                    variant={selectedFeedback.status === "resolved" ? "default" : "outline"}
+                    onClick={() => handleUpdateStatus("resolved")}
+                    disabled={isUpdating}
+                    className="w-full border-2 hover:shadow-md transition-all"
+                  >
+                    Resolved
+                  </Button>
+                  <Button
+                    variant={selectedFeedback.status === "closed" ? "default" : "outline"}
+                    onClick={() => handleUpdateStatus("closed")}
+                    disabled={isUpdating}
+                    className="w-full border-2 hover:shadow-md transition-all"
+                  >
+                    Closed
+                  </Button>
+                </div>
               </div>
 
               {/* Actions */}

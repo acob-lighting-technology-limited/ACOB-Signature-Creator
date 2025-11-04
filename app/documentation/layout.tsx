@@ -2,11 +2,11 @@ import type { Metadata } from "next"
 import { AppLayout } from "@/components/app-layout"
 
 export const metadata: Metadata = {
-  title: "Feedback | ACOB Lighting Technology Limited",
-  description: "Submit feedback, concerns, complaints, or suggestions to ACOB Lighting Technology Limited",
+  title: "Documentation | ACOB Lighting Technology Limited",
+  description: "Create and manage your work documentation",
 }
 
-export default function FeedbackLayout({
+export default function DocumentationLayout({
   children,
 }: {
   children: React.ReactNode

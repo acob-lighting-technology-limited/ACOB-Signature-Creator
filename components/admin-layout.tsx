@@ -1,18 +1,12 @@
-import type { Metadata } from "next"
-import { Sidebar } from "@/components/sidebar"
+import { AdminSidebar } from "@/components/admin-sidebar"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
-export const metadata: Metadata = {
-  title: "Dashboard | ACOB Lighting Technology Limited",
-  description: "View your personal dashboard, stats, and activities at ACOB Lighting Technology Limited",
+interface AdminLayoutProps {
+  children: React.ReactNode
 }
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export async function AdminLayout({ children }: AdminLayoutProps) {
   const supabase = await createClient()
   const { data, error } = await supabase.auth.getUser()
 
@@ -20,12 +14,19 @@ export default async function DashboardLayout({
     redirect("/auth/login")
   }
 
-  // Fetch user profile
+  // Fetch user profile with role
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", data.user.id)
     .single()
+
+  // Check if user has admin privileges
+  // Role hierarchy: super_admin > admin > lead > staff > visitor
+  // Only super_admin, admin, and lead can access admin panel
+  if (!profile || !["super_admin", "admin", "lead"].includes(profile.role)) {
+    redirect("/dashboard")
+  }
 
   const userData = {
     email: data.user.email,
@@ -34,7 +35,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar user={userData} profile={profile || undefined} isAdmin={profile?.is_admin === true} />
+      <AdminSidebar user={userData} profile={profile} />
       <main className="flex-1 lg:pl-64">
         <div className="lg:hidden h-16" /> {/* Spacer for mobile header */}
         {children}

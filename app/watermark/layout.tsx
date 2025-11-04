@@ -2,11 +2,11 @@ import type { Metadata } from "next"
 import { AppLayout } from "@/components/app-layout"
 
 export const metadata: Metadata = {
-  title: "Feedback | ACOB Lighting Technology Limited",
-  description: "Submit feedback, concerns, complaints, or suggestions to ACOB Lighting Technology Limited",
+  title: "Watermark Tool | ACOB Lighting Technology Limited",
+  description: "Add watermarks to your images and documents",
 }
 
-export default function FeedbackLayout({
+export default function WatermarkLayout({
   children,
 }: {
   children: React.ReactNode
