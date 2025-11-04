@@ -31,6 +31,7 @@ export default function SignUpPage() {
     lastName: "",
     otherNames: "",
     email: "",
+    password: "",
     department: "",
     phoneNumber: "",
     residentialAddress: "",
@@ -46,10 +47,10 @@ export default function SignUpPage() {
     setError(null)
 
     try {
-      // Create user with OTP
-      const { error: signUpError } = await supabase.auth.signUp({
+      // Create user with password
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
-        password: Math.random().toString(36).slice(-12), // Temporary password, won't be used
+        password: formData.password,
         options: {
           emailRedirectTo:
             process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/auth/callback`,
@@ -65,17 +66,7 @@ export default function SignUpPage() {
       })
       if (signUpError) throw signUpError
 
-      // Send OTP
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email: formData.email,
-        options: {
-          emailRedirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/auth/callback`,
-        },
-      })
-      if (otpError) throw otpError
-
-      toast.success("Account created! OTP sent to your email.")
+      toast.success("Account created! Please check your email to confirm.")
       router.push("/auth/sign-up-success")
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "An error occurred"
@@ -87,112 +78,150 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Create Account</CardTitle>
-              <CardDescription>Sign up to access the ACOB staff portal</CardDescription>
+    <div className="flex min-h-screen w-full items-center justify-center p-4 md:p-6 bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="w-full max-w-2xl">
+        <div className="flex flex-col gap-8">
+          {/* Header Section */}
+          <div className="text-center space-y-2">
+            <h1 className="text-4xl font-bold tracking-tight">Join ACOB</h1>
+            <p className="text-muted-foreground text-lg">
+              Create your account to access the staff portal
+            </p>
+          </div>
+
+          <Card className="border-2 shadow-xl">
+            <CardHeader className="space-y-3 pb-6">
+              <CardTitle className="text-2xl font-semibold">Create Account</CardTitle>
+              <CardDescription className="text-base">Fill in your details to get started</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pb-8">
               <form onSubmit={handleSignUp}>
-                <div className="flex flex-col gap-4">
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <div>
-                      <Label htmlFor="firstName">First Name *</Label>
+                <div className="flex flex-col gap-5">
+                  {/* Name Fields */}
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="grid gap-3">
+                      <Label htmlFor="firstName" className="text-sm font-medium">First Name *</Label>
                       <Input
                         id="firstName"
                         value={formData.firstName}
                         onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                         required
+                        className="h-11 text-base"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="lastName">Last Name *</Label>
+                    <div className="grid gap-3">
+                      <Label htmlFor="lastName" className="text-sm font-medium">Last Name *</Label>
                       <Input
                         id="lastName"
                         value={formData.lastName}
                         onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                         required
+                        className="h-11 text-base"
                       />
                     </div>
                   </div>
 
-                  <div className="grid gap-2">
-                    <Label htmlFor="otherNames">Other Names</Label>
+                  <div className="grid gap-3">
+                    <Label htmlFor="otherNames" className="text-sm font-medium">Other Names</Label>
                     <Input
                       id="otherNames"
                       value={formData.otherNames}
                       onChange={(e) => setFormData({ ...formData, otherNames: e.target.value })}
+                      className="h-11 text-base"
+                      placeholder="Optional"
                     />
                   </div>
 
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="your.email@example.com"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      required
-                    />
+                  {/* Email and Password */}
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="grid gap-3">
+                      <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="your.email@example.com"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        required
+                        className="h-11 text-base"
+                      />
+                    </div>
+                    <div className="grid gap-3">
+                      <Label htmlFor="password" className="text-sm font-medium">Password *</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Min. 6 characters"
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        required
+                        minLength={6}
+                        className="h-11 text-base"
+                      />
+                    </div>
                   </div>
 
-                  <div className="grid gap-2">
-                    <Label htmlFor="department">Department</Label>
-                    <Select
-                      value={formData.department}
-                      onValueChange={(value) => setFormData({ ...formData, department: value })}
-                    >
-                      <SelectTrigger id="department">
-                        <SelectValue placeholder="Select department" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {DEPARTMENTS.map((dept) => (
-                          <SelectItem key={dept} value={dept}>
-                            {dept}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  {/* Department and Phone */}
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="grid gap-3">
+                      <Label htmlFor="department" className="text-sm font-medium">Department</Label>
+                      <Select
+                        value={formData.department}
+                        onValueChange={(value) => setFormData({ ...formData, department: value })}
+                      >
+                        <SelectTrigger id="department" className="h-11 text-base">
+                          <SelectValue placeholder="Select department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DEPARTMENTS.map((dept) => (
+                            <SelectItem key={dept} value={dept}>
+                              {dept}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-3">
+                      <Label htmlFor="phoneNumber" className="text-sm font-medium">Phone Number</Label>
+                      <Input
+                        id="phoneNumber"
+                        type="tel"
+                        value={formData.phoneNumber}
+                        onChange={(e) => {
+                          // Only allow numbers and + symbol
+                          const value = e.target.value.replace(/[^0-9+]/g, '')
+                          setFormData({ ...formData, phoneNumber: value })
+                        }}
+                        placeholder="+2348012345678"
+                        className="h-11 text-base"
+                      />
+                    </div>
                   </div>
 
-                  <div className="grid gap-2">
-                    <Label htmlFor="phoneNumber">Phone Number</Label>
-                    <Input
-                      id="phoneNumber"
-                      type="tel"
-                      value={formData.phoneNumber}
-                      onChange={(e) => {
-                        // Only allow numbers and + symbol
-                        const value = e.target.value.replace(/[^0-9+]/g, '')
-                        setFormData({ ...formData, phoneNumber: value })
-                      }}
-                      placeholder="e.g., +2348012345678"
-                    />
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="residentialAddress">Residential Address</Label>
+                  {/* Residential Address */}
+                  <div className="grid gap-3">
+                    <Label htmlFor="residentialAddress" className="text-sm font-medium">Residential Address</Label>
                     <Input
                       id="residentialAddress"
                       value={formData.residentialAddress}
                       onChange={(e) => setFormData({ ...formData, residentialAddress: e.target.value })}
+                      className="h-11 text-base"
+                      placeholder="Your home address"
                     />
                   </div>
 
-                  {error && <p className="text-sm text-red-500">{error}</p>}
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Creating account..." : "Sign up"}
+                  {error && <p className="text-sm text-red-500 bg-red-50 dark:bg-red-950/30 p-3 rounded-md">{error}</p>}
+                  <Button type="submit" className="w-full h-12 text-base font-semibold mt-2" disabled={isLoading}>
+                    {isLoading ? "Creating account..." : "Create Account"}
                   </Button>
                 </div>
-                <div className="mt-4 text-center text-sm">
-                  Already have an account?{" "}
-                  <Link href="/auth/login" className="underline underline-offset-4">
-                    Login
-                  </Link>
+                <div className="mt-6 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Already have an account?{" "}
+                    <Link href="/auth/login" className="font-semibold text-primary hover:underline underline-offset-4">
+                      Login
+                    </Link>
+                  </p>
                 </div>
               </form>
             </CardContent>
