@@ -22,8 +22,16 @@ import {
 } from "@/components/ui/select"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
-import { ScrollText, Search, Filter, Calendar, User, FileText, LayoutGrid, List } from "lucide-react"
+import { ScrollText, Search, Filter, Calendar, User, FileText, LayoutGrid, List, Eye } from "lucide-react"
 import { formatName } from "@/lib/utils"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 
 interface AuditLog {
   id: string
@@ -35,6 +43,11 @@ interface AuditLog {
   new_values?: any
   created_at: string
   user?: {
+    first_name: string
+    last_name: string
+    company_email: string
+  }
+  target_user?: {
     first_name: string
     last_name: string
     company_email: string
@@ -51,6 +64,8 @@ export default function AuditLogsPage() {
   const [customStartDate, setCustomStartDate] = useState("")
   const [customEndDate, setCustomEndDate] = useState("")
   const [viewMode, setViewMode] = useState<"list" | "card">("list")
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
 
   const supabase = createClient()
 
@@ -81,15 +96,28 @@ export default function AuditLogsPage() {
         throw logsError
       }
 
-      // If we have logs, fetch user details for each unique user_id
+      // If we have logs, fetch user details for each unique user_id and entity_id
       if (logsData && logsData.length > 0) {
+        // Fetch users who performed actions
         const userIdsSet = new Set(logsData.map(log => log.user_id).filter(Boolean))
         const uniqueUserIds = Array.from(userIdsSet)
+
+        // Fetch target users (entity_id that might be user IDs)
+        const entityIdsSet = new Set(
+          logsData
+            .filter(log => log.entity_id && log.entity_id.length > 0)
+            .map(log => log.entity_id)
+            .filter(Boolean)
+        )
+        const uniqueEntityIds = Array.from(entityIdsSet)
+
+        // Combine both sets for a single query
+        const allUserIds = Array.from(new Set([...uniqueUserIds, ...uniqueEntityIds as string[]]))
 
         const { data: usersData } = await supabase
           .from("profiles")
           .select("id, first_name, last_name, company_email")
-          .in("id", uniqueUserIds)
+          .in("id", allUserIds)
 
         // Create a map of user data
         const usersMap = new Map(usersData?.map(user => [user.id, user]))
@@ -97,7 +125,8 @@ export default function AuditLogsPage() {
         // Combine logs with user data
         const logsWithUsers = logsData.map(log => ({
           ...log,
-          user: log.user_id ? usersMap.get(log.user_id) : null
+          user: log.user_id ? usersMap.get(log.user_id) : null,
+          target_user: log.entity_id ? usersMap.get(log.entity_id) : null
         }))
 
         console.log("Loaded audit logs count:", logsWithUsers.length)
@@ -184,6 +213,34 @@ export default function AuditLogsPage() {
       hour: "2-digit",
       minute: "2-digit",
     })
+  }
+
+  const getTargetDescription = (log: AuditLog) => {
+    const action = log.action.toLowerCase()
+    
+    if (log.target_user) {
+      const name = `${formatName(log.target_user.first_name)} ${formatName(log.target_user.last_name)}`
+      
+      if (action.includes("assign")) return `Assigned to ${name}`
+      if (action.includes("create")) return `Created for ${name}`
+      if (action.includes("update")) return `Updated ${name}`
+      if (action.includes("delete")) return `Deleted ${name}`
+      if (action.includes("approve")) return `Approved ${name}`
+      if (action.includes("reject")) return `Rejected ${name}`
+      
+      return name
+    }
+    
+    if (log.entity_id) {
+      return `ID: ${log.entity_id.substring(0, 8)}...`
+    }
+    
+    return "-"
+  }
+
+  const handleViewDetails = (log: AuditLog) => {
+    setSelectedLog(log)
+    setIsDetailsOpen(true)
   }
 
   const formatValues = (values: any) => {
@@ -422,16 +479,17 @@ export default function AuditLogsPage() {
           viewMode === "list" ? (
             <Card className="border-2">
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">#</TableHead>
-                    <TableHead>Action</TableHead>
-                    <TableHead>Entity</TableHead>
-                    <TableHead>Entity ID</TableHead>
-                    <TableHead>User</TableHead>
-                    <TableHead>Date</TableHead>
-                  </TableRow>
-                </TableHeader>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">#</TableHead>
+                      <TableHead>Action</TableHead>
+                      <TableHead>Entity</TableHead>
+                      <TableHead>Target/Affected</TableHead>
+                      <TableHead>Performed By</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="w-20">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
                 <TableBody>
                   {filteredLogs.map((log, index) => (
                     <TableRow key={log.id}>
@@ -447,13 +505,9 @@ export default function AuditLogsPage() {
                         </span>
                       </TableCell>
                       <TableCell>
-                        {log.entity_id ? (
-                          <span className="text-xs text-muted-foreground font-mono">
-                            {log.entity_id.substring(0, 8)}...
-                          </span>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">-</span>
-                        )}
+                        <span className="text-sm text-foreground">
+                          {getTargetDescription(log)}
+                        </span>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2 text-sm">
@@ -469,6 +523,16 @@ export default function AuditLogsPage() {
                           <span className="text-muted-foreground">{formatDate(log.created_at)}</span>
                         </div>
                       </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewDetails(log)}
+                          className="gap-2"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -481,18 +545,16 @@ export default function AuditLogsPage() {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-wrap">
                           <Badge className={getActionColor(log.action)}>
                             {log.action.toUpperCase()}
                           </Badge>
                           <span className="text-sm font-medium text-foreground">
                             {log.entity_type.replace("_", " ").toUpperCase()}
                           </span>
-                          {log.entity_id && (
-                            <span className="text-xs text-muted-foreground font-mono">
-                              ID: {log.entity_id.substring(0, 8)}...
-                            </span>
-                          )}
+                          <span className="text-sm text-muted-foreground">
+                            {getTargetDescription(log)}
+                          </span>
                         </div>
 
                         <div className="flex items-center gap-4 text-sm">
@@ -527,6 +589,14 @@ export default function AuditLogsPage() {
                           </details>
                         )}
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewDetails(log)}
+                        className="gap-2"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -555,6 +625,119 @@ export default function AuditLogsPage() {
           </div>
         )}
       </div>
+
+      {/* Details Dialog */}
+      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Audit Log Details</DialogTitle>
+            <DialogDescription>Complete information about this audit event</DialogDescription>
+          </DialogHeader>
+
+          {selectedLog && (
+            <div className="space-y-6">
+              {/* Action and Entity */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Action</Label>
+                  <div>
+                    <Badge className={getActionColor(selectedLog.action)}>
+                      {selectedLog.action.toUpperCase()}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Entity Type</Label>
+                  <div className="text-sm font-medium">
+                    {selectedLog.entity_type.replace("_", " ").toUpperCase()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Target/Affected */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Target/Affected</Label>
+                <div className="p-3 bg-muted/50 rounded-lg border">
+                  <p className="text-sm">{getTargetDescription(selectedLog)}</p>
+                  {selectedLog.target_user && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {selectedLog.target_user.company_email}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Performed By */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Performed By</Label>
+                <div className="p-3 bg-muted/50 rounded-lg border">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">
+                      {formatName((selectedLog.user as any)?.first_name)} {formatName((selectedLog.user as any)?.last_name)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {(selectedLog.user as any)?.company_email}
+                  </p>
+                </div>
+              </div>
+
+              {/* Date and Time */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Date & Time</Label>
+                <div className="p-3 bg-muted/50 rounded-lg border">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{formatDate(selectedLog.created_at)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Old Values */}
+              {selectedLog.old_values && Object.keys(selectedLog.old_values).length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Old Values</Label>
+                  <div className="p-4 bg-muted/50 rounded-lg border max-h-60 overflow-auto">
+                    <pre className="text-xs whitespace-pre-wrap font-mono">
+                      {JSON.stringify(selectedLog.old_values, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* New Values */}
+              {selectedLog.new_values && Object.keys(selectedLog.new_values).length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">New Values</Label>
+                  <div className="p-4 bg-muted/50 rounded-lg border max-h-60 overflow-auto">
+                    <pre className="text-xs whitespace-pre-wrap font-mono">
+                      {JSON.stringify(selectedLog.new_values, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* Entity ID */}
+              {selectedLog.entity_id && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Entity ID</Label>
+                  <div className="p-3 bg-muted/50 rounded-lg border">
+                    <code className="text-xs font-mono break-all">{selectedLog.entity_id}</code>
+                  </div>
+                </div>
+              )}
+
+              {/* Close Button */}
+              <div className="flex gap-2 pt-4 border-t">
+                <Button onClick={() => setIsDetailsOpen(false)} variant="outline" className="flex-1">
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
