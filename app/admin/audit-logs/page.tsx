@@ -52,6 +52,22 @@ interface AuditLog {
     last_name: string
     company_email: string
   }
+  task_info?: {
+    title: string
+    assigned_to?: string
+    assigned_to_user?: {
+      first_name: string
+      last_name: string
+    }
+  }
+  device_info?: {
+    device_name: string
+    assigned_to?: string
+    assigned_to_user?: {
+      first_name: string
+      last_name: string
+    }
+  }
 }
 
 export default function AuditLogsPage() {
@@ -102,31 +118,126 @@ export default function AuditLogsPage() {
         const userIdsSet = new Set(logsData.map(log => log.user_id).filter(Boolean))
         const uniqueUserIds = Array.from(userIdsSet)
 
-        // Fetch target users (entity_id that might be user IDs)
-        const entityIdsSet = new Set(
+        // Separate entity IDs by type
+        const userEntityIds = new Set(
           logsData
-            .filter(log => log.entity_id && log.entity_id.length > 0)
+            .filter(log => 
+              log.entity_id && 
+              (log.entity_type === 'profile' || log.entity_type === 'user' || log.entity_type === 'pending_user')
+            )
             .map(log => log.entity_id)
             .filter(Boolean)
         )
-        const uniqueEntityIds = Array.from(entityIdsSet)
 
-        // Combine both sets for a single query
-        const allUserIds = Array.from(new Set([...uniqueUserIds, ...uniqueEntityIds as string[]]))
+        const taskEntityIds = Array.from(new Set(
+          logsData
+            .filter(log => log.entity_id && log.entity_type === 'task')
+            .map(log => log.entity_id)
+            .filter(Boolean)
+        ))
 
+        const deviceEntityIds = Array.from(new Set(
+          logsData
+            .filter(log => log.entity_id && (log.entity_type === 'device' || log.entity_type === 'device_assignment'))
+            .map(log => log.entity_id)
+            .filter(Boolean)
+        ))
+
+        // Combine all user IDs for a single query
+        const allUserIds = Array.from(new Set([...uniqueUserIds, ...Array.from(userEntityIds) as string[]]))
+
+        // Fetch all users
         const { data: usersData } = await supabase
           .from("profiles")
           .select("id, first_name, last_name, company_email")
           .in("id", allUserIds)
 
-        // Create a map of user data
         const usersMap = new Map(usersData?.map(user => [user.id, user]))
 
-        // Combine logs with user data
+        // Fetch tasks if needed
+        let tasksMap = new Map()
+        if (taskEntityIds.length > 0) {
+          const { data: tasksData } = await supabase
+            .from("tasks")
+            .select("id, title, assigned_to")
+            .in("id", taskEntityIds)
+
+          if (tasksData) {
+            // Get assigned users for tasks
+            const taskUserIds = Array.from(new Set(tasksData.map(t => t.assigned_to).filter(Boolean)))
+            if (taskUserIds.length > 0) {
+              const { data: taskUsersData } = await supabase
+                .from("profiles")
+                .select("id, first_name, last_name")
+                .in("id", taskUserIds)
+
+              const taskUsersMap = new Map(taskUsersData?.map(u => [u.id, u]))
+              
+              tasksMap = new Map(tasksData.map(task => [
+                task.id,
+                {
+                  title: task.title,
+                  assigned_to: task.assigned_to,
+                  assigned_to_user: task.assigned_to ? taskUsersMap.get(task.assigned_to) : null
+                }
+              ]))
+            } else {
+              tasksMap = new Map(tasksData.map(task => [task.id, { title: task.title }]))
+            }
+          }
+        }
+
+        // Fetch devices and their current assignments if needed
+        let devicesMap = new Map()
+        if (deviceEntityIds.length > 0) {
+          const { data: devicesData } = await supabase
+            .from("devices")
+            .select("id, device_name")
+            .in("id", deviceEntityIds)
+
+          if (devicesData) {
+            // Get current device assignments
+            const { data: assignmentsData } = await supabase
+              .from("device_assignments")
+              .select("device_id, assigned_to")
+              .in("device_id", deviceEntityIds)
+              .eq("is_current", true)
+
+            const assignmentsMap = new Map(assignmentsData?.map(a => [a.device_id, a.assigned_to]))
+            
+            // Get assigned users
+            const deviceUserIds = Array.from(new Set(Array.from(assignmentsMap.values()).filter(Boolean)))
+            let deviceUsersMap = new Map()
+            if (deviceUserIds.length > 0) {
+              const { data: deviceUsersData } = await supabase
+                .from("profiles")
+                .select("id, first_name, last_name")
+                .in("id", deviceUserIds)
+
+              deviceUsersMap = new Map(deviceUsersData?.map(u => [u.id, u]))
+            }
+
+            devicesMap = new Map(devicesData.map(device => {
+              const assignedTo = assignmentsMap.get(device.id)
+              return [
+                device.id,
+                {
+                  device_name: device.device_name,
+                  assigned_to: assignedTo,
+                  assigned_to_user: assignedTo ? deviceUsersMap.get(assignedTo) : null
+                }
+              ]
+            }))
+          }
+        }
+
+        // Combine logs with all fetched data
         const logsWithUsers = logsData.map(log => ({
           ...log,
           user: log.user_id ? usersMap.get(log.user_id) : null,
-          target_user: log.entity_id ? usersMap.get(log.entity_id) : null
+          target_user: log.entity_id ? usersMap.get(log.entity_id) : null,
+          task_info: log.entity_id && log.entity_type === 'task' ? tasksMap.get(log.entity_id) : null,
+          device_info: log.entity_id && (log.entity_type === 'device' || log.entity_type === 'device_assignment') ? devicesMap.get(log.entity_id) : null
         }))
 
         console.log("Loaded audit logs count:", logsWithUsers.length)
@@ -218,6 +329,27 @@ export default function AuditLogsPage() {
   const getTargetDescription = (log: AuditLog) => {
     const action = log.action.toLowerCase()
     
+    // Handle task-related logs
+    if (log.task_info) {
+      const taskTitle = log.task_info.title
+      if (log.task_info.assigned_to_user) {
+        const name = `${formatName(log.task_info.assigned_to_user.first_name)} ${formatName(log.task_info.assigned_to_user.last_name)}`
+        return `Task "${taskTitle}" for ${name}`
+      }
+      return `Task "${taskTitle}"`
+    }
+    
+    // Handle device-related logs
+    if (log.device_info) {
+      const deviceName = log.device_info.device_name
+      if (log.device_info.assigned_to_user) {
+        const name = `${formatName(log.device_info.assigned_to_user.first_name)} ${formatName(log.device_info.assigned_to_user.last_name)}`
+        return `Device "${deviceName}" for ${name}`
+      }
+      return `Device "${deviceName}"`
+    }
+    
+    // Handle user-related logs
     if (log.target_user) {
       const name = `${formatName(log.target_user.first_name)} ${formatName(log.target_user.last_name)}`
       
@@ -231,6 +363,7 @@ export default function AuditLogsPage() {
       return name
     }
     
+    // Fallback to entity ID or dash
     if (log.entity_id) {
       return `ID: ${log.entity_id.substring(0, 8)}...`
     }
@@ -658,11 +791,31 @@ export default function AuditLogsPage() {
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">Target/Affected</Label>
                 <div className="p-3 bg-muted/50 rounded-lg border">
-                  <p className="text-sm">{getTargetDescription(selectedLog)}</p>
+                  <p className="text-sm font-medium">{getTargetDescription(selectedLog)}</p>
                   {selectedLog.target_user && (
                     <p className="text-xs text-muted-foreground mt-1">
                       {selectedLog.target_user.company_email}
                     </p>
+                  )}
+                  {selectedLog.task_info && (
+                    <div className="mt-2 pt-2 border-t">
+                      <p className="text-xs text-muted-foreground">Task: {selectedLog.task_info.title}</p>
+                      {selectedLog.task_info.assigned_to_user && (
+                        <p className="text-xs text-muted-foreground">
+                          Assigned to: {formatName(selectedLog.task_info.assigned_to_user.first_name)} {formatName(selectedLog.task_info.assigned_to_user.last_name)}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {selectedLog.device_info && (
+                    <div className="mt-2 pt-2 border-t">
+                      <p className="text-xs text-muted-foreground">Device: {selectedLog.device_info.device_name}</p>
+                      {selectedLog.device_info.assigned_to_user && (
+                        <p className="text-xs text-muted-foreground">
+                          Assigned to: {formatName(selectedLog.device_info.assigned_to_user.first_name)} {formatName(selectedLog.device_info.assigned_to_user.last_name)}
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
