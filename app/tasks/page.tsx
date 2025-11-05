@@ -36,6 +36,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 interface Task {
   id: string
@@ -486,18 +494,43 @@ export default function TasksPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-muted rounded w-1/3"></div>
+        <div className="mx-auto max-w-6xl space-y-6">
+          <div className="animate-pulse space-y-6">
+            {/* Header Skeleton */}
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="space-y-2">
+                <div className="h-8 bg-muted rounded w-48"></div>
+                <div className="h-5 bg-muted rounded w-64"></div>
+              </div>
+              <div className="h-10 bg-muted rounded w-48"></div>
+            </div>
+
+            {/* Stats Skeleton */}
             <div className="grid gap-4 md:grid-cols-4">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-24 bg-muted rounded"></div>
+                <Card key={i} className="border-2">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-2">
+                        <div className="h-4 bg-muted rounded w-24"></div>
+                        <div className="h-8 bg-muted rounded w-16"></div>
+                      </div>
+                      <div className="h-8 w-8 bg-muted rounded"></div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
-            <div className="space-y-4">
-              <div className="h-32 bg-muted rounded"></div>
-              <div className="h-32 bg-muted rounded"></div>
-            </div>
+
+            {/* Table Skeleton */}
+            <Card className="border-2">
+              <div className="p-4 space-y-3">
+                <div className="h-10 bg-muted rounded mb-2"></div>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-12 bg-muted rounded"></div>
+                ))}
+              </div>
+            </Card>
           </div>
         </div>
       </div>
@@ -579,75 +612,104 @@ export default function TasksPage() {
 
         {/* Tasks List */}
         {filteredTasks.length > 0 ? (
-          <div className="space-y-4">
-            {filteredTasks.map((task) => (
-              <Card
-                key={task.id}
-                className="border-2 shadow-md hover:shadow-lg transition-all cursor-pointer"
-                onClick={() => openTaskDetails(task)}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                            {task.title}
-                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                          </h3>
-                          {task.description && (
-                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{task.description}</p>
-                          )}
+          <Card className="border-2">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">#</TableHead>
+                  <TableHead>Task</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Priority</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Due Date</TableHead>
+                  <TableHead>Assigned By</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredTasks.map((task, index) => (
+                  <TableRow 
+                    key={task.id} 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => openTaskDetails(task)}
+                  >
+                    <TableCell className="text-muted-foreground font-medium">{index + 1}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                          <ClipboardList className="h-4 w-4 text-primary" />
                         </div>
+                        <span className="font-medium text-foreground">{task.title}</span>
                       </div>
-
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <Badge className={getStatusColor(task.status)}>
-                          <span className="flex items-center gap-1">
-                            {getStatusIcon(task.status)}
-                            {task.status.replace("_", " ")}
-                          </span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(task.status)}>
+                        <span className="flex items-center gap-1">
+                          {getStatusIcon(task.status)}
+                          {task.status.replace("_", " ")}
+                        </span>
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {task.assignment_type === "multiple" && (
+                        <Badge variant="outline" className="flex items-center gap-1 w-fit">
+                          <Users className="h-3 w-3" />
+                          Group
                         </Badge>
-                        <Badge className={getPriorityColor(task.priority)}>{task.priority} priority</Badge>
-                        {task.assignment_type === "multiple" && (
-                          <Badge variant="outline" className="flex items-center gap-1">
-                            <Users className="h-3 w-3" />
-                            Group Task
-                          </Badge>
-                        )}
-                        {task.assignment_type === "department" && (
-                          <Badge variant="outline" className="flex items-center gap-1">
-                            <Building2 className="h-3 w-3" />
-                            {task.department}
-                          </Badge>
-                        )}
-                        {task.assignment_type === "individual" && task.department && (
-                          <Badge variant="outline">{task.department}</Badge>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
-                        {task.due_date && (
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>Due: {formatDate(task.due_date)}</span>
-                          </div>
-                        )}
-                                                {task.assigned_by_user && (
-                            <div className="flex items-center gap-1">
-                              <User className="h-4 w-4" />
-                              <span>
-                                By: {formatName(task.assigned_by_user.first_name)} {formatName(task.assigned_by_user.last_name)}
-                              </span>
-                            </div>
-                          )}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                      )}
+                      {task.assignment_type === "department" && (
+                        <Badge variant="outline" className="flex items-center gap-1 w-fit">
+                          <Building2 className="h-3 w-3" />
+                          {task.department}
+                        </Badge>
+                      )}
+                      {task.assignment_type === "individual" && (
+                        <Badge variant="outline" className="flex items-center gap-1 w-fit">
+                          <User className="h-3 w-3" />
+                          Individual
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {task.due_date ? (
+                        <div className="flex items-center gap-1 text-sm">
+                          <Calendar className="h-3 w-3 text-muted-foreground" />
+                          <span>{formatDate(task.due_date)}</span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {task.assigned_by_user ? (
+                        <div className="flex items-center gap-1 text-sm">
+                          <User className="h-3 w-3 text-muted-foreground" />
+                          <span>{formatName(task.assigned_by_user.first_name)} {formatName(task.assigned_by_user.last_name)}</span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openTaskDetails(task)
+                        }}
+                      >
+                        View
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         ) : (
           <Card className="border-2">
             <CardContent className="p-12 text-center">

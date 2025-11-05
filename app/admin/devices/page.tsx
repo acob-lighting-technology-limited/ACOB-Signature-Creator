@@ -30,6 +30,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { SearchableSelect } from "@/components/ui/searchable-select"
+import { Building2 } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -122,9 +124,12 @@ interface AssignmentHistory {
 export default function AdminDevicesPage() {
   const [devices, setDevices] = useState<Device[]>([])
   const [staff, setStaff] = useState<Staff[]>([])
+  const [departments, setDepartments] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [departmentFilter, setDepartmentFilter] = useState("all")
+  const [staffFilter, setStaffFilter] = useState("all")
   const [viewMode, setViewMode] = useState<"list" | "card">("list")
 
   // Dialog states
@@ -217,6 +222,12 @@ export default function AdminDevicesPage() {
 
       setDevices(devicesWithAssignments)
       setStaff(staffData || [])
+      
+      // Extract unique departments
+      const uniqueDepartments = Array.from(
+        new Set(staffData?.map((s: any) => s.department).filter(Boolean))
+      ) as string[]
+      setDepartments(uniqueDepartments.sort())
     } catch (error: any) {
       console.error("Error loading data:", error)
       const errorMessage = error?.message || error?.toString() || "Failed to load data"
@@ -493,7 +504,16 @@ export default function AdminDevicesPage() {
 
     const matchesStatus = statusFilter === "all" || device.status === statusFilter
 
-    return matchesSearch && matchesStatus
+    // Filter by department (based on assigned user's department)
+    const matchesDepartment = departmentFilter === "all" || 
+      (device.current_assignment?.assigned_to && 
+        staff.find((s) => s.id === device.current_assignment?.assigned_to)?.department === departmentFilter)
+
+    // Filter by staff
+    const matchesStaff = staffFilter === "all" || 
+      device.current_assignment?.assigned_to === staffFilter
+
+    return matchesSearch && matchesStatus && matchesDepartment && matchesStaff
   })
 
   const stats = {
@@ -531,15 +551,57 @@ export default function AdminDevicesPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-muted rounded w-1/3"></div>
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="h-24 bg-muted rounded"></div>
-              <div className="h-24 bg-muted rounded"></div>
-              <div className="h-24 bg-muted rounded"></div>
-              <div className="h-24 bg-muted rounded"></div>
+        <div className="mx-auto max-w-7xl space-y-6">
+          <div className="animate-pulse space-y-6">
+            {/* Header Skeleton */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <div className="h-8 bg-muted rounded w-64"></div>
+                <div className="h-5 bg-muted rounded w-96"></div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-10 bg-muted rounded w-32"></div>
+                <div className="h-10 bg-muted rounded w-32"></div>
+              </div>
             </div>
+
+            {/* Stats Skeleton */}
+            <div className="grid gap-4 md:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Card key={i} className="border-2">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-2">
+                        <div className="h-4 bg-muted rounded w-24"></div>
+                        <div className="h-8 bg-muted rounded w-16"></div>
+                      </div>
+                      <div className="h-12 w-12 bg-muted rounded-lg"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Filters Skeleton */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="h-10 bg-muted rounded flex-1"></div>
+                  <div className="h-10 bg-muted rounded w-48"></div>
+                  <div className="h-10 bg-muted rounded w-48"></div>
+                  <div className="h-10 bg-muted rounded w-32"></div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Table/List Skeleton */}
+            <Card className="border-2">
+              <div className="p-4 space-y-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-16 bg-muted rounded"></div>
+                ))}
+              </div>
+            </Card>
           </div>
         </div>
       </div>
@@ -673,6 +735,38 @@ export default function AdminDevicesPage() {
                   <SelectItem value="retired">Retired</SelectItem>
                 </SelectContent>
               </Select>
+              <SearchableSelect
+                value={departmentFilter}
+                onValueChange={setDepartmentFilter}
+                placeholder="All Departments"
+                searchPlaceholder="Search departments..."
+                icon={<Building2 className="h-4 w-4" />}
+                className="w-full md:w-48"
+                options={[
+                  { value: "all", label: "All Departments" },
+                  ...departments.map((dept) => ({
+                    value: dept,
+                    label: dept,
+                    icon: <Building2 className="h-3 w-3" />,
+                  })),
+                ]}
+              />
+              <SearchableSelect
+                value={staffFilter}
+                onValueChange={setStaffFilter}
+                placeholder="All Staff"
+                searchPlaceholder="Search staff..."
+                icon={<User className="h-4 w-4" />}
+                className="w-full md:w-48"
+                options={[
+                  { value: "all", label: "All Staff" },
+                  ...staff.map((member) => ({
+                    value: member.id,
+                    label: `${formatName(member.first_name)} ${formatName(member.last_name)} - ${member.department}`,
+                    icon: <User className="h-3 w-3" />,
+                  })),
+                ]}
+              />
             </div>
           </CardContent>
         </Card>

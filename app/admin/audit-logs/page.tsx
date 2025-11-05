@@ -20,6 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { SearchableSelect } from "@/components/ui/searchable-select"
+import { Building2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import { ScrollText, Search, Filter, Calendar, User, FileText, LayoutGrid, List, Eye } from "lucide-react"
@@ -80,11 +82,15 @@ interface AuditLog {
 
 export default function AuditLogsPage() {
   const [logs, setLogs] = useState<AuditLog[]>([])
+  const [staff, setStaff] = useState<{ id: string; first_name: string; last_name: string; department: string }[]>([])
+  const [departments, setDepartments] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [actionFilter, setActionFilter] = useState("all")
   const [entityFilter, setEntityFilter] = useState("all")
   const [dateFilter, setDateFilter] = useState("all")
+  const [departmentFilter, setDepartmentFilter] = useState("all")
+  const [staffFilter, setStaffFilter] = useState("all")
   const [customStartDate, setCustomStartDate] = useState("")
   const [customEndDate, setCustomEndDate] = useState("")
   const [viewMode, setViewMode] = useState<"list" | "card">("list")
@@ -323,6 +329,19 @@ export default function AuditLogsPage() {
         console.log("No audit logs found")
         setLogs([])
       }
+
+      // Load staff for filter
+      const { data: staffData } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name, department")
+        .order("last_name", { ascending: true })
+      setStaff(staffData || [])
+      
+      // Extract unique departments
+      const uniqueDepartments = Array.from(
+        new Set(staffData?.map((s: any) => s.department).filter(Boolean))
+      ) as string[]
+      setDepartments(uniqueDepartments.sort())
     } catch (error: any) {
       console.error("Error loading audit logs:", error)
     } finally {
@@ -339,6 +358,13 @@ export default function AuditLogsPage() {
 
     const matchesAction = actionFilter === "all" || log.action === actionFilter
     const matchesEntity = entityFilter === "all" || log.entity_type === entityFilter
+
+    // Filter by department (based on user's department)
+    const matchesDepartment = departmentFilter === "all" || 
+      (log.user && staff.find((s) => s.id === log.user_id)?.department === departmentFilter)
+
+    // Filter by staff
+    const matchesStaff = staffFilter === "all" || log.user_id === staffFilter
 
     let matchesDate = true
     if (dateFilter !== "all") {
@@ -375,7 +401,7 @@ export default function AuditLogsPage() {
       }
     }
 
-    return matchesSearch && matchesAction && matchesEntity && matchesDate
+      return matchesSearch && matchesAction && matchesEntity && matchesDate && matchesDepartment && matchesStaff
   })
 
   const getActionColor = (action: string) => {
@@ -514,15 +540,39 @@ export default function AuditLogsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-muted rounded w-1/3"></div>
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="h-24 bg-muted rounded"></div>
-              <div className="h-24 bg-muted rounded"></div>
-              <div className="h-24 bg-muted rounded"></div>
-              <div className="h-24 bg-muted rounded"></div>
+        <div className="mx-auto max-w-7xl space-y-6">
+          <div className="animate-pulse space-y-6">
+            {/* Header Skeleton */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <div className="h-8 bg-muted rounded w-64"></div>
+                <div className="h-5 bg-muted rounded w-96"></div>
+              </div>
             </div>
+
+            {/* Filters Skeleton */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="h-10 bg-muted rounded flex-1"></div>
+                  <div className="h-10 bg-muted rounded w-48"></div>
+                  <div className="h-10 bg-muted rounded w-48"></div>
+                  <div className="h-10 bg-muted rounded w-48"></div>
+                  <div className="h-10 bg-muted rounded w-48"></div>
+                  <div className="h-10 bg-muted rounded w-48"></div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Table Skeleton */}
+            <Card className="border-2">
+              <div className="p-4 space-y-3">
+                <div className="h-10 bg-muted rounded mb-2"></div>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-16 bg-muted rounded"></div>
+                ))}
+              </div>
+            </Card>
           </div>
         </div>
       </div>
@@ -683,6 +733,39 @@ export default function AuditLogsPage() {
                   <SelectItem value="custom">Custom Range</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            
+            <div className="grid gap-4 md:grid-cols-2 mt-4">
+              <SearchableSelect
+                value={departmentFilter}
+                onValueChange={setDepartmentFilter}
+                placeholder="All Departments"
+                searchPlaceholder="Search departments..."
+                icon={<Building2 className="h-4 w-4" />}
+                options={[
+                  { value: "all", label: "All Departments" },
+                  ...departments.map((dept) => ({
+                    value: dept,
+                    label: dept,
+                    icon: <Building2 className="h-3 w-3" />,
+                  })),
+                ]}
+              />
+              <SearchableSelect
+                value={staffFilter}
+                onValueChange={setStaffFilter}
+                placeholder="All Staff"
+                searchPlaceholder="Search staff..."
+                icon={<User className="h-4 w-4" />}
+                options={[
+                  { value: "all", label: "All Staff" },
+                  ...staff.map((member) => ({
+                    value: member.id,
+                    label: `${formatName(member.first_name)} ${formatName(member.last_name)} - ${member.department}`,
+                    icon: <User className="h-3 w-3" />,
+                  })),
+                ]}
+              />
             </div>
 
             {dateFilter === "custom" && (
@@ -854,7 +937,7 @@ export default function AuditLogsPage() {
               <ScrollText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-foreground mb-2">No Audit Logs Found</h3>
               <p className="text-muted-foreground">
-                {searchQuery || actionFilter !== "all" || entityFilter !== "all" || dateFilter !== "all"
+                {searchQuery || actionFilter !== "all" || entityFilter !== "all" || dateFilter !== "all" || departmentFilter !== "all" || staffFilter !== "all"
                   ? "No logs match your filters"
                   : "No audit logs available yet"}
               </p>

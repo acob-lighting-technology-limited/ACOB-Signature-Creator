@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { SearchableSelect } from "@/components/ui/searchable-select"
+import { Building2, User } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -24,11 +26,43 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
   const [selectedType, setSelectedType] = useState("all")
   const [selectedStatus, setSelectedStatus] = useState("all")
   const [departmentFilter, setDepartmentFilter] = useState("all")
+  const [staffFilter, setStaffFilter] = useState("all")
   const [nameSortOrder, setNameSortOrder] = useState<"asc" | "desc">("asc")
   const [viewMode, setViewMode] = useState<"list" | "card">("list")
   const [selectedFeedback, setSelectedFeedback] = useState<any | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [departments, setDepartments] = useState<string[]>([])
+  const [staff, setStaff] = useState<{ id: string; first_name: string; last_name: string; department: string }[]>([])
+
+  const supabase = createClient()
+
+  // Load all departments and staff from database
+  useEffect(() => {
+    const loadFilterData = async () => {
+      try {
+        // Load all departments
+        const { data: staffData } = await supabase
+          .from("profiles")
+          .select("id, first_name, last_name, department")
+          .order("last_name", { ascending: true })
+
+        if (staffData) {
+          setStaff(staffData)
+          
+          // Extract unique departments
+          const uniqueDepartments = Array.from(
+            new Set(staffData.map((s: any) => s.department).filter(Boolean))
+          ) as string[]
+          setDepartments(uniqueDepartments.sort())
+        }
+      } catch (error) {
+        console.error("Error loading filter data:", error)
+      }
+    }
+
+    loadFilterData()
+  }, [])
 
   // Real-time filtering with useEffect
   useEffect(() => {
@@ -61,6 +95,11 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
       filtered = filtered.filter((item) => item.profiles?.department === departmentFilter)
     }
 
+    // Staff filter
+    if (staffFilter !== "all") {
+      filtered = filtered.filter((item) => item.user_id === staffFilter)
+    }
+
     // Sort by name
     filtered = filtered.sort((a, b) => {
       const lastNameA = formatName(a.profiles?.last_name || "").toLowerCase()
@@ -74,12 +113,7 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
     })
 
     setFilteredFeedback(filtered)
-  }, [feedback, searchQuery, selectedType, selectedStatus, departmentFilter, nameSortOrder])
-
-  // Get unique departments from feedback profiles
-  const departments = Array.from(
-    new Set(feedback.map((f) => f.profiles?.department).filter(Boolean))
-  ) as string[]
+  }, [feedback, searchQuery, selectedType, selectedStatus, departmentFilter, staffFilter, nameSortOrder])
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -242,19 +276,40 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Department</label>
-              <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Departments" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Departments</SelectItem>
-                  {departments.map((dept) => (
-                    <SelectItem key={dept} value={dept}>
-                      {dept}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                value={departmentFilter}
+                onValueChange={setDepartmentFilter}
+                placeholder="All Departments"
+                searchPlaceholder="Search departments..."
+                icon={<Building2 className="h-4 w-4" />}
+                options={[
+                  { value: "all", label: "All Departments" },
+                  ...departments.map((dept) => ({
+                    value: dept,
+                    label: dept,
+                    icon: <Building2 className="h-3 w-3" />,
+                  })),
+                ]}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Staff</label>
+              <SearchableSelect
+                value={staffFilter}
+                onValueChange={setStaffFilter}
+                placeholder="All Staff"
+                searchPlaceholder="Search staff..."
+                icon={<User className="h-4 w-4" />}
+                options={[
+                  { value: "all", label: "All Staff" },
+                  ...staff.map((member) => ({
+                    value: member.id,
+                    label: `${formatName(member.first_name)} ${formatName(member.last_name)} - ${member.department}`,
+                    icon: <User className="h-3 w-3" />,
+                  })),
+                ]}
+              />
             </div>
 
             <div className="space-y-2">
@@ -415,7 +470,7 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
               No Feedback Found
             </h3>
             <p className="text-muted-foreground">
-              {searchQuery || selectedType !== "all" || selectedStatus !== "all" || departmentFilter !== "all"
+              {searchQuery || selectedType !== "all" || selectedStatus !== "all" || departmentFilter !== "all" || staffFilter !== "all"
                 ? "No feedback matches your filters"
                 : "No feedback has been submitted yet"}
             </p>

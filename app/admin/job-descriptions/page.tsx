@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import {
@@ -74,6 +75,7 @@ export default function AdminJobDescriptionsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [departmentFilter, setDepartmentFilter] = useState("all")
+  const [staffFilter, setStaffFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
   const [nameSortOrder, setNameSortOrder] = useState<"asc" | "desc">("asc")
   const [viewMode, setViewMode] = useState<"list" | "card">("list")
@@ -142,12 +144,15 @@ export default function AdminJobDescriptionsPage() {
       const matchesDepartment =
         departmentFilter === "all" || profile.department === departmentFilter
 
+      const matchesStaff =
+        staffFilter === "all" || profile.id === staffFilter
+
       const matchesStatus =
         statusFilter === "all" ||
         (statusFilter === "completed" && profile.job_description) ||
         (statusFilter === "pending" && !profile.job_description)
 
-      return matchesSearch && matchesDepartment && matchesStatus
+      return matchesSearch && matchesDepartment && matchesStaff && matchesStatus
     })
     .sort((a, b) => {
       const lastNameA = formatName(a.last_name).toLowerCase()
@@ -198,15 +203,53 @@ export default function AdminJobDescriptionsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-muted rounded w-1/3"></div>
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="h-24 bg-muted rounded"></div>
-              <div className="h-24 bg-muted rounded"></div>
-              <div className="h-24 bg-muted rounded"></div>
-              <div className="h-24 bg-muted rounded"></div>
+        <div className="mx-auto max-w-7xl space-y-6">
+          <div className="animate-pulse space-y-6">
+            {/* Header Skeleton */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <div className="h-8 bg-muted rounded w-64"></div>
+                <div className="h-5 bg-muted rounded w-96"></div>
+              </div>
+              <div className="h-10 bg-muted rounded w-32"></div>
             </div>
+
+            {/* Stats Skeleton */}
+            <div className="grid gap-4 md:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Card key={i} className="border-2">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-2">
+                        <div className="h-4 bg-muted rounded w-24"></div>
+                        <div className="h-8 bg-muted rounded w-16"></div>
+                      </div>
+                      <div className="h-12 w-12 bg-muted rounded-lg"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Filters Skeleton */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="h-10 bg-muted rounded flex-1"></div>
+                  <div className="h-10 bg-muted rounded w-48"></div>
+                  <div className="h-10 bg-muted rounded w-48"></div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Table/List Skeleton */}
+            <Card className="border-2">
+              <div className="p-4 space-y-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-16 bg-muted rounded"></div>
+                ))}
+              </div>
+            </Card>
           </div>
         </div>
       </div>
@@ -321,20 +364,38 @@ export default function AdminJobDescriptionsPage() {
                   className="pl-10"
                 />
               </div>
-              <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-                <SelectTrigger className="w-full md:w-48">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="All Departments" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Departments</SelectItem>
-                  {departments.map((dept) => (
-                    <SelectItem key={dept} value={dept}>
-                      {dept}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                value={departmentFilter}
+                onValueChange={setDepartmentFilter}
+                placeholder="All Departments"
+                searchPlaceholder="Search departments..."
+                icon={<Building2 className="h-4 w-4" />}
+                className="w-full md:w-48"
+                options={[
+                  { value: "all", label: "All Departments" },
+                  ...departments.map((dept) => ({
+                    value: dept,
+                    label: dept,
+                    icon: <Building2 className="h-3 w-3" />,
+                  })),
+                ]}
+              />
+              <SearchableSelect
+                value={staffFilter}
+                onValueChange={setStaffFilter}
+                placeholder="All Staff"
+                searchPlaceholder="Search staff..."
+                icon={<User className="h-4 w-4" />}
+                className="w-full md:w-48"
+                options={[
+                  { value: "all", label: "All Staff" },
+                  ...profiles.map((member) => ({
+                    value: member.id,
+                    label: `${formatName(member.first_name)} ${formatName(member.last_name)} - ${member.department}`,
+                    icon: <User className="h-3 w-3" />,
+                  })),
+                ]}
+              />
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full md:w-48">
                   <SelectValue placeholder="All Status" />
@@ -490,7 +551,7 @@ export default function AdminJobDescriptionsPage() {
                 No Staff Found
               </h3>
               <p className="text-muted-foreground">
-                {searchQuery || departmentFilter !== "all" || statusFilter !== "all"
+                {searchQuery || departmentFilter !== "all" || staffFilter !== "all" || statusFilter !== "all"
                   ? "No staff matches your filters"
                   : "No staff members found"}
               </p>
