@@ -92,14 +92,17 @@ export function Sidebar({ user, profile, isAdmin }: SidebarProps) {
   const SidebarContent = () => (
     <>
       {/* Empty space for logo (moved to navbar) */}
-      <div className={cn("border-b", isCollapsed ? "px-2 py-10" : "px-6 py-10")}>
+      <div className={cn("", isCollapsed ? "px-2 py-8" : "px-6 py-8")}>
         {/* Logo space maintained but empty */}
       </div>
 
       {/* User Profile Section */}
-      <div className={cn("border-b transition-all duration-300", isCollapsed ? "px-2 py-4" : "px-6 py-6")}>
+      <div className={cn(
+        "border-b transition-all duration-300 py-6",
+        isCollapsed ? "mx-auto" : "px-6"
+      )}>
         <div className="flex items-center gap-3">
-          <Avatar className={cn("ring-2 ring-primary/10 transition-all duration-300 flex-shrink-0", isCollapsed ? "h-10 w-10" : "h-12 w-12")}>
+          <Avatar className={cn("ring-2 ring-primary/10 transition-all duration-300 flex-shrink-0 h-12 w-12")}>
             <AvatarFallback className="bg-primary text-primary-foreground text-lg font-semibold">
               {getInitials(user?.email, profile?.first_name, profile?.last_name)}
             </AvatarFallback>

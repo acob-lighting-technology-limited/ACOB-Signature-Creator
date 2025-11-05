@@ -77,7 +77,7 @@ export function Navbar({ user, isAdmin = false }: NavbarProps) {
             >
               {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
             </Button>
-            <Link href="/dashboard" className="flex items-center px-4 h-full border-r border-border">
+            <Link href="/dashboard" className="flex items-center px-4 h-full ">
               <Image src="/acob-logo.webp" alt="ACOB Lighting" width={150} height={150} className="h-8 w-auto" />
             </Link>
               </div>
@@ -179,7 +179,11 @@ export function Navbar({ user, isAdmin = false }: NavbarProps) {
           {/* Mobile menu */}
           {isOpen && (
             <div className="md:hidden border-t border-border py-4 space-y-2">
-              <div className="flex items-center gap-3 px-4 py-2 mb-2">
+              <div
+                className={`flex items-center px-4 py-2 mb-2${
+                  isCollapsed ? '' : ' gap-3'
+                }`}
+              >
                 <Avatar className="h-10 w-10">
                   <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
                     {getInitials(user?.email)}

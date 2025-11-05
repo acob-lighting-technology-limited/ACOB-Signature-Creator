@@ -98,12 +98,15 @@ export function AdminSidebar({ user, profile }: AdminSidebarProps) {
   const SidebarContent = () => (
     <>
       {/* Empty space for logo (moved to navbar) */}
-      <div className={cn("border-b", isCollapsed ? "px-2 py-10" : "px-6 py-10")}>
+      <div className={cn("", isCollapsed ? "px-2 py-8" : "px-6 py-8")}>
         {/* Logo space maintained but empty */}
       </div>
 
       {/* Admin Badge & User Profile - Fixed height container */}
-      <div className={cn("border-b transition-all duration-300 pt-10 min-h-[120px] flex flex-col", isCollapsed ? "px-2 py-6" : "px-6 py-6")}>
+      <div className={cn(
+        "border-b transition-all duration-300 pt-10 min-h-[100px] flex flex-col py-6",
+        isCollapsed ? "items-center mx-0 px-0" : "mx-6"
+      )}>
         {/* Admin Panel Badge - Commented out */}
         {/* <div className={cn("transition-all duration-300 overflow-hidden", isCollapsed ? "max-h-0 opacity-0" : "max-h-10 opacity-100")}>
         <div className="flex items-center gap-2">
@@ -192,19 +195,19 @@ export function AdminSidebar({ user, profile }: AdminSidebarProps) {
         })}
       </nav>
 
-      {/* Back to Portal & Logout */}
+      {/* Back to Dashboard & Logout */}
       <div className="px-4 py-4 border-t space-y-2">
         <Link href="/dashboard">
           <Button
             variant="outline"
             className={cn(
-              "w-full text-muted-foreground hover:text-foreground transition-all duration-300 min-h-[44px]",
+              "w-full mb-2 text-muted-foreground hover:text-foreground transition-all duration-300 min-h-[44px]",
               isCollapsed ? "justify-center px-3" : "justify-start gap-3"
             )}
-            title={isCollapsed ? "Back to Portal" : undefined}
+            title={isCollapsed ? "Back to Dashboard" : undefined}
           >
             <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
-            <span className={cn("transition-all duration-300 overflow-hidden whitespace-nowrap", isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-0")}>Back to Portal</span>
+            <span className={cn("transition-all duration-300 overflow-hidden whitespace-nowrap", isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-0")}>Back to Dashboard</span>
           </Button>
         </Link>
         <Button

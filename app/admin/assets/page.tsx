@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,7 +55,6 @@ import {
   LayoutGrid,
   List,
   User,
-  Users,
   Building2,
   Eye,
   History,
@@ -134,6 +134,8 @@ export default function AdminAssetsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [departmentFilter, setDepartmentFilter] = useState("all")
+  const [userFilter, setUserFilter] = useState("all")
   const [viewMode, setViewMode] = useState<"list" | "card">("list")
 
   // Dialog states
@@ -150,10 +152,7 @@ export default function AdminAssetsPage() {
   const [assetForm, setAssetForm] = useState({
     asset_name: "",
     asset_type: "",
-    asset_model: "",
     serial_number: "",
-    purchase_date: "",
-    purchase_cost: "",
     status: "available",
     notes: "",
   })
@@ -346,10 +345,7 @@ export default function AdminAssetsPage() {
        setAssetForm({
          asset_name: asset.asset_name,
          asset_type: asset.asset_type,
-         asset_model: asset.asset_model || "",
          serial_number: asset.serial_number || "",
-         purchase_date: asset.purchase_date || "",
-         purchase_cost: asset.purchase_cost?.toString() || "",
          status: asset.status,
          notes: asset.notes || "",
        })
@@ -358,10 +354,7 @@ export default function AdminAssetsPage() {
              setAssetForm({
          asset_name: "",
          asset_type: "",
-         asset_model: "",
          serial_number: "",
-         purchase_date: "",
-         purchase_cost: "",
          status: "available",
          notes: "",
        })
@@ -390,7 +383,6 @@ export default function AdminAssetsPage() {
                  // Update existing asset
          const updateData = {
            ...assetForm,
-           purchase_cost: assetForm.purchase_cost ? parseFloat(assetForm.purchase_cost) : null,
          }
          const { error } = await supabase
            .from("assets")
@@ -413,7 +405,6 @@ export default function AdminAssetsPage() {
                  // Create new asset
          const insertData = {
            ...assetForm,
-           purchase_cost: assetForm.purchase_cost ? parseFloat(assetForm.purchase_cost) : null,
            created_by: user.id,
          }
          const { data: newAsset, error } = await supabase.from("assets").insert(insertData).select().single()
@@ -583,11 +574,20 @@ export default function AdminAssetsPage() {
     const matchesSearch =
       asset.asset_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       asset.asset_type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      asset.asset_model?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       asset.serial_number?.toLowerCase().includes(searchQuery.toLowerCase())
 
     const matchesStatus = statusFilter === "all" || asset.status === statusFilter
 
-    return matchesSearch && matchesStatus
+    // Filter by department
+    const matchesDepartment = departmentFilter === "all" || 
+      asset.current_assignment?.department === departmentFilter
+
+    // Filter by user
+    const matchesUser = userFilter === "all" || 
+      asset.current_assignment?.assigned_to === userFilter
+
+    return matchesSearch && matchesStatus && matchesDepartment && matchesUser
   })
 
   const stats = {
@@ -625,15 +625,58 @@ export default function AdminAssetsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-muted rounded w-1/3"></div>
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="h-24 bg-muted rounded"></div>
-              <div className="h-24 bg-muted rounded"></div>
-              <div className="h-24 bg-muted rounded"></div>
-              <div className="h-24 bg-muted rounded"></div>
+        <div className="mx-auto max-w-7xl space-y-6">
+          <div className="animate-pulse space-y-6">
+            {/* Header Skeleton */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <div className="h-8 bg-muted rounded w-64"></div>
+                <div className="h-5 bg-muted rounded w-96"></div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-10 bg-muted rounded w-32"></div>
+                <div className="h-10 bg-muted rounded w-32"></div>
+                <div className="h-10 bg-muted rounded w-32"></div>
+              </div>
             </div>
+
+            {/* Stats Skeleton */}
+            <div className="grid gap-4 md:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Card key={i} className="border-2">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-2">
+                        <div className="h-4 bg-muted rounded w-24"></div>
+                        <div className="h-8 bg-muted rounded w-16"></div>
+                      </div>
+                      <div className="h-12 w-12 bg-muted rounded-lg"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Filters Skeleton */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="h-10 bg-muted rounded flex-1"></div>
+                  <div className="h-10 bg-muted rounded w-48"></div>
+                  <div className="h-10 bg-muted rounded w-48"></div>
+                  <div className="h-10 bg-muted rounded w-32"></div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Table/List Skeleton */}
+            <Card className="border-2">
+              <div className="p-4 space-y-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-16 bg-muted rounded"></div>
+                ))}
+              </div>
+            </Card>
           </div>
         </div>
       </div>
@@ -748,7 +791,7 @@ export default function AdminAssetsPage() {
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search assets..."
+                  placeholder="Search assets by name, type, model, or serial number..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -767,6 +810,38 @@ export default function AdminAssetsPage() {
                   <SelectItem value="retired">Retired</SelectItem>
                 </SelectContent>
               </Select>
+              <SearchableSelect
+                value={departmentFilter}
+                onValueChange={setDepartmentFilter}
+                placeholder="All Departments"
+                searchPlaceholder="Search departments..."
+                icon={<Building2 className="h-4 w-4" />}
+                className="w-full md:w-48"
+                options={[
+                  { value: "all", label: "All Departments" },
+                  ...departments.map((dept) => ({
+                    value: dept,
+                    label: dept,
+                    icon: <Building2 className="h-3 w-3" />,
+                  })),
+                ]}
+              />
+              <SearchableSelect
+                value={userFilter}
+                onValueChange={setUserFilter}
+                placeholder="All Users"
+                searchPlaceholder="Search users..."
+                icon={<User className="h-4 w-4" />}
+                className="w-full md:w-48"
+                options={[
+                  { value: "all", label: "All Users" },
+                  ...staff.map((member) => ({
+                    value: member.id,
+                    label: `${formatName(member.first_name)} ${formatName(member.last_name)} - ${member.department}`,
+                    icon: <User className="h-3 w-3" />,
+                  })),
+                ]}
+              />
             </div>
           </CardContent>
         </Card>
@@ -988,12 +1063,12 @@ export default function AdminAssetsPage() {
           <Card className="border-2">
             <CardContent className="p-12 text-center">
               <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                             <h3 className="text-xl font-semibold text-foreground mb-2">No Assets Found</h3>
-               <p className="text-muted-foreground">
-                 {searchQuery || statusFilter !== "all"
-                   ? "No assets match your filters"
-                   : "Get started by adding your first asset"}
-               </p>
+              <h3 className="text-xl font-semibold text-foreground mb-2">No Assets Found</h3>
+              <p className="text-muted-foreground">
+                {searchQuery || statusFilter !== "all" || departmentFilter !== "all" || userFilter !== "all"
+                  ? "No assets match your filters"
+                  : "Get started by adding your first asset"}
+              </p>
             </CardContent>
           </Card>
         )}
@@ -1046,58 +1121,17 @@ export default function AdminAssetsPage() {
                </div>
              </div>
 
-                         <div className="grid gap-4 md:grid-cols-2">
-               <div>
-                 <Label htmlFor="asset_model">Model</Label>
-                 <Input
-                   id="asset_model"
-                   value={assetForm.asset_model}
-                   onChange={(e) =>
-                     setAssetForm({ ...assetForm, asset_model: e.target.value })
-                   }
-                   placeholder="e.g., Ergonomic Chair"
-                 />
-               </div>
-               <div>
-                 <Label htmlFor="serial_number">Serial Number</Label>
-                 <Input
-                   id="serial_number"
-                   value={assetForm.serial_number}
-                   onChange={(e) =>
-                     setAssetForm({ ...assetForm, serial_number: e.target.value })
-                   }
-                   placeholder="e.g., ABC123XYZ"
-                 />
-               </div>
-             </div>
-
-             <div className="grid gap-4 md:grid-cols-2">
-               <div>
-                 <Label htmlFor="purchase_date">Purchase Date</Label>
-                 <Input
-                   id="purchase_date"
-                   type="date"
-                   value={assetForm.purchase_date}
-                   onChange={(e) =>
-                     setAssetForm({ ...assetForm, purchase_date: e.target.value })
-                   }
-                 />
-               </div>
-               <div>
-                 <Label htmlFor="purchase_cost">Purchase Cost</Label>
-                 <Input
-                   id="purchase_cost"
-                   type="number"
-                   step="0.01"
-                   min="0"
-                   value={assetForm.purchase_cost}
-                   onChange={(e) =>
-                     setAssetForm({ ...assetForm, purchase_cost: e.target.value })
-                   }
-                   placeholder="e.g., 1500.00"
-                 />
-               </div>
-             </div>
+            <div>
+              <Label htmlFor="serial_number">Serial Number</Label>
+              <Input
+                id="serial_number"
+                value={assetForm.serial_number}
+                onChange={(e) =>
+                  setAssetForm({ ...assetForm, serial_number: e.target.value })
+                }
+                placeholder="e.g., ABC123XYZ"
+              />
+            </div>
 
             <div>
               <Label htmlFor="status">Status</Label>
