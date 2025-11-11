@@ -14,7 +14,6 @@ export default function EditProfilePage() {
   const supabase = createClient()
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     loadUserData()
@@ -22,8 +21,6 @@ export default function EditProfilePage() {
 
   const loadUserData = async () => {
     try {
-      setIsLoading(true)
-
       // Get current user
       const { data: { user: authUser }, error: userError } = await supabase.auth.getUser()
       if (userError || !authUser) {
@@ -79,50 +76,7 @@ export default function EditProfilePage() {
     } catch (error: any) {
       console.error("Error loading user data:", error)
       toast.error("Failed to load profile data")
-    } finally {
-      setIsLoading(false)
     }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="mx-auto max-w-4xl p-6">
-          <div className="animate-pulse space-y-4">
-            {/* Header Skeleton */}
-            <div className="flex items-center gap-4 mb-8">
-              <div className="h-10 w-10 bg-muted rounded"></div>
-              <div className="space-y-2">
-                <div className="h-8 bg-muted rounded w-48"></div>
-                <div className="h-4 bg-muted rounded w-64"></div>
-              </div>
-            </div>
-
-            {/* Form Skeleton */}
-            <Card>
-              <CardContent className="p-6 space-y-6">
-                <div className="grid gap-4 md:grid-cols-2">
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="space-y-2">
-                      <div className="h-4 bg-muted rounded w-24"></div>
-                      <div className="h-10 bg-muted rounded"></div>
-                    </div>
-                  ))}
-                </div>
-                <div className="space-y-2">
-                  <div className="h-4 bg-muted rounded w-24"></div>
-                  <div className="h-24 bg-muted rounded"></div>
-                </div>
-                <div className="flex gap-4 justify-end">
-                  <div className="h-10 bg-muted rounded w-24"></div>
-                  <div className="h-10 bg-muted rounded w-32"></div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   if (!user || !profile) {

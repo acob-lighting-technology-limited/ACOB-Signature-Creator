@@ -10,7 +10,6 @@ export default function FeedbackPage() {
   const router = useRouter()
   const [userFeedback, setUserFeedback] = useState<any[]>([])
   const [userId, setUserId] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,7 +31,6 @@ export default function FeedbackPage() {
         .order("created_at", { ascending: false })
 
       setUserFeedback(feedback || [])
-      setIsLoading(false)
     }
 
     fetchData()
@@ -42,7 +40,7 @@ export default function FeedbackPage() {
     setUserFeedback([newFeedback, ...userFeedback])
   }
 
-  if (isLoading || !userId) {
+  if (!userId) {
     return <div className="min-h-screen bg-background" />
   }
 

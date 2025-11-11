@@ -86,7 +86,6 @@ interface TaskUpdate {
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [taskUpdates, setTaskUpdates] = useState<TaskUpdate[]>([])
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
@@ -240,8 +239,6 @@ export default function TasksPage() {
       console.error("Error loading tasks:", error)
       const errorMessage = error?.message || error?.toString() || "Failed to load tasks"
       toast.error(`Failed to load tasks: ${errorMessage}`)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -491,52 +488,6 @@ export default function TasksPage() {
   }
 
   const stats = getTaskStats()
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
-        <div className="mx-auto max-w-6xl space-y-6">
-          <div className="animate-pulse space-y-6">
-            {/* Header Skeleton */}
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="space-y-2">
-                <div className="h-8 bg-muted rounded w-48"></div>
-                <div className="h-5 bg-muted rounded w-64"></div>
-              </div>
-              <div className="h-10 bg-muted rounded w-48"></div>
-            </div>
-
-            {/* Stats Skeleton */}
-            <div className="grid gap-4 md:grid-cols-4">
-              {[1, 2, 3, 4].map((i) => (
-                <Card key={i} className="border-2">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-2">
-                        <div className="h-4 bg-muted rounded w-24"></div>
-                        <div className="h-8 bg-muted rounded w-16"></div>
-                      </div>
-                      <div className="h-8 w-8 bg-muted rounded"></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* Table Skeleton */}
-            <Card className="border-2">
-              <div className="p-4 space-y-3">
-                <div className="h-10 bg-muted rounded mb-2"></div>
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-12 bg-muted rounded"></div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">

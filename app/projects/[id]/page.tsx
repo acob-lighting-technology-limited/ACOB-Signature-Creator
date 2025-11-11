@@ -109,7 +109,6 @@ export default function ProjectDetailPage() {
   const [items, setItems] = useState<ProjectItem[]>([])
   const [updates, setUpdates] = useState<ProjectUpdate[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [newComment, setNewComment] = useState("")
   const [isSaving, setIsSaving] = useState(false)
 
@@ -133,8 +132,6 @@ export default function ProjectDetailPage() {
     } catch (error) {
       console.error("Error loading project data:", error)
       toast.error("Failed to load project data")
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -348,17 +345,6 @@ export default function ProjectDetailPage() {
       hour: "2-digit",
       minute: "2-digit",
     })
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading project...</p>
-        </div>
-      </div>
-    )
   }
 
   if (!project) {

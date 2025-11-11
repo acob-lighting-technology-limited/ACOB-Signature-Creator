@@ -59,7 +59,6 @@ const CATEGORIES = [
 export default function DocumentationPage() {
   const [docs, setDocs] = useState<Documentation[]>([])
   const [filteredDocs, setFilteredDocs] = useState<Documentation[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedDoc, setSelectedDoc] = useState<Documentation | null>(null)
@@ -99,8 +98,6 @@ export default function DocumentationPage() {
     } catch (error) {
       console.error("Error loading documentation:", error)
       toast.error("Failed to load documentation")
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -277,23 +274,6 @@ export default function DocumentationPage() {
   }
 
   const stats = getStats()
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-muted rounded w-1/3"></div>
-            <div className="grid gap-4 md:grid-cols-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-24 bg-muted rounded"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">

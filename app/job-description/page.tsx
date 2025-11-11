@@ -15,7 +15,6 @@ export default function JobDescriptionPage() {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
   const [profile, setProfile] = useState<{
     first_name: string | null
     last_name: string | null
@@ -57,8 +56,6 @@ export default function JobDescriptionPage() {
     } catch (error) {
       console.error("Error loading job description:", error)
       toast.error("Failed to load job description")
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -109,19 +106,6 @@ export default function JobDescriptionPage() {
 
   const handlePrint = () => {
     window.print()
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
-        <div className="mx-auto max-w-4xl">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-muted rounded w-1/3"></div>
-            <div className="h-64 bg-muted rounded"></div>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (

@@ -118,7 +118,6 @@ export default function ProfilePage() {
   const [assets, setAssets] = useState<Asset[]>([])
   const [documentation, setDocumentation] = useState<Documentation[]>([])
   const [feedback, setFeedback] = useState<Feedback[]>([])
-  const [isLoading, setIsLoading] = useState(true)
 
   const supabase = createClient()
 
@@ -128,8 +127,6 @@ export default function ProfilePage() {
 
   const loadUserData = async () => {
     try {
-      setIsLoading(true)
-
       // Get current user
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) {
@@ -279,8 +276,6 @@ export default function ProfilePage() {
     } catch (error: any) {
       console.error("Error loading user data:", error)
       toast.error("Failed to load profile data")
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -312,61 +307,6 @@ export default function ProfilePage() {
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
     }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="animate-pulse space-y-4">
-          {/* Header Skeleton */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <div className="h-8 bg-muted rounded w-48"></div>
-              <div className="h-4 bg-muted rounded w-64"></div>
-            </div>
-            <div className="h-10 bg-muted rounded w-32"></div>
-          </div>
-
-          {/* Profile Card Skeleton */}
-          <Card>
-            <CardHeader>
-              <div className="h-6 bg-muted rounded w-40"></div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className="h-12 w-12 bg-muted rounded-full"></div>
-                    <div className="space-y-2">
-                      <div className="h-4 bg-muted rounded w-24"></div>
-                      <div className="h-5 bg-muted rounded w-32"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Tabs Skeleton */}
-          <div className="space-y-4">
-            <div className="flex gap-2 border-b">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-10 bg-muted rounded-t w-32"></div>
-              ))}
-            </div>
-            <Card>
-              <CardContent className="p-6">
-                <div className="space-y-3">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="h-12 bg-muted rounded"></div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   if (!profile) {

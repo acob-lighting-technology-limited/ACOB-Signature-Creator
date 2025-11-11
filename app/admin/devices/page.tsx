@@ -126,7 +126,6 @@ export default function AdminDevicesPage() {
   const [staff, setStaff] = useState<Staff[]>([])
   const [departments, setDepartments] = useState<string[]>([])
   const [userProfile, setUserProfile] = useState<{ role?: string; lead_departments?: string[] } | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [departmentFilter, setDepartmentFilter] = useState("all")
@@ -268,8 +267,6 @@ export default function AdminDevicesPage() {
       console.error("Error loading data:", error)
       const errorMessage = error?.message || error?.toString() || "Failed to load data"
       toast.error(`Failed to load data: ${errorMessage}`)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -594,66 +591,6 @@ export default function AdminDevicesPage() {
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
     }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
-        <div className="mx-auto max-w-7xl space-y-6">
-          <div className="animate-pulse space-y-6">
-            {/* Header Skeleton */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <div className="h-8 bg-muted rounded w-64"></div>
-                <div className="h-5 bg-muted rounded w-96"></div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-10 bg-muted rounded w-32"></div>
-                <div className="h-10 bg-muted rounded w-32"></div>
-              </div>
-            </div>
-
-            {/* Stats Skeleton */}
-            <div className="grid gap-4 md:grid-cols-4">
-              {[1, 2, 3, 4].map((i) => (
-                <Card key={i} className="border-2">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-2">
-                        <div className="h-4 bg-muted rounded w-24"></div>
-                        <div className="h-8 bg-muted rounded w-16"></div>
-                      </div>
-                      <div className="h-12 w-12 bg-muted rounded-lg"></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* Filters Skeleton */}
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="h-10 bg-muted rounded flex-1"></div>
-                  <div className="h-10 bg-muted rounded w-48"></div>
-                  <div className="h-10 bg-muted rounded w-48"></div>
-                  <div className="h-10 bg-muted rounded w-32"></div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Table/List Skeleton */}
-            <Card className="border-2">
-              <div className="p-4 space-y-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-16 bg-muted rounded"></div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (

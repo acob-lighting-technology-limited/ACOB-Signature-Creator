@@ -574,48 +574,6 @@ export default function AuditLogsPage() {
     deletes: logs.filter((l) => l.action === "delete").length,
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
-        <div className="mx-auto max-w-7xl space-y-6">
-          <div className="animate-pulse space-y-6">
-            {/* Header Skeleton */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <div className="h-8 bg-muted rounded w-64"></div>
-                <div className="h-5 bg-muted rounded w-96"></div>
-              </div>
-            </div>
-
-            {/* Filters Skeleton */}
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="h-10 bg-muted rounded flex-1"></div>
-                  <div className="h-10 bg-muted rounded w-48"></div>
-                  <div className="h-10 bg-muted rounded w-48"></div>
-                  <div className="h-10 bg-muted rounded w-48"></div>
-                  <div className="h-10 bg-muted rounded w-48"></div>
-                  <div className="h-10 bg-muted rounded w-48"></div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Table Skeleton */}
-            <Card className="border-2">
-              <div className="p-4 space-y-3">
-                <div className="h-10 bg-muted rounded mb-2"></div>
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-16 bg-muted rounded"></div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
       <div className="mx-auto max-w-7xl space-y-6">

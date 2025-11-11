@@ -45,7 +45,6 @@ interface Project {
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [filterStatus, setFilterStatus] = useState("all")
   const supabase = createClient()
 
@@ -110,8 +109,6 @@ export default function ProjectsPage() {
     } catch (error) {
       console.error("Error loading projects:", error)
       toast.error("Failed to load projects")
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -163,17 +160,6 @@ export default function ProjectsPage() {
     planning: projects.filter((p) => p.status === "planning").length,
     active: projects.filter((p) => p.status === "active").length,
     completed: projects.filter((p) => p.status === "completed").length,
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading projects...</p>
-        </div>
-      </div>
-    )
   }
 
   return (

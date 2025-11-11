@@ -96,7 +96,6 @@ function formatRelativeTime(dateString?: string): string {
 export default function NotificationPage() {
   const router = useRouter()
   const [notifications, setNotifications] = useState<Notification[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [readIds, setReadIds] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState("")
   const [typeFilter, setTypeFilter] = useState("all")
@@ -105,10 +104,9 @@ export default function NotificationPage() {
 
   useEffect(() => {
     if (typeof window === "undefined") {
-      setIsLoading(false)
       return
     }
-    
+
     import("@/lib/supabase/client").then(({ createClient }) => {
       const supabase = createClient()
       loadNotifications(supabase)
@@ -119,7 +117,6 @@ export default function NotificationPage() {
       }, 30000)
     }).catch((error) => {
       console.error("Error initializing Supabase client:", error)
-      setIsLoading(false)
     })
 
     return () => {
@@ -229,8 +226,6 @@ export default function NotificationPage() {
     } catch (error) {
       console.error("Error loading notifications:", error)
       toast.error("Failed to load notifications")
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -273,55 +268,6 @@ export default function NotificationPage() {
   })
 
   const unreadCount = notifications.filter((n) => !readIds.has(n.id)).length
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="animate-pulse space-y-4">
-          {/* Header Skeleton */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="h-10 w-10 bg-muted rounded"></div>
-              <div className="space-y-2">
-                <div className="h-8 bg-muted rounded w-48"></div>
-                <div className="h-4 bg-muted rounded w-64"></div>
-              </div>
-            </div>
-            <div className="h-10 bg-muted rounded w-40"></div>
-          </div>
-
-          {/* Filters Skeleton */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="h-10 bg-muted rounded flex-1"></div>
-                <div className="h-10 bg-muted rounded w-48"></div>
-                <div className="h-10 bg-muted rounded w-48"></div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Notifications Skeleton */}
-          <div className="space-y-2">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Card key={i}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    <div className="h-10 w-10 bg-muted rounded-full"></div>
-                    <div className="flex-1 space-y-2">
-                      <div className="h-5 bg-muted rounded w-3/4"></div>
-                      <div className="h-4 bg-muted rounded w-full"></div>
-                      <div className="h-3 bg-muted rounded w-32"></div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">

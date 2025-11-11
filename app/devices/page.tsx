@@ -40,7 +40,6 @@ interface DeviceAssignment {
 
 export default function DevicesPage() {
   const [assignments, setAssignments] = useState<DeviceAssignment[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const supabase = createClient()
 
   useEffect(() => {
@@ -94,8 +93,6 @@ export default function DevicesPage() {
       console.error("Error loading devices:", error)
       const errorMessage = error?.message || error?.toString() || "Failed to load devices"
       toast.error(`Failed to load devices: ${errorMessage}`)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -121,22 +118,6 @@ export default function DevicesPage() {
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
     }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-muted rounded w-1/3"></div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="h-48 bg-muted rounded"></div>
-              <div className="h-48 bg-muted rounded"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (

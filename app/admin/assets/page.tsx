@@ -684,67 +684,6 @@ export default function AdminAssetsPage() {
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
-        <div className="mx-auto max-w-7xl space-y-6">
-          <div className="animate-pulse space-y-6">
-            {/* Header Skeleton */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <div className="h-8 bg-muted rounded w-64"></div>
-                <div className="h-5 bg-muted rounded w-96"></div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-10 bg-muted rounded w-32"></div>
-                <div className="h-10 bg-muted rounded w-32"></div>
-                <div className="h-10 bg-muted rounded w-32"></div>
-              </div>
-            </div>
-
-            {/* Stats Skeleton */}
-            <div className="grid gap-4 md:grid-cols-4">
-              {[1, 2, 3, 4].map((i) => (
-                <Card key={i} className="border-2">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-2">
-                        <div className="h-4 bg-muted rounded w-24"></div>
-                        <div className="h-8 bg-muted rounded w-16"></div>
-                      </div>
-                      <div className="h-12 w-12 bg-muted rounded-lg"></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* Filters Skeleton */}
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="h-10 bg-muted rounded flex-1"></div>
-                  <div className="h-10 bg-muted rounded w-48"></div>
-                  <div className="h-10 bg-muted rounded w-48"></div>
-                  <div className="h-10 bg-muted rounded w-32"></div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Table/List Skeleton */}
-            <Card className="border-2">
-              <div className="p-4 space-y-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-16 bg-muted rounded"></div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -1329,23 +1268,19 @@ export default function AdminAssetsPage() {
             {assignForm.assignment_type === "individual" ? (
               <div>
                 <Label htmlFor="assigned_to">Assign To *</Label>
-                <Select
+                <SearchableSelect
                   value={assignForm.assigned_to}
                   onValueChange={(value) =>
                     setAssignForm({ ...assignForm, assigned_to: value })
                   }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select staff member" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[300px] overflow-y-auto">
-                    {staff.map((member) => (
-                      <SelectItem key={member.id} value={member.id}>
-                        {formatName(member.first_name)} {formatName(member.last_name)} - {member.department}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Select staff member"
+                  searchPlaceholder="Search staff..."
+                  icon={<User className="h-4 w-4" />}
+                  options={staff.map((member) => ({
+                    value: member.id,
+                    label: `${formatName(member.first_name)} ${formatName(member.last_name)} - ${member.department}`,
+                  }))}
+                />
                 <p className="text-xs text-muted-foreground mt-1">
                   {staff.length} staff members available
                 </p>

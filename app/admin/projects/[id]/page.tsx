@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -125,15 +126,30 @@ export default function AdminProjectDetailPage() {
 
   useEffect(() => {
     if (projectId) {
+      console.log("📂 Loading project detail page for ID:", projectId)
       loadProjectData()
     }
   }, [projectId])
 
   const loadProjectData = async () => {
     try {
+      console.log("🔄 Starting to load project data...")
+
+      // Check auth first
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      console.log("👤 Current user:", user?.id, authError ? `Error: ${authError.message}` : "✅")
+
+      if (authError || !user) {
+        console.error("❌ Auth error, redirecting...", authError)
+        router.push("/auth/login")
+        return
+      }
+
       await Promise.all([loadProject(), loadStaff(), loadMembers(), loadItems()])
+      console.log("✅ All project data loaded successfully")
     } catch (error) {
-      console.error("Error loading project data:", error)
+      console.error("❌ Error loading project data:", error)
+      console.error("Error details:", JSON.stringify(error, null, 2))
       toast.error("Failed to load project data")
     } finally {
       setIsLoading(false)
@@ -141,27 +157,32 @@ export default function AdminProjectDetailPage() {
   }
 
   const loadProject = async () => {
+    console.log("📋 Loading project details...")
     const { data, error } = await supabase
       .from("projects")
       .select("*")
       .eq("id", projectId)
       .single()
 
+    console.log("Project result:", { data, error })
     if (error) throw error
     setProject(data)
   }
 
   const loadStaff = async () => {
+    console.log("👥 Loading staff...")
     const { data, error } = await supabase
       .from("profiles")
       .select("id, first_name, last_name, company_email, department")
       .order("last_name", { ascending: true })
 
+    console.log("Staff result:", { count: data?.length, error })
     if (error) throw error
     setStaff(data || [])
   }
 
   const loadMembers = async () => {
+    console.log("👨‍👩‍👧‍👦 Loading project members...")
     const { data, error } = await supabase
       .from("project_members")
       .select(`
@@ -181,17 +202,20 @@ export default function AdminProjectDetailPage() {
       .eq("is_active", true)
       .order("assigned_at", { ascending: false })
 
+    console.log("Members result:", { count: data?.length, error })
     if (error) throw error
     setMembers((data as any) || [])
   }
 
   const loadItems = async () => {
+    console.log("📦 Loading project items...")
     const { data, error } = await supabase
       .from("project_items")
       .select("*")
       .eq("project_id", projectId)
       .order("created_at", { ascending: false })
 
+    console.log("Items result:", { count: data?.length, error })
     if (error) throw error
     setItems(data || [])
   }
@@ -381,14 +405,7 @@ export default function AdminProjectDetailPage() {
   const availableStaff = staff.filter((s) => !members.some((m) => m.user_id === s.id))
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading project...</p>
-        </div>
-      </div>
-    )
+    return null // loading.tsx will handle the loading state
   }
 
   if (!project) {
@@ -569,21 +586,17 @@ export default function AdminProjectDetailPage() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="user_id">Staff Member</Label>
-              <Select
+              <SearchableSelect
                 value={memberForm.user_id}
                 onValueChange={(value) => setMemberForm({ ...memberForm, user_id: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select staff member" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableStaff.map((member) => (
-                    <SelectItem key={member.id} value={member.id}>
-                      {member.first_name} {member.last_name} - {member.department}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="Select staff member"
+                searchPlaceholder="Search staff..."
+                icon={<User className="h-4 w-4" />}
+                options={availableStaff.map((member) => ({
+                  value: member.id,
+                  label: `${member.first_name} ${member.last_name} - ${member.department}`,
+                }))}
+              />
             </div>
 
             <div className="space-y-2">

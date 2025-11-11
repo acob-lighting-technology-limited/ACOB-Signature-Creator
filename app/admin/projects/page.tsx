@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -116,6 +117,8 @@ export default function AdminProjectsPage() {
 
   const loadData = async () => {
     try {
+      console.log("🔄 Starting to load projects data...")
+
       const [projectsData, staffData] = await Promise.all([
         supabase
           .from("projects")
@@ -137,14 +140,38 @@ export default function AdminProjectsPage() {
           .order("last_name", { ascending: true }),
       ])
 
-      if (projectsData.error) throw projectsData.error
-      if (staffData.error) throw staffData.error
+      console.log("📊 Projects query result:", {
+        error: projectsData.error,
+        data: projectsData.data,
+        count: projectsData.data?.length,
+        status: projectsData.status,
+        statusText: projectsData.statusText
+      })
 
+      console.log("👥 Staff query result:", {
+        error: staffData.error,
+        data: staffData.data,
+        count: staffData.data?.length,
+        status: staffData.status,
+        statusText: staffData.statusText
+      })
+
+      if (projectsData.error) {
+        console.error("❌ Projects error details:", projectsData.error)
+        throw projectsData.error
+      }
+      if (staffData.error) {
+        console.error("❌ Staff error details:", staffData.error)
+        throw staffData.error
+      }
+
+      console.log("✅ Successfully loaded data")
       setProjects((projectsData.data as any) || [])
       setStaff(staffData.data || [])
     } catch (error) {
-      console.error("Error loading data:", error)
-      toast.error("Failed to load data")
+      console.error("❌ Error loading data:", error)
+      console.error("Error details:", JSON.stringify(error, null, 2))
+      toast.error(`Failed to load data: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsLoading(false)
     }
@@ -189,10 +216,14 @@ export default function AdminProjectsPage() {
 
     setIsSaving(true)
     try {
+      console.log("💾 Starting to save project...")
+
       const {
         data: { user },
       } = await supabase.auth.getUser()
       if (!user) throw new Error("Not authenticated")
+
+      console.log("👤 Current user:", user.id)
 
       const projectData = {
         project_name: projectForm.project_name,
@@ -206,13 +237,17 @@ export default function AdminProjectsPage() {
         status: projectForm.status,
       }
 
+      console.log("📝 Project data to save:", projectData)
+
       if (selectedProject) {
         // Update existing project
-        const { error } = await supabase
+        console.log("🔄 Updating project:", selectedProject.id)
+        const { error, data } = await supabase
           .from("projects")
           .update(projectData)
           .eq("id", selectedProject.id)
 
+        console.log("Update result:", { error, data })
         if (error) throw error
 
         await supabase.rpc("log_audit", {
@@ -225,11 +260,13 @@ export default function AdminProjectsPage() {
         toast.success("Project updated successfully")
       } else {
         // Create new project
-        const { error } = await supabase.from("projects").insert({
+        console.log("➕ Creating new project")
+        const { error, data } = await supabase.from("projects").insert({
           ...projectData,
           created_by: user.id,
         })
 
+        console.log("Insert result:", { error, data })
         if (error) throw error
 
         await supabase.rpc("log_audit", {
@@ -242,11 +279,13 @@ export default function AdminProjectsPage() {
         toast.success("Project created successfully")
       }
 
+      console.log("✅ Project saved successfully")
       setIsProjectDialogOpen(false)
       loadData()
     } catch (error) {
-      console.error("Error saving project:", error)
-      toast.error("Failed to save project")
+      console.error("❌ Error saving project:", error)
+      console.error("Error details:", JSON.stringify(error, null, 2))
+      toast.error(`Failed to save project: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsSaving(false)
     }
@@ -256,8 +295,11 @@ export default function AdminProjectsPage() {
     if (!projectToDelete) return
 
     try {
-      const { error } = await supabase.from("projects").delete().eq("id", projectToDelete.id)
+      console.log("🗑️ Deleting project:", projectToDelete.id)
 
+      const { error, data } = await supabase.from("projects").delete().eq("id", projectToDelete.id)
+
+      console.log("Delete result:", { error, data })
       if (error) throw error
 
       await supabase.rpc("log_audit", {
@@ -267,13 +309,15 @@ export default function AdminProjectsPage() {
         p_old_values: projectToDelete,
       })
 
+      console.log("✅ Project deleted successfully")
       toast.success("Project deleted successfully")
       setIsDeleteDialogOpen(false)
       setProjectToDelete(null)
       loadData()
     } catch (error) {
-      console.error("Error deleting project:", error)
-      toast.error("Failed to delete project")
+      console.error("❌ Error deleting project:", error)
+      console.error("Error details:", JSON.stringify(error, null, 2))
+      toast.error(`Failed to delete project: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -315,17 +359,6 @@ export default function AdminProjectsPage() {
     planning: projects.filter((p) => p.status === "planning").length,
     active: projects.filter((p) => p.status === "active").length,
     completed: projects.filter((p) => p.status === "completed").length,
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading projects...</p>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -622,24 +655,22 @@ export default function AdminProjectsPage() {
 
             <div className="space-y-2">
               <Label htmlFor="project_manager_id">Project Manager</Label>
-              <Select
-                value={projectForm.project_manager_id}
+              <SearchableSelect
+                value={projectForm.project_manager_id || "none"}
                 onValueChange={(value) =>
-                  setProjectForm({ ...projectForm, project_manager_id: value })
+                  setProjectForm({ ...projectForm, project_manager_id: value === "none" ? "" : value })
                 }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select project manager" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">None</SelectItem>
-                  {staff.map((member) => (
-                    <SelectItem key={member.id} value={member.id}>
-                      {member.first_name} {member.last_name} - {member.department}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="Select project manager"
+                searchPlaceholder="Search staff..."
+                icon={<User className="h-4 w-4" />}
+                options={[
+                  { value: "none", label: "None" },
+                  ...staff.map((member) => ({
+                    value: member.id,
+                    label: `${member.first_name} ${member.last_name} - ${member.department}`,
+                  })),
+                ]}
+              />
             </div>
 
             <div className="space-y-2">
