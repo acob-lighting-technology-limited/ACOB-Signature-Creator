@@ -24,14 +24,16 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     const checkSession = async () => {
       const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
       if (!session) {
         toast.error("Invalid or expired reset link. Please request a new one.")
         router.push("/auth/forgot-password")
       }
     }
-    
+
     checkSession()
   }, [router])
 
@@ -60,12 +62,12 @@ export default function ResetPasswordPage() {
       const { error } = await supabase.auth.updateUser({
         password: password,
       })
-      
+
       if (error) throw error
-      
+
       setIsSuccess(true)
       toast.success("Password reset successful!")
-      
+
       // Redirect to login after 2 seconds
       setTimeout(() => {
         router.push("/auth/login")
@@ -80,20 +82,18 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-4 md:p-6 bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="from-background via-background to-muted/20 flex min-h-screen w-full items-center justify-center bg-gradient-to-br p-4 md:p-6">
       <div className="w-full max-w-lg">
         <div className="flex flex-col gap-8">
           {/* Header Section */}
-          <div className="text-center space-y-2">
+          <div className="space-y-2 text-center">
             <h1 className="text-4xl font-bold tracking-tight">Reset Password</h1>
-            <p className="text-muted-foreground text-lg">
-              Enter your new password below
-            </p>
+            <p className="text-muted-foreground text-lg">Enter your new password below</p>
           </div>
 
           <Card className="border-2 shadow-xl">
             <CardHeader className="space-y-3 pb-6">
-              <CardTitle className="text-2xl font-semibold flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-2xl font-semibold">
                 {isSuccess ? (
                   <>
                     <CheckCircle className="h-6 w-6 text-green-600" />
@@ -101,29 +101,25 @@ export default function ResetPasswordPage() {
                   </>
                 ) : (
                   <>
-                    <Lock className="h-6 w-6 text-primary" />
+                    <Lock className="text-primary h-6 w-6" />
                     Create New Password
                   </>
                 )}
               </CardTitle>
               <CardDescription className="text-base">
-                {isSuccess 
-                  ? "Your password has been successfully reset" 
-                  : "Choose a strong password for your account"}
+                {isSuccess ? "Your password has been successfully reset" : "Choose a strong password for your account"}
               </CardDescription>
             </CardHeader>
             <CardContent className="pb-8">
               {isSuccess ? (
                 <div className="space-y-6">
-                  <div className="p-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-lg">
+                  <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900 dark:bg-green-950/30">
                     <p className="text-sm text-green-800 dark:text-green-200">
                       You can now log in with your new password. Redirecting to login page...
                     </p>
                   </div>
                   <Link href="/auth/login" className="block">
-                    <Button className="w-full h-11">
-                      Go to Login
-                    </Button>
+                    <Button className="h-11 w-full">Go to Login</Button>
                   </Link>
                 </div>
               ) : (
@@ -144,9 +140,7 @@ export default function ResetPasswordPage() {
                         autoFocus
                         minLength={6}
                       />
-                      <p className="text-xs text-muted-foreground">
-                        Must be at least 6 characters long
-                      </p>
+                      <p className="text-muted-foreground text-xs">Must be at least 6 characters long</p>
                     </div>
 
                     <div className="grid gap-3">
@@ -166,21 +160,17 @@ export default function ResetPasswordPage() {
                     </div>
 
                     {error && (
-                      <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-lg">
+                      <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950/30">
                         <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
                       </div>
                     )}
 
-                    <Button 
-                      type="submit" 
-                      className="w-full h-11 text-base font-semibold" 
-                      disabled={isLoading}
-                    >
+                    <Button type="submit" className="h-11 w-full text-base font-semibold" disabled={isLoading}>
                       {isLoading ? "Resetting Password..." : "Reset Password"}
                     </Button>
 
                     <Link href="/auth/login" className="block">
-                      <Button variant="ghost" className="w-full h-11">
+                      <Button variant="ghost" className="h-11 w-full">
                         Cancel
                       </Button>
                     </Link>
@@ -195,7 +185,7 @@ export default function ResetPasswordPage() {
             <Card className="border bg-blue-50 dark:bg-blue-950/20">
               <CardContent className="p-4">
                 <div className="flex gap-3">
-                  <div className="text-blue-600 dark:text-blue-400 mt-0.5">
+                  <div className="mt-0.5 text-blue-600 dark:text-blue-400">
                     <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
@@ -205,8 +195,8 @@ export default function ResetPasswordPage() {
                     </svg>
                   </div>
                   <div className="text-sm text-blue-900 dark:text-blue-100">
-                    <p className="font-medium mb-1">Password Tips</p>
-                    <ul className="list-disc list-inside space-y-1 text-xs">
+                    <p className="mb-1 font-medium">Password Tips</p>
+                    <ul className="list-inside list-disc space-y-1 text-xs">
                       <li>Use a mix of letters, numbers, and symbols</li>
                       <li>Avoid common words or personal information</li>
                       <li>Make it at least 6 characters long</li>
@@ -221,4 +211,3 @@ export default function ResetPasswordPage() {
     </div>
   )
 }
-

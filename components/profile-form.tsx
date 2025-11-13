@@ -67,7 +67,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
         brand: profile?.device_allocated || "",
         model: profile?.device_model || "",
       },
-    ],
+    ]
   )
 
   const [isLoading, setIsLoading] = useState(false)
@@ -109,8 +109,8 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
     setIsLoading(true)
 
     // Clean phone numbers - only digits and + allowed
-    const phoneNumber = formData.phoneNumber.replace(/[^0-9+]/g, '')
-    const additionalPhone = formData.additionalPhone.replace(/[^0-9+]/g, '')
+    const phoneNumber = formData.phoneNumber.replace(/[^0-9+]/g, "")
+    const additionalPhone = formData.additionalPhone.replace(/[^0-9+]/g, "")
 
     // Validate phone numbers
     if (additionalPhone && additionalPhone === phoneNumber) {
@@ -238,7 +238,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
                     value={formData.phoneNumber}
                     onChange={(e) => {
                       // Only allow numbers and + symbol
-                      const value = e.target.value.replace(/[^0-9+]/g, '')
+                      const value = e.target.value.replace(/[^0-9+]/g, "")
                       handleInputChange("phoneNumber", value)
                     }}
                     placeholder="e.g., +2348012345678"
@@ -252,7 +252,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
                     value={formData.additionalPhone}
                     onChange={(e) => {
                       // Only allow numbers and + symbol
-                      const value = e.target.value.replace(/[^0-9+]/g, '')
+                      const value = e.target.value.replace(/[^0-9+]/g, "")
                       handleInputChange("additionalPhone", value)
                     }}
                     placeholder="Must be different from main phone"
@@ -395,7 +395,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
                     value={formData.bankAccountNumber}
                     onChange={(e) => {
                       // Only allow numbers
-                      const value = e.target.value.replace(/[^0-9]/g, '')
+                      const value = e.target.value.replace(/[^0-9]/g, "")
                       handleInputChange("bankAccountNumber", value)
                     }}
                     placeholder="e.g., 1234567890"

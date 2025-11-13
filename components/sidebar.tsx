@@ -93,41 +93,43 @@ export function Sidebar({ user, profile, isAdmin }: SidebarProps) {
   const SidebarContent = () => (
     <>
       {/* Empty space for logo (moved to navbar) */}
-      <div className={cn("", isCollapsed ? "px-2 py-8" : "px-6 py-8")}>
-        {/* Logo space maintained but empty */}
-      </div>
+      <div className={cn("", isCollapsed ? "px-2 py-8" : "px-6 py-8")}>{/* Logo space maintained but empty */}</div>
 
       {/* User Profile Section */}
-      <div className={cn(
-        "border-b transition-all duration-300 py-6",
-        isCollapsed ? "mx-auto" : "px-6"
-      )}>
+      <div className={cn("border-b py-6 transition-all duration-300", isCollapsed ? "mx-auto" : "px-6")}>
         <div className="flex items-center gap-3">
-          <Avatar className={cn("ring-2 ring-primary/10 transition-all duration-300 flex-shrink-0 h-12 w-12")}>
+          <Avatar className={cn("ring-primary/10 h-12 w-12 flex-shrink-0 ring-2 transition-all duration-300")}>
             <AvatarFallback className="bg-primary text-primary-foreground text-lg font-semibold">
               {getInitials(user?.email, profile?.first_name, profile?.last_name)}
             </AvatarFallback>
           </Avatar>
-          <div className={cn(
-            "transition-all duration-300 overflow-hidden",
-            isCollapsed 
-              ? "w-0 opacity-0 max-w-0" 
-              : "w-auto opacity-100 max-w-full flex-1 min-w-0"
-          )}>
-            <div className={cn("transition-all duration-300 overflow-hidden", isCollapsed ? "max-h-0 opacity-0" : "max-h-20 opacity-100")}>
-              <p className="text-sm font-semibold text-foreground truncate whitespace-nowrap">
+          <div
+            className={cn(
+              "overflow-hidden transition-all duration-300",
+              isCollapsed ? "w-0 max-w-0 opacity-0" : "w-auto max-w-full min-w-0 flex-1 opacity-100"
+            )}
+          >
+            <div
+              className={cn(
+                "overflow-hidden transition-all duration-300",
+                isCollapsed ? "max-h-0 opacity-0" : "max-h-20 opacity-100"
+              )}
+            >
+              <p className="text-foreground truncate text-sm font-semibold whitespace-nowrap">
                 {profile?.first_name && profile?.last_name
                   ? `${formatName(profile.first_name)} ${formatName(profile.last_name)}`
                   : user?.email?.split("@")[0]}
               </p>
-              <p className="text-xs text-muted-foreground truncate whitespace-nowrap">{profile?.department || "Staff Member"}</p>
+              <p className="text-muted-foreground truncate text-xs whitespace-nowrap">
+                {profile?.department || "Staff Member"}
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-1">
+      <nav className="flex-1 space-y-1 px-4 py-6">
         {navigation.map((item) => {
           const isActive = pathname === item.href
           return (
@@ -137,10 +139,8 @@ export function Sidebar({ user, profile, isAdmin }: SidebarProps) {
               onClick={() => setIsMobileMenuOpen(false)}
               className={cn(
                 "flex items-center rounded-lg transition-all duration-300",
-                isCollapsed
-                  ? "justify-center px-3 py-3"
-                  : "gap-3 px-4 py-3",
-                "text-sm font-medium min-h-[44px]",
+                isCollapsed ? "justify-center px-3 py-3" : "gap-3 px-4 py-3",
+                "min-h-[44px] text-sm font-medium",
                 isActive
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -148,26 +148,36 @@ export function Sidebar({ user, profile, isAdmin }: SidebarProps) {
               title={isCollapsed ? item.name : undefined}
             >
               <item.icon className="h-5 w-5 flex-shrink-0" />
-              <span className={cn("transition-all duration-300 overflow-hidden whitespace-nowrap", isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-0")}>{item.name}</span>
+              <span
+                className={cn(
+                  "overflow-hidden whitespace-nowrap transition-all duration-300",
+                  isCollapsed ? "w-0 opacity-0" : "ml-0 w-auto opacity-100"
+                )}
+              >
+                {item.name}
+              </span>
             </Link>
           )
         })}
 
         {(isAdmin || profile?.role === "lead" || profile?.role === "admin" || profile?.role === "super_admin") && (
           <>
-            <div className={cn("transition-all duration-300 overflow-hidden", isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100")}>
+            <div
+              className={cn(
+                "overflow-hidden transition-all duration-300",
+                isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100"
+              )}
+            >
               <div className="pt-4 pb-2">
-                <p className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</p>
+                <p className="text-muted-foreground px-4 text-xs font-semibold tracking-wider uppercase">Admin</p>
               </div>
             </div>
             <Link
               href="/admin"
               onClick={() => setIsMobileMenuOpen(false)}
               className={cn(
-                "flex items-center rounded-lg transition-all duration-300 min-h-[44px]",
-                isCollapsed
-                  ? "justify-center px-3 py-3"
-                  : "gap-3 px-4 py-3",
+                "flex min-h-[44px] items-center rounded-lg transition-all duration-300",
+                isCollapsed ? "justify-center px-3 py-3" : "gap-3 px-4 py-3",
                 "text-sm font-medium",
                 pathname === "/admin"
                   ? "bg-primary text-primary-foreground shadow-sm"
@@ -176,25 +186,39 @@ export function Sidebar({ user, profile, isAdmin }: SidebarProps) {
               title={isCollapsed ? "Admin Dashboard" : undefined}
             >
               <ShieldCheck className="h-5 w-5 flex-shrink-0" />
-              <span className={cn("transition-all duration-300 overflow-hidden whitespace-nowrap", isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-0")}>Admin Dashboard</span>
+              <span
+                className={cn(
+                  "overflow-hidden whitespace-nowrap transition-all duration-300",
+                  isCollapsed ? "w-0 opacity-0" : "ml-0 w-auto opacity-100"
+                )}
+              >
+                Admin Dashboard
+              </span>
             </Link>
           </>
         )}
       </nav>
 
       {/* Logout Button */}
-      <div className="px-4 py-4 border-t">
+      <div className="border-t px-4 py-4">
         <Button
           variant="outline"
           className={cn(
-            "w-full text-muted-foreground hover:text-foreground transition-all duration-300 min-h-[44px]",
+            "text-muted-foreground hover:text-foreground min-h-[44px] w-full transition-all duration-300",
             isCollapsed ? "justify-center px-3" : "justify-start gap-3"
           )}
           onClick={handleLogout}
           title={isCollapsed ? "Logout" : undefined}
         >
           <LogOut className="h-5 w-5 flex-shrink-0" />
-          <span className={cn("transition-all duration-300 overflow-hidden whitespace-nowrap", isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-0")}>Logout</span>
+          <span
+            className={cn(
+              "overflow-hidden whitespace-nowrap transition-all duration-300",
+              isCollapsed ? "w-0 opacity-0" : "ml-0 w-auto opacity-100"
+            )}
+          >
+            Logout
+          </span>
         </Button>
       </div>
     </>
@@ -205,7 +229,7 @@ export function Sidebar({ user, profile, isAdmin }: SidebarProps) {
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          "hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-card border-r transition-all duration-300",
+          "bg-card hidden border-r transition-all duration-300 lg:fixed lg:inset-y-0 lg:flex lg:flex-col",
           isCollapsed ? "lg:w-20" : "lg:w-64"
         )}
       >
@@ -213,7 +237,7 @@ export function Sidebar({ user, profile, isAdmin }: SidebarProps) {
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-card border-b">
+      <div className="bg-card fixed top-0 right-0 left-0 z-40 border-b lg:hidden">
         <div className="flex items-center justify-between px-4 py-3">
           <Image src="/acob-logo.webp" alt="ACOB Lighting" width={120} height={120} />
           <Button
@@ -231,26 +255,21 @@ export function Sidebar({ user, profile, isAdmin }: SidebarProps) {
       <>
         <div
           className={cn(
-            "lg:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-40 transition-opacity duration-300",
-            isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+            "bg-background/80 fixed inset-0 z-40 backdrop-blur-sm transition-opacity duration-300 lg:hidden",
+            isMobileMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
           )}
           onClick={() => setIsMobileMenuOpen(false)}
         />
-        <aside 
+        <aside
           className={cn(
-            "lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-card border-r shadow-xl flex flex-col transition-transform duration-300 ease-out",
+            "bg-card fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r shadow-xl transition-transform duration-300 ease-out lg:hidden",
             isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
           {/* Close button for mobile */}
-          <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b">
+          <div className="flex items-center justify-between border-b px-4 py-3 lg:hidden">
             <Image src="/acob-logo.webp" alt="ACOB Lighting" width={100} height={100} />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="h-8 w-8"
-            >
+            <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)} className="h-8 w-8">
               <X className="h-5 w-5" />
             </Button>
           </div>

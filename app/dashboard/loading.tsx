@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export default function DashboardLoading() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div className="bg-background min-h-screen">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="space-y-6">
           {/* Header skeleton */}
           <div className="space-y-2">
@@ -21,7 +21,7 @@ export default function DashboardLoading() {
                   <Skeleton className="h-4 w-4 rounded" />
                 </CardHeader>
                 <CardContent>
-                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="mb-2 h-8 w-16" />
                   <Skeleton className="h-3 w-32" />
                 </CardContent>
               </Card>

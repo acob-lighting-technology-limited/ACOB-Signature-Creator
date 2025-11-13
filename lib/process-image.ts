@@ -64,7 +64,7 @@ export async function processImage(imageFile: File, watermarkPath: string, confi
             }
           },
           imageFile.type,
-          0.95,
+          0.95
         )
       }
 

@@ -6,10 +6,6 @@ export const metadata: Metadata = {
   description: "Create professional email signatures for ACOB Lighting Technology Limited",
 }
 
-export default function SignatureLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function SignatureLayout({ children }: { children: React.ReactNode }) {
   return <AppLayout>{children}</AppLayout>
 }

@@ -1,21 +1,14 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { useState, useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
+import Link from "next/link"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   Dialog,
   DialogContent,
@@ -23,19 +16,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { SearchableSelect } from "@/components/ui/searchable-select";
-import { User } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-import { toast } from "sonner";
-import { formatName } from "@/lib/utils";
+} from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { SearchableSelect } from "@/components/ui/searchable-select"
+import { User } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
+import { formatName } from "@/lib/utils"
 import {
   Users,
   Search,
@@ -55,63 +42,58 @@ import {
   FileSignature,
   Download,
   FileText,
-} from "lucide-react";
-import type { UserRole } from "@/types/database";
-import {
-  getRoleDisplayName,
-  getRoleBadgeColor,
-  canAssignRoles,
-  DEPARTMENTS,
-} from "@/lib/permissions";
-import { SignatureCreator } from "@/components/signature-creator";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Calendar, User as UserIcon } from "lucide-react";
+} from "lucide-react"
+import type { UserRole } from "@/types/database"
+import { getRoleDisplayName, getRoleBadgeColor, canAssignRoles, DEPARTMENTS } from "@/lib/permissions"
+import { SignatureCreator } from "@/components/signature-creator"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Calendar, User as UserIcon } from "lucide-react"
 
 interface Staff {
-  id: string;
-  first_name: string;
-  last_name: string;
-  other_names: string | null;
-  company_email: string;
-  department: string;
-  company_role: string | null;
-  role: UserRole;
-  phone_number: string | null;
-  residential_address: string | null;
-  current_work_location: string | null;
-  is_admin: boolean;
-  is_department_lead: boolean;
-  lead_departments: string[];
-  created_at: string;
+  id: string
+  first_name: string
+  last_name: string
+  other_names: string | null
+  company_email: string
+  department: string
+  company_role: string | null
+  role: UserRole
+  phone_number: string | null
+  residential_address: string | null
+  current_work_location: string | null
+  is_admin: boolean
+  is_department_lead: boolean
+  lead_departments: string[]
+  created_at: string
 }
 
 interface UserProfile {
-  role: UserRole;
+  role: UserRole
 }
 
 export default function AdminStaffPage() {
-  const searchParams = useSearchParams();
-  const [staff, setStaff] = useState<Staff[]>([]);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("all");
-  const [staffFilter, setStaffFilter] = useState("all");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [nameSortOrder, setNameSortOrder] = useState<"asc" | "desc">("asc");
-  const [viewMode, setViewMode] = useState<"list" | "card">("list");
-  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isSignatureDialogOpen, setIsSignatureDialogOpen] = useState(false);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [viewStaffProfile, setViewStaffProfile] = useState<any>(null);
+  const searchParams = useSearchParams()
+  const [staff, setStaff] = useState<Staff[]>([])
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [, setIsLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [departmentFilter, setDepartmentFilter] = useState("all")
+  const [staffFilter, setStaffFilter] = useState("all")
+  const [roleFilter, setRoleFilter] = useState("all")
+  const [nameSortOrder, setNameSortOrder] = useState<"asc" | "desc">("asc")
+  const [viewMode, setViewMode] = useState<"list" | "card">("list")
+  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isSignatureDialogOpen, setIsSignatureDialogOpen] = useState(false)
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [viewStaffProfile, setViewStaffProfile] = useState<any>(null)
   const [viewStaffData, setViewStaffData] = useState<{
-    tasks: any[];
-    assets: any[];
-    documentation: any[];
-  }>({ tasks: [], assets: [], documentation: [] });
+    tasks: any[]
+    assets: any[]
+    documentation: any[]
+  }>({ tasks: [], assets: [], documentation: [] })
 
   // Form states
   const [editForm, setEditForm] = useState({
@@ -119,115 +101,100 @@ export default function AdminStaffPage() {
     department: "",
     company_role: "",
     lead_departments: [] as string[],
-  });
+  })
 
-  const supabase = createClient();
+  const supabase = createClient()
 
   useEffect(() => {
-    loadData();
-  }, []);
+    loadData()
+  }, [])
 
   // Handle userId from search params (for edit dialog)
   useEffect(() => {
-    const userId = searchParams?.get("userId");
+    const userId = searchParams?.get("userId")
     if (userId && staff.length > 0 && !isEditDialogOpen) {
-      const user = staff.find((s) => s.id === userId);
+      const user = staff.find((s) => s.id === userId)
       if (user) {
-        handleEditStaff(user);
+        handleEditStaff(user)
       }
     }
-  }, [searchParams, staff, isEditDialogOpen]);
+  }, [searchParams, staff, isEditDialogOpen])
 
   const loadData = async () => {
     try {
       const {
         data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
+      } = await supabase.auth.getUser()
+      if (!user) return
 
       // Get user profile
       const { data: profile } = await supabase
         .from("profiles")
         .select("role, lead_departments")
         .eq("id", user.id)
-        .single();
+        .single()
 
-      setUserProfile(profile);
+      setUserProfile(profile)
 
       // Fetch staff - leads can only see staff in their departments
-      let query = supabase
-        .from("profiles")
-        .select("*")
-        .order("last_name", { ascending: true });
+      let query = supabase.from("profiles").select("*").order("last_name", { ascending: true })
 
       // If user is a lead, filter by their lead departments
-      if (
-        profile?.role === "lead" &&
-        profile.lead_departments &&
-        profile.lead_departments.length > 0
-      ) {
-        query = query.in("department", profile.lead_departments);
+      if (profile?.role === "lead" && profile.lead_departments && profile.lead_departments.length > 0) {
+        query = query.in("department", profile.lead_departments)
       }
 
-      const { data, error } = await query;
+      const { data, error } = await query
 
-      if (error) throw error;
+      if (error) throw error
 
-      setStaff(data || []);
+      setStaff(data || [])
     } catch (error: any) {
-      console.error("Error loading staff:", error);
-      toast.error("Failed to load staff");
+      console.error("Error loading staff:", error)
+      toast.error("Failed to load staff")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleEditStaff = (staffMember: Staff) => {
-    setSelectedStaff(staffMember);
+    setSelectedStaff(staffMember)
     setEditForm({
       role: staffMember.role,
       department: staffMember.department,
       company_role: staffMember.company_role || "",
       lead_departments: staffMember.lead_departments || [],
-    });
-    setIsEditDialogOpen(true);
-  };
+    })
+    setIsEditDialogOpen(true)
+  }
 
   const handleViewSignature = async (staffMember: Staff) => {
     try {
-      setSelectedStaff(staffMember);
-      setIsSignatureDialogOpen(true);
+      setSelectedStaff(staffMember)
+      setIsSignatureDialogOpen(true)
 
       // Load full profile data for signature
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", staffMember.id)
-        .single();
+      const { data: profileData } = await supabase.from("profiles").select("*").eq("id", staffMember.id).single()
 
       if (profileData) {
-        setSelectedStaff(profileData as any);
+        setSelectedStaff(profileData as any)
       }
     } catch (error: any) {
-      console.error("Error loading profile for signature:", error);
-      toast.error("Failed to load profile data");
+      console.error("Error loading profile for signature:", error)
+      toast.error("Failed to load profile data")
     }
-  };
+  }
 
   const handleViewDetails = async (staffMember: Staff) => {
     try {
-      setSelectedStaff(staffMember);
-      setIsViewDialogOpen(true);
+      setSelectedStaff(staffMember)
+      setIsViewDialogOpen(true)
 
       // Load full profile data
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", staffMember.id)
-        .single();
+      const { data: profileData } = await supabase.from("profiles").select("*").eq("id", staffMember.id).single()
 
       if (profileData) {
-        setViewStaffProfile(profileData);
+        setViewStaffProfile(profileData)
 
         // Load related data
         const [tasksResult, assetsResult, docsResult] = await Promise.all([
@@ -254,38 +221,38 @@ export default function AdminStaffPage() {
             .eq("user_id", staffMember.id)
             .order("created_at", { ascending: false })
             .limit(10),
-        ]);
+        ])
 
         setViewStaffData({
           tasks: tasksResult.data || [],
           assets: assetsResult.data || [],
           documentation: docsResult.data || [],
-        });
+        })
       }
     } catch (error: any) {
-      console.error("Error loading staff details:", error);
-      toast.error("Failed to load staff details");
+      console.error("Error loading staff details:", error)
+      toast.error("Failed to load staff details")
     }
-  };
+  }
 
   const handleSaveStaff = async () => {
     try {
-      if (!selectedStaff) return;
+      if (!selectedStaff) return
 
       // Check if user can assign this role
       if (userProfile && !canAssignRoles(userProfile.role, editForm.role)) {
-        toast.error("You don't have permission to assign this role");
-        return;
+        toast.error("You don't have permission to assign this role")
+        return
       }
 
       // Validate: If role is lead, at least one department must be selected
       if (editForm.role === "lead" && editForm.lead_departments.length === 0) {
-        toast.error("Please select at least one department for this lead");
-        return;
+        toast.error("Please select at least one department for this lead")
+        return
       }
 
       // If role is lead, automatically set is_department_lead to true
-      const isLead = editForm.role === "lead";
+      const isLead = editForm.role === "lead"
 
       const { error } = await supabase
         .from("profiles")
@@ -297,84 +264,70 @@ export default function AdminStaffPage() {
           lead_departments: isLead ? editForm.lead_departments : [],
           is_admin: ["super_admin", "admin"].includes(editForm.role),
         })
-        .eq("id", selectedStaff.id);
+        .eq("id", selectedStaff.id)
 
-      if (error) throw error;
+      if (error) throw error
 
-      toast.success("Staff member updated successfully");
-      setIsEditDialogOpen(false);
-      loadData();
+      toast.success("Staff member updated successfully")
+      setIsEditDialogOpen(false)
+      loadData()
     } catch (error: any) {
-      console.error("Error updating staff:", error);
-      toast.error("Failed to update staff member");
+      console.error("Error updating staff:", error)
+      toast.error("Failed to update staff member")
     }
-  };
+  }
 
   const filteredStaff = staff
     .filter((member) => {
       const matchesSearch =
         member.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.company_email
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        member.company_role?.toLowerCase().includes(searchQuery.toLowerCase());
+        member.company_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        member.company_role?.toLowerCase().includes(searchQuery.toLowerCase())
 
-      const matchesDepartment =
-        departmentFilter === "all" || member.department === departmentFilter;
+      const matchesDepartment = departmentFilter === "all" || member.department === departmentFilter
 
-      const matchesStaff = staffFilter === "all" || member.id === staffFilter;
+      const matchesStaff = staffFilter === "all" || member.id === staffFilter
 
-      const matchesRole = roleFilter === "all" || member.role === roleFilter;
+      const matchesRole = roleFilter === "all" || member.role === roleFilter
 
-      return matchesSearch && matchesDepartment && matchesStaff && matchesRole;
+      return matchesSearch && matchesDepartment && matchesStaff && matchesRole
     })
     .sort((a, b) => {
-      const lastNameA = formatName(a.last_name).toLowerCase();
-      const lastNameB = formatName(b.last_name).toLowerCase();
+      const lastNameA = formatName(a.last_name).toLowerCase()
+      const lastNameB = formatName(b.last_name).toLowerCase()
 
       if (nameSortOrder === "asc") {
-        return lastNameA.localeCompare(lastNameB);
+        return lastNameA.localeCompare(lastNameB)
       } else {
-        return lastNameB.localeCompare(lastNameA);
+        return lastNameB.localeCompare(lastNameA)
       }
-    });
+    })
 
-  const departments = Array.from(
-    new Set(staff.map((s) => s.department).filter(Boolean))
-  ) as string[];
+  const departments = Array.from(new Set(staff.map((s) => s.department).filter(Boolean))) as string[]
 
-  const roles: UserRole[] = [
-    "visitor",
-    "staff",
-    "lead",
-    "admin",
-    "super_admin",
-  ];
+  const roles: UserRole[] = ["visitor", "staff", "lead", "admin", "super_admin"]
 
   const stats = {
     total: staff.length,
-    admins: staff.filter((s) => ["super_admin", "admin"].includes(s.role))
-      .length,
+    admins: staff.filter((s) => ["super_admin", "admin"].includes(s.role)).length,
     leads: staff.filter((s) => s.role === "lead").length,
     staff: staff.filter((s) => s.role === "staff").length,
-  };
+  }
 
   const exportStaffToExcel = async () => {
     try {
       if (filteredStaff.length === 0) {
-        toast.error("No staff data to export");
-        return;
+        toast.error("No staff data to export")
+        return
       }
 
-      const XLSX = await import("xlsx");
-      const { default: saveAs } = await import("file-saver");
+      const XLSX = await import("xlsx")
+      const { default: saveAs } = await import("file-saver")
 
       const dataToExport = filteredStaff.map((member, index) => ({
         "#": index + 1,
-        Name: `${formatName(member.first_name)} ${formatName(
-          member.last_name
-        )}`,
+        Name: `${formatName(member.first_name)} ${formatName(member.last_name)}`,
         Email: member.company_email,
         Department: member.department || "-",
         Role: getRoleDisplayName(member.role),
@@ -382,63 +335,51 @@ export default function AdminStaffPage() {
         Phone: member.phone_number || "-",
         "Work Location": member.current_work_location || "-",
         "Is Lead": member.is_department_lead ? "Yes" : "No",
-        "Lead Departments": member.lead_departments?.length
-          ? member.lead_departments.join(", ")
-          : "-",
-        "Created At": member.created_at
-          ? new Date(member.created_at).toLocaleDateString()
-          : "-",
-      }));
+        "Lead Departments": member.lead_departments?.length ? member.lead_departments.join(", ") : "-",
+        "Created At": member.created_at ? new Date(member.created_at).toLocaleDateString() : "-",
+      }))
 
-      const ws = XLSX.utils.json_to_sheet(dataToExport);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Staff");
+      const ws = XLSX.utils.json_to_sheet(dataToExport)
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, "Staff")
 
-      const maxWidth = 60;
+      const maxWidth = 60
       const cols = Object.keys(dataToExport[0] || {}).map((key) => ({
         wch: Math.min(
-          Math.max(
-            key.length,
-            ...dataToExport.map(
-              (row) => String(row[key as keyof typeof row]).length
-            )
-          ),
+          Math.max(key.length, ...dataToExport.map((row) => String(row[key as keyof typeof row]).length)),
           maxWidth
         ),
-      }));
-      ws["!cols"] = cols;
+      }))
+      ws["!cols"] = cols
 
-      const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" })
       const data = new Blob([excelBuffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      saveAs(
-        data,
-        `staff-export-${new Date().toISOString().split("T")[0]}.xlsx`
-      );
-      toast.success("Staff exported to Excel successfully");
+      })
+      saveAs(data, `staff-export-${new Date().toISOString().split("T")[0]}.xlsx`)
+      toast.success("Staff exported to Excel successfully")
     } catch (error: any) {
-      console.error("Error exporting staff to Excel:", error);
-      toast.error("Failed to export staff to Excel");
+      console.error("Error exporting staff to Excel:", error)
+      toast.error("Failed to export staff to Excel")
     }
-  };
+  }
 
   const exportStaffToPDF = async () => {
     try {
       if (filteredStaff.length === 0) {
-        toast.error("No staff data to export");
-        return;
+        toast.error("No staff data to export")
+        return
       }
 
-      const jsPDF = (await import("jspdf")).default;
-      const autoTable = (await import("jspdf-autotable")).default;
+      const jsPDF = (await import("jspdf")).default
+      const autoTable = (await import("jspdf-autotable")).default
 
-      const doc = new jsPDF({ orientation: "landscape" });
-      doc.setFontSize(16);
-      doc.text("Staff Report", 14, 15);
-      doc.setFontSize(10);
-      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 22);
-      doc.text(`Total Staff: ${filteredStaff.length}`, 14, 28);
+      const doc = new jsPDF({ orientation: "landscape" })
+      doc.setFontSize(16)
+      doc.text("Staff Report", 14, 15)
+      doc.setFontSize(10)
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 22)
+      doc.text(`Total Staff: ${filteredStaff.length}`, 14, 28)
 
       const dataToExport = filteredStaff.map((member, index) => [
         index + 1,
@@ -453,41 +394,30 @@ export default function AdminStaffPage() {
             ? member.lead_departments.join(", ")
             : "Yes"
           : "-",
-      ]);
+      ])
 
       autoTable(doc, {
-        head: [
-          [
-            "#",
-            "Name",
-            "Email",
-            "Department",
-            "Role",
-            "Position",
-            "Phone",
-            "Lead Departments",
-          ],
-        ],
+        head: [["#", "Name", "Email", "Department", "Role", "Position", "Phone", "Lead Departments"]],
         body: dataToExport,
         startY: 35,
         styles: { fontSize: 8, cellPadding: 2 },
         headStyles: { fillColor: [59, 130, 246], textColor: 255 },
         alternateRowStyles: { fillColor: [245, 247, 250] },
-      });
+      })
 
-      doc.save(`staff-export-${new Date().toISOString().split("T")[0]}.pdf`);
-      toast.success("Staff exported to PDF successfully");
+      doc.save(`staff-export-${new Date().toISOString().split("T")[0]}.pdf`)
+      toast.success("Staff exported to PDF successfully")
     } catch (error: any) {
-      console.error("Error exporting staff to PDF:", error);
-      toast.error("Failed to export staff to PDF");
+      console.error("Error exporting staff to PDF:", error)
+      toast.error("Failed to export staff to PDF")
     }
-  };
+  }
 
   const exportStaffToWord = async () => {
     try {
       if (filteredStaff.length === 0) {
-        toast.error("No staff data to export");
-        return;
+        toast.error("No staff data to export")
+        return
       }
 
       const {
@@ -501,8 +431,8 @@ export default function AdminStaffPage() {
         AlignmentType,
         HeadingLevel,
         TextRun,
-      } = await import("docx");
-      const { default: saveAs } = await import("file-saver");
+      } = await import("docx")
+      const { default: saveAs } = await import("file-saver")
 
       const tableRows = [
         new TableRow({
@@ -559,9 +489,7 @@ export default function AdminStaffPage() {
             new TableCell({
               children: [
                 new Paragraph({
-                  children: [
-                    new TextRun({ text: "Work Location", bold: true }),
-                  ],
+                  children: [new TextRun({ text: "Work Location", bold: true })],
                 }),
               ],
             }),
@@ -575,9 +503,7 @@ export default function AdminStaffPage() {
             new TableCell({
               children: [
                 new Paragraph({
-                  children: [
-                    new TextRun({ text: "Lead Departments", bold: true }),
-                  ],
+                  children: [new TextRun({ text: "Lead Departments", bold: true })],
                 }),
               ],
             }),
@@ -591,13 +517,7 @@ export default function AdminStaffPage() {
                   children: [new Paragraph((index + 1).toString())],
                 }),
                 new TableCell({
-                  children: [
-                    new Paragraph(
-                      `${formatName(member.first_name)} ${formatName(
-                        member.last_name
-                      )}`
-                    ),
-                  ],
+                  children: [new Paragraph(`${formatName(member.first_name)} ${formatName(member.last_name)}`)],
                 }),
                 new TableCell({
                   children: [new Paragraph(member.company_email)],
@@ -615,28 +535,18 @@ export default function AdminStaffPage() {
                   children: [new Paragraph(member.phone_number || "-")],
                 }),
                 new TableCell({
-                  children: [
-                    new Paragraph(member.current_work_location || "-"),
-                  ],
+                  children: [new Paragraph(member.current_work_location || "-")],
                 }),
                 new TableCell({
-                  children: [
-                    new Paragraph(member.is_department_lead ? "Yes" : "No"),
-                  ],
+                  children: [new Paragraph(member.is_department_lead ? "Yes" : "No")],
                 }),
                 new TableCell({
-                  children: [
-                    new Paragraph(
-                      member.lead_departments?.length
-                        ? member.lead_departments.join(", ")
-                        : "-"
-                    ),
-                  ],
+                  children: [new Paragraph(member.lead_departments?.length ? member.lead_departments.join(", ") : "-")],
                 }),
               ],
             })
         ),
-      ];
+      ]
 
       const doc = new Document({
         sections: [
@@ -663,47 +573,44 @@ export default function AdminStaffPage() {
             ],
           },
         ],
-      });
+      })
 
-      const blob = await Packer.toBlob(doc);
-      saveAs(
-        blob,
-        `staff-export-${new Date().toISOString().split("T")[0]}.docx`
-      );
-      toast.success("Staff exported to Word successfully");
+      const blob = await Packer.toBlob(doc)
+      saveAs(blob, `staff-export-${new Date().toISOString().split("T")[0]}.docx`)
+      toast.success("Staff exported to Word successfully")
     } catch (error: any) {
-      console.error("Error exporting staff to Word:", error);
-      toast.error("Failed to export staff to Word");
+      console.error("Error exporting staff to Word:", error)
+      toast.error("Failed to export staff to Word")
     }
-  };
+  }
 
   const getAvailableRoles = (): UserRole[] => {
-    if (!userProfile) return [];
+    if (!userProfile) return []
 
     if (userProfile.role === "super_admin") {
-      return ["visitor", "staff", "lead", "admin", "super_admin"];
+      return ["visitor", "staff", "lead", "admin", "super_admin"]
     } else if (userProfile.role === "admin") {
-      return ["visitor", "staff", "lead"];
+      return ["visitor", "staff", "lead"]
     }
 
-    return [];
-  };
+    return []
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 w-full overflow-x-hidden">
+    <div className="from-background via-background to-muted/20 min-h-screen w-full overflow-x-hidden bg-gradient-to-br">
       <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2 sm:gap-3">
-              <Users className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            <h1 className="text-foreground flex items-center gap-2 text-2xl font-bold sm:gap-3 sm:text-3xl">
+              <Users className="text-primary h-6 w-6 sm:h-8 sm:w-8" />
               Staff Management
             </h1>
             <p className="text-muted-foreground mt-2 text-sm sm:text-base">
               View and manage staff members, roles, and permissions
             </p>
           </div>
-          <div className="flex items-center border rounded-lg p-1">
+          <div className="flex items-center rounded-lg border p-1">
             <Button
               variant={viewMode === "list" ? "default" : "ghost"}
               size="sm"
@@ -726,20 +633,16 @@ export default function AdminStaffPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 md:grid-cols-4 md:gap-4">
           <Card className="border-2">
             <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] xs:text-xs text-muted-foreground font-medium truncate">
-                    Total Staff
-                  </p>
-                  <p className="text-lg sm:text-xl md:text-3xl font-bold text-foreground mt-1 md:mt-2">
-                    {stats.total}
-                  </p>
+                  <p className="xs:text-xs text-muted-foreground truncate text-[10px] font-medium">Total Staff</p>
+                  <p className="text-foreground mt-1 text-lg font-bold sm:text-xl md:mt-2 md:text-3xl">{stats.total}</p>
                 </div>
-                <div className="p-1.5 sm:p-2 md:p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg shrink-0 ml-1">
-                  <Users className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-blue-600 dark:text-blue-400" />
+                <div className="ml-1 shrink-0 rounded-lg bg-blue-100 p-1.5 sm:p-2 md:p-3 dark:bg-blue-900/30">
+                  <Users className="h-4 w-4 text-blue-600 sm:h-5 sm:w-5 md:h-6 md:w-6 dark:text-blue-400" />
                 </div>
               </div>
             </CardContent>
@@ -749,15 +652,13 @@ export default function AdminStaffPage() {
             <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] xs:text-xs text-muted-foreground font-medium truncate">
-                    Admins
-                  </p>
-                  <p className="text-lg sm:text-xl md:text-3xl font-bold text-foreground mt-1 md:mt-2">
+                  <p className="xs:text-xs text-muted-foreground truncate text-[10px] font-medium">Admins</p>
+                  <p className="text-foreground mt-1 text-lg font-bold sm:text-xl md:mt-2 md:text-3xl">
                     {stats.admins}
                   </p>
                 </div>
-                <div className="p-1.5 sm:p-2 md:p-3 bg-red-100 dark:bg-red-900/30 rounded-lg flex-shrink-0 ml-1">
-                  <Shield className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-red-600 dark:text-red-400" />
+                <div className="ml-1 flex-shrink-0 rounded-lg bg-red-100 p-1.5 sm:p-2 md:p-3 dark:bg-red-900/30">
+                  <Shield className="h-4 w-4 text-red-600 sm:h-5 sm:w-5 md:h-6 md:w-6 dark:text-red-400" />
                 </div>
               </div>
             </CardContent>
@@ -767,15 +668,11 @@ export default function AdminStaffPage() {
             <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] xs:text-xs text-muted-foreground font-medium truncate">
-                    Leads
-                  </p>
-                  <p className="text-lg sm:text-xl md:text-3xl font-bold text-foreground mt-1 md:mt-2">
-                    {stats.leads}
-                  </p>
+                  <p className="xs:text-xs text-muted-foreground truncate text-[10px] font-medium">Leads</p>
+                  <p className="text-foreground mt-1 text-lg font-bold sm:text-xl md:mt-2 md:text-3xl">{stats.leads}</p>
                 </div>
-                <div className="p-1.5 sm:p-2 md:p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0 ml-1">
-                  <UserCog className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-purple-600 dark:text-purple-400" />
+                <div className="ml-1 flex-shrink-0 rounded-lg bg-purple-100 p-1.5 sm:p-2 md:p-3 dark:bg-purple-900/30">
+                  <UserCog className="h-4 w-4 text-purple-600 sm:h-5 sm:w-5 md:h-6 md:w-6 dark:text-purple-400" />
                 </div>
               </div>
             </CardContent>
@@ -785,15 +682,11 @@ export default function AdminStaffPage() {
             <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] xs:text-xs text-muted-foreground font-medium truncate">
-                    Staff Members
-                  </p>
-                  <p className="text-lg sm:text-xl md:text-3xl font-bold text-foreground mt-1 md:mt-2">
-                    {stats.staff}
-                  </p>
+                  <p className="xs:text-xs text-muted-foreground truncate text-[10px] font-medium">Staff Members</p>
+                  <p className="text-foreground mt-1 text-lg font-bold sm:text-xl md:mt-2 md:text-3xl">{stats.staff}</p>
                 </div>
-                <div className="p-1.5 sm:p-2 md:p-3 bg-green-100 dark:bg-green-900/30 rounded-lg flex-shrink-0 ml-1">
-                  <Users className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-green-600 dark:text-green-400" />
+                <div className="ml-1 flex-shrink-0 rounded-lg bg-green-100 p-1.5 sm:p-2 md:p-3 dark:bg-green-900/30">
+                  <Users className="h-4 w-4 text-green-600 sm:h-5 sm:w-5 md:h-6 md:w-6 dark:text-green-400" />
                 </div>
               </div>
             </CardContent>
@@ -803,12 +696,10 @@ export default function AdminStaffPage() {
         {/* Export Buttons */}
         <Card className="border-2">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Download className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">
-                  Export Filtered Staff:
-                </span>
+                <Download className="text-muted-foreground h-4 w-4" />
+                <span className="text-foreground text-sm font-medium">Export Filtered Staff:</span>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -849,9 +740,9 @@ export default function AdminStaffPage() {
         {/* Filters */}
         <Card className="border-2">
           <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="flex flex-col gap-4 md:flex-row">
+              <div className="relative flex-1">
+                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
                 <Input
                   placeholder="Search staff..."
                   value={searchQuery}
@@ -925,11 +816,7 @@ export default function AdminStaffPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() =>
-                              setNameSortOrder(
-                                nameSortOrder === "asc" ? "desc" : "asc"
-                              )
-                            }
+                            onClick={() => setNameSortOrder(nameSortOrder === "asc" ? "desc" : "asc")}
                             className="h-6 w-6 p-0"
                           >
                             {nameSortOrder === "asc" ? (
@@ -950,64 +837,51 @@ export default function AdminStaffPage() {
                   <TableBody>
                     {filteredStaff.map((member, index) => (
                       <TableRow key={member.id}>
-                        <TableCell className="text-muted-foreground font-medium">
-                          {index + 1}
-                        </TableCell>
+                        <TableCell className="text-muted-foreground font-medium">{index + 1}</TableCell>
                         <TableCell>
                           <Link
                             href={`/admin/staff/${member.id}`}
-                            className="flex items-center gap-2 hover:text-primary transition-colors"
+                            className="hover:text-primary flex items-center gap-2 transition-colors"
                           >
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                              <Users className="h-4 w-4 text-primary" />
+                            <div className="bg-primary/10 rounded-lg p-2">
+                              <Users className="text-primary h-4 w-4" />
                             </div>
-                            <span className="font-medium text-foreground">
-                              {formatName(member.last_name)},{" "}
-                              {formatName(member.first_name)}
+                            <span className="text-foreground font-medium">
+                              {formatName(member.last_name)}, {formatName(member.first_name)}
                             </span>
                           </Link>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div className="text-muted-foreground flex items-center gap-2 text-sm">
                             <Mail className="h-3 w-3" />
-                            <span className="truncate max-w-[200px]">
-                              {member.company_email}
-                            </span>
+                            <span className="max-w-[200px] truncate">{member.company_email}</span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-sm text-foreground">
-                            {member.department || "-"}
-                          </div>
+                          <div className="text-foreground text-sm">{member.department || "-"}</div>
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-1">
-                            <Badge className={getRoleBadgeColor(member.role)}>
-                              {getRoleDisplayName(member.role)}
-                            </Badge>
+                            <Badge className={getRoleBadgeColor(member.role)}>{getRoleDisplayName(member.role)}</Badge>
                             {member.role === "lead" &&
                               member.lead_departments &&
                               member.lead_departments.length > 0 && (
                                 <Badge variant="outline" className="text-xs">
                                   {member.lead_departments.length} Dept
-                                  {member.lead_departments.length > 1
-                                    ? "s"
-                                    : ""}
+                                  {member.lead_departments.length > 1 ? "s" : ""}
                                 </Badge>
                               )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-muted-foreground">
-                            {member.company_role || "-"}
-                          </span>
+                          <span className="text-muted-foreground text-sm">{member.company_role || "-"}</span>
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1 sm:gap-2 ">
+                          <div className="flex items-center justify-end gap-1 sm:gap-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              className="h-8 w-8 sm:h-auto sm:w-auto p-0 sm:p-2"
+                              className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:p-2"
                               title="View Signature"
                               onClick={() => handleViewSignature(member)}
                             >
@@ -1016,7 +890,7 @@ export default function AdminStaffPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="h-8 sm:h-auto text-xs sm:text-sm"
+                              className="h-8 text-xs sm:h-auto sm:text-sm"
                               onClick={() => handleViewDetails(member)}
                             >
                               <span className="hidden sm:inline">View</span>
@@ -1025,7 +899,7 @@ export default function AdminStaffPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="h-8 w-8 sm:h-auto sm:w-auto p-0 sm:p-2"
+                              className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:p-2"
                               onClick={() => handleEditStaff(member)}
                             >
                               <Edit className="h-3 w-3" />
@@ -1041,35 +915,28 @@ export default function AdminStaffPage() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredStaff.map((member) => (
-                <Card
-                  key={member.id}
-                  className="border-2 hover:shadow-lg transition-shadow"
-                >
-                  <CardHeader className="border-b bg-linear-to-r from-primary/5 to-background">
+                <Card key={member.id} className="border-2 transition-shadow hover:shadow-lg">
+                  <CardHeader className="from-primary/5 to-background border-b bg-linear-to-r">
                     <div className="flex items-start justify-between">
                       <Link
                         href={`/admin/staff/${member.id}`}
-                        className="flex items-start gap-3 flex-1 hover:text-primary transition-colors"
+                        className="hover:text-primary flex flex-1 items-start gap-3 transition-colors"
                       >
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                          <Users className="h-5 w-5 text-primary" />
+                        <div className="bg-primary/10 rounded-lg p-2">
+                          <Users className="text-primary h-5 w-5" />
                         </div>
-                        <div className="flex-1 min-w-0">
+                        <div className="min-w-0 flex-1">
                           <CardTitle className="text-lg">
                             {member.first_name} {member.last_name}
                           </CardTitle>
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            <Badge className={getRoleBadgeColor(member.role)}>
-                              {getRoleDisplayName(member.role)}
-                            </Badge>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <Badge className={getRoleBadgeColor(member.role)}>{getRoleDisplayName(member.role)}</Badge>
                             {member.role === "lead" &&
                               member.lead_departments &&
                               member.lead_departments.length > 0 && (
                                 <Badge variant="outline" className="text-xs">
                                   {member.lead_departments.length} Dept
-                                  {member.lead_departments.length > 1
-                                    ? "s"
-                                    : ""}
+                                  {member.lead_departments.length > 1 ? "s" : ""}
                                 </Badge>
                               )}
                           </div>
@@ -1079,72 +946,64 @@ export default function AdminStaffPage() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditStaff(member);
+                          e.stopPropagation()
+                          handleEditStaff(member)
                         }}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CardContent className="space-y-3 p-4">
+                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
                       <Mail className="h-4 w-4" />
                       <span className="truncate">{member.company_email}</span>
                     </div>
 
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
                       <Building2 className="h-4 w-4" />
                       <span>{member.department || "-"}</span>
                     </div>
 
                     {member.company_role && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="text-muted-foreground flex items-center gap-2 text-sm">
                         <UserCog className="h-4 w-4" />
                         <span>{member.company_role}</span>
                       </div>
                     )}
 
                     {member.phone_number && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="text-muted-foreground flex items-center gap-2 text-sm">
                         <Phone className="h-4 w-4" />
                         <span>{member.phone_number}</span>
                       </div>
                     )}
 
                     {member.current_work_location && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="text-muted-foreground flex items-center gap-2 text-sm">
                         <MapPin className="h-4 w-4" />
                         <span>{member.current_work_location}</span>
                       </div>
                     )}
 
-                    {member.is_department_lead &&
-                      member.lead_departments.length > 0 && (
-                        <div className="pt-2 border-t">
-                          <p className="text-xs text-muted-foreground mb-1">
-                            Leading:
-                          </p>
-                          <div className="flex flex-wrap gap-1">
-                            {member.lead_departments.map((dept, idx) => (
-                              <span
-                                key={idx}
-                                className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 px-2 py-1 rounded"
-                              >
-                                {dept}
-                              </span>
-                            ))}
-                          </div>
+                    {member.is_department_lead && member.lead_departments.length > 0 && (
+                      <div className="border-t pt-2">
+                        <p className="text-muted-foreground mb-1 text-xs">Leading:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {member.lead_departments.map((dept, idx) => (
+                            <span
+                              key={idx}
+                              className="rounded bg-blue-100 px-2 py-1 text-xs text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                            >
+                              {dept}
+                            </span>
+                          ))}
                         </div>
-                      )}
+                      </div>
+                    )}
 
-                    <div className="flex gap-2 mt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewDetails(member)}
-                        className="flex-1"
-                      >
+                    <div className="mt-2 flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => handleViewDetails(member)} className="flex-1">
                         View Details
                       </Button>
                       <Button
@@ -1174,14 +1033,10 @@ export default function AdminStaffPage() {
         ) : (
           <Card className="border-2">
             <CardContent className="p-12 text-center">
-              <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">
-                No Staff Found
-              </h3>
+              <Users className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
+              <h3 className="text-foreground mb-2 text-xl font-semibold">No Staff Found</h3>
               <p className="text-muted-foreground">
-                {searchQuery ||
-                departmentFilter !== "all" ||
-                roleFilter !== "all"
+                {searchQuery || departmentFilter !== "all" || roleFilter !== "all"
                   ? "No staff matches your filters"
                   : "No staff members found"}
               </p>
@@ -1197,9 +1052,7 @@ export default function AdminStaffPage() {
             <DialogTitle>
               Edit {selectedStaff?.first_name} {selectedStaff?.last_name}
             </DialogTitle>
-            <DialogDescription>
-              Update staff member's role, department, and permissions
-            </DialogDescription>
+            <DialogDescription>Update staff member's role, department, and permissions</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
@@ -1207,14 +1060,14 @@ export default function AdminStaffPage() {
               <Select
                 value={editForm.role}
                 onValueChange={(value: UserRole) => {
-                  setEditForm({ ...editForm, role: value });
+                  setEditForm({ ...editForm, role: value })
                   // Clear lead departments when role is not lead
                   if (value !== "lead") {
                     setEditForm((prev) => ({
                       ...prev,
                       role: value,
                       lead_departments: [],
-                    }));
+                    }))
                   }
                 }}
               >
@@ -1229,13 +1082,13 @@ export default function AdminStaffPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 text-xs">
                 {userProfile?.role === "admin"
                   ? "As Admin, you can assign: Visitor, Staff, and Lead roles"
                   : "As Super Admin, you can assign any role"}
               </p>
               {editForm.role === "lead" && (
-                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
                   ⚠️ Lead role requires selecting at least one department below
                 </p>
               )}
@@ -1245,9 +1098,7 @@ export default function AdminStaffPage() {
               <Label htmlFor="department">Department *</Label>
               <Select
                 value={editForm.department}
-                onValueChange={(value) =>
-                  setEditForm({ ...editForm, department: value })
-                }
+                onValueChange={(value) => setEditForm({ ...editForm, department: value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select department" />
@@ -1267,27 +1118,23 @@ export default function AdminStaffPage() {
               <Input
                 id="company_role"
                 value={editForm.company_role}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, company_role: e.target.value })
-                }
+                onChange={(e) => setEditForm({ ...editForm, company_role: e.target.value })}
                 placeholder="e.g., Senior Developer"
               />
             </div>
 
             {editForm.role === "lead" && (
               <div className="space-y-2">
-                <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
-                  <p className="text-sm font-medium text-primary mb-2">
-                    Lead Department Selection Required
-                  </p>
-                  <p className="text-xs text-muted-foreground">
+                <div className="bg-primary/10 border-primary/20 rounded-lg border p-3">
+                  <p className="text-primary mb-2 text-sm font-medium">Lead Department Selection Required</p>
+                  <p className="text-muted-foreground text-xs">
                     Select at least one department that this person will lead
                   </p>
                 </div>
 
                 <div>
                   <Label>Lead Departments *</Label>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
+                  <div className="mt-2 grid grid-cols-2 gap-2">
                     {DEPARTMENTS.map((dept) => (
                       <div key={dept} className="flex items-center gap-2">
                         <input
@@ -1298,19 +1145,13 @@ export default function AdminStaffPage() {
                             if (e.target.checked) {
                               setEditForm({
                                 ...editForm,
-                                lead_departments: [
-                                  ...editForm.lead_departments,
-                                  dept,
-                                ],
-                              });
+                                lead_departments: [...editForm.lead_departments, dept],
+                              })
                             } else {
                               setEditForm({
                                 ...editForm,
-                                lead_departments:
-                                  editForm.lead_departments.filter(
-                                    (d) => d !== dept
-                                  ),
-                              });
+                                lead_departments: editForm.lead_departments.filter((d) => d !== dept),
+                              })
                             }
                           }}
                           className="rounded"
@@ -1322,19 +1163,14 @@ export default function AdminStaffPage() {
                     ))}
                   </div>
                   {editForm.lead_departments.length === 0 && (
-                    <p className="text-xs text-destructive mt-2">
-                      Please select at least one department
-                    </p>
+                    <p className="text-destructive mt-2 text-xs">Please select at least one department</p>
                   )}
                 </div>
               </div>
             )}
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsEditDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
               Cancel
             </Button>
             <Button onClick={handleSaveStaff}>Save Changes</Button>
@@ -1343,19 +1179,13 @@ export default function AdminStaffPage() {
       </Dialog>
 
       {/* Signature Dialog */}
-      <Dialog
-        open={isSignatureDialogOpen}
-        onOpenChange={setIsSignatureDialogOpen}
-      >
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={isSignatureDialogOpen} onOpenChange={setIsSignatureDialogOpen}>
+        <DialogContent className="max-h-[90vh] max-w-6xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              Email Signature - {selectedStaff?.first_name}{" "}
-              {selectedStaff?.last_name}
+              Email Signature - {selectedStaff?.first_name} {selectedStaff?.last_name}
             </DialogTitle>
-            <DialogDescription>
-              View and manage signature for this staff member
-            </DialogDescription>
+            <DialogDescription>View and manage signature for this staff member</DialogDescription>
           </DialogHeader>
           {selectedStaff && (
             <div className="mt-4">
@@ -1367,18 +1197,14 @@ export default function AdminStaffPage() {
 
       {/* View Details Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh]">
+        <DialogContent className="max-h-[90vh] max-w-6xl">
           <DialogHeader>
             <DialogTitle>
               {viewStaffProfile
-                ? `${formatName(viewStaffProfile.first_name)} ${formatName(
-                    viewStaffProfile.last_name
-                  )}`
+                ? `${formatName(viewStaffProfile.first_name)} ${formatName(viewStaffProfile.last_name)}`
                 : "Staff Details"}
             </DialogTitle>
-            <DialogDescription>
-              View complete profile and related information
-            </DialogDescription>
+            <DialogDescription>View complete profile and related information</DialogDescription>
           </DialogHeader>
           {viewStaffProfile && (
             <ScrollArea className="max-h-[70vh] pr-4">
@@ -1392,7 +1218,7 @@ export default function AdminStaffPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-12 w-12">
                           <AvatarFallback className="bg-primary text-primary-foreground">
@@ -1401,67 +1227,46 @@ export default function AdminStaffPage() {
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="text-sm text-muted-foreground">
-                            Full Name
-                          </p>
+                          <p className="text-muted-foreground text-sm">Full Name</p>
                           <p className="font-medium">
-                            {formatName(viewStaffProfile.first_name)}{" "}
-                            {formatName(viewStaffProfile.last_name)}
+                            {formatName(viewStaffProfile.first_name)} {formatName(viewStaffProfile.last_name)}
                           </p>
                           {viewStaffProfile.other_names && (
-                            <p className="text-xs text-muted-foreground">
-                              ({viewStaffProfile.other_names})
-                            </p>
+                            <p className="text-muted-foreground text-xs">({viewStaffProfile.other_names})</p>
                           )}
                         </div>
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <Mail className="h-5 w-5 text-muted-foreground" />
+                        <Mail className="text-muted-foreground h-5 w-5" />
                         <div>
-                          <p className="text-sm text-muted-foreground">Email</p>
-                          <p className="font-medium">
-                            {viewStaffProfile.company_email}
-                          </p>
+                          <p className="text-muted-foreground text-sm">Email</p>
+                          <p className="font-medium">{viewStaffProfile.company_email}</p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <Building2 className="h-5 w-5 text-muted-foreground" />
+                        <Building2 className="text-muted-foreground h-5 w-5" />
                         <div>
-                          <p className="text-sm text-muted-foreground">
-                            Department
-                          </p>
-                          <p className="font-medium">
-                            {viewStaffProfile.department || "N/A"}
-                          </p>
+                          <p className="text-muted-foreground text-sm">Department</p>
+                          <p className="font-medium">{viewStaffProfile.department || "N/A"}</p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <Shield className="h-5 w-5 text-muted-foreground" />
+                        <Shield className="text-muted-foreground h-5 w-5" />
                         <div>
-                          <p className="text-sm text-muted-foreground">Role</p>
-                          <div className="flex gap-2 mt-1">
-                            <Badge
-                              className={getRoleBadgeColor(
-                                viewStaffProfile.role as UserRole
-                              )}
-                            >
-                              {getRoleDisplayName(
-                                viewStaffProfile.role as UserRole
-                              )}
+                          <p className="text-muted-foreground text-sm">Role</p>
+                          <div className="mt-1 flex gap-2">
+                            <Badge className={getRoleBadgeColor(viewStaffProfile.role as UserRole)}>
+                              {getRoleDisplayName(viewStaffProfile.role as UserRole)}
                             </Badge>
                             {viewStaffProfile.role === "lead" &&
                               viewStaffProfile.lead_departments &&
                               viewStaffProfile.lead_departments.length > 0 && (
                                 <Badge variant="outline">
-                                  Leading{" "}
-                                  {viewStaffProfile.lead_departments.length}{" "}
-                                  Dept
-                                  {viewStaffProfile.lead_departments.length > 1
-                                    ? "s"
-                                    : ""}
+                                  Leading {viewStaffProfile.lead_departments.length} Dept
+                                  {viewStaffProfile.lead_departments.length > 1 ? "s" : ""}
                                 </Badge>
                               )}
                           </div>
@@ -1469,31 +1274,21 @@ export default function AdminStaffPage() {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <UserIcon className="h-5 w-5 text-muted-foreground" />
+                        <UserIcon className="text-muted-foreground h-5 w-5" />
                         <div>
-                          <p className="text-sm text-muted-foreground">
-                            Position
-                          </p>
-                          <p className="font-medium">
-                            {viewStaffProfile.company_role || "N/A"}
-                          </p>
+                          <p className="text-muted-foreground text-sm">Position</p>
+                          <p className="font-medium">{viewStaffProfile.company_role || "N/A"}</p>
                         </div>
                       </div>
 
                       {viewStaffProfile.phone_number && (
                         <div className="flex items-center gap-3">
-                          <Phone className="h-5 w-5 text-muted-foreground" />
+                          <Phone className="text-muted-foreground h-5 w-5" />
                           <div>
-                            <p className="text-sm text-muted-foreground">
-                              Phone
-                            </p>
-                            <p className="font-medium">
-                              {viewStaffProfile.phone_number}
-                            </p>
+                            <p className="text-muted-foreground text-sm">Phone</p>
+                            <p className="font-medium">{viewStaffProfile.phone_number}</p>
                             {viewStaffProfile.additional_phone && (
-                              <p className="text-xs text-muted-foreground">
-                                {viewStaffProfile.additional_phone}
-                              </p>
+                              <p className="text-muted-foreground text-xs">{viewStaffProfile.additional_phone}</p>
                             )}
                           </div>
                         </div>
@@ -1501,64 +1296,45 @@ export default function AdminStaffPage() {
 
                       {viewStaffProfile.residential_address && (
                         <div className="flex items-center gap-3">
-                          <MapPin className="h-5 w-5 text-muted-foreground" />
+                          <MapPin className="text-muted-foreground h-5 w-5" />
                           <div>
-                            <p className="text-sm text-muted-foreground">
-                              Address
-                            </p>
-                            <p className="font-medium">
-                              {viewStaffProfile.residential_address}
-                            </p>
+                            <p className="text-muted-foreground text-sm">Address</p>
+                            <p className="font-medium">{viewStaffProfile.residential_address}</p>
                           </div>
                         </div>
                       )}
 
                       {viewStaffProfile.current_work_location && (
                         <div className="flex items-center gap-3">
-                          <MapPin className="h-5 w-5 text-muted-foreground" />
+                          <MapPin className="text-muted-foreground h-5 w-5" />
                           <div>
-                            <p className="text-sm text-muted-foreground">
-                              Work Location
-                            </p>
-                            <p className="font-medium">
-                              {viewStaffProfile.current_work_location}
-                            </p>
+                            <p className="text-muted-foreground text-sm">Work Location</p>
+                            <p className="font-medium">{viewStaffProfile.current_work_location}</p>
                           </div>
                         </div>
                       )}
 
-                      {viewStaffProfile.lead_departments &&
-                        viewStaffProfile.lead_departments.length > 0 && (
-                          <div className="flex items-center gap-3">
-                            <Building2 className="h-5 w-5 text-muted-foreground" />
-                            <div>
-                              <p className="text-sm text-muted-foreground">
-                                Leading Departments
-                              </p>
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {viewStaffProfile.lead_departments.map(
-                                  (dept: string) => (
-                                    <Badge key={dept} variant="outline">
-                                      {dept}
-                                    </Badge>
-                                  )
-                                )}
-                              </div>
+                      {viewStaffProfile.lead_departments && viewStaffProfile.lead_departments.length > 0 && (
+                        <div className="flex items-center gap-3">
+                          <Building2 className="text-muted-foreground h-5 w-5" />
+                          <div>
+                            <p className="text-muted-foreground text-sm">Leading Departments</p>
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {viewStaffProfile.lead_departments.map((dept: string) => (
+                                <Badge key={dept} variant="outline">
+                                  {dept}
+                                </Badge>
+                              ))}
                             </div>
                           </div>
-                        )}
+                        </div>
+                      )}
 
                       <div className="flex items-center gap-3">
-                        <Calendar className="h-5 w-5 text-muted-foreground" />
+                        <Calendar className="text-muted-foreground h-5 w-5" />
                         <div>
-                          <p className="text-sm text-muted-foreground">
-                            Member Since
-                          </p>
-                          <p className="font-medium">
-                            {new Date(
-                              viewStaffProfile.created_at
-                            ).toLocaleDateString()}
-                          </p>
+                          <p className="text-muted-foreground text-sm">Member Since</p>
+                          <p className="font-medium">{new Date(viewStaffProfile.created_at).toLocaleDateString()}</p>
                         </div>
                       </div>
                     </div>
@@ -1568,12 +1344,8 @@ export default function AdminStaffPage() {
                 {/* Related Data Tabs */}
                 <Tabs defaultValue="tasks" className="space-y-4">
                   <TabsList>
-                    <TabsTrigger value="tasks">
-                      Tasks ({viewStaffData.tasks.length})
-                    </TabsTrigger>
-                    <TabsTrigger value="assets">
-                      Assets ({viewStaffData.assets.length})
-                    </TabsTrigger>
+                    <TabsTrigger value="tasks">Tasks ({viewStaffData.tasks.length})</TabsTrigger>
+                    <TabsTrigger value="assets">Assets ({viewStaffData.assets.length})</TabsTrigger>
                     <TabsTrigger value="documentation">
                       Documentation ({viewStaffData.documentation.length})
                     </TabsTrigger>
@@ -1588,21 +1360,14 @@ export default function AdminStaffPage() {
                         {viewStaffData.tasks.length > 0 ? (
                           <div className="space-y-2">
                             {viewStaffData.tasks.map((task: any) => (
-                              <div
-                                key={task.id}
-                                className="p-3 border rounded-lg"
-                              >
+                              <div key={task.id} className="rounded-lg border p-3">
                                 <p className="font-medium">{task.title}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {task.status}
-                                </p>
+                                <p className="text-muted-foreground text-sm">{task.status}</p>
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground">
-                            No tasks assigned
-                          </p>
+                          <p className="text-muted-foreground text-sm">No tasks assigned</p>
                         )}
                       </CardContent>
                     </Card>
@@ -1617,23 +1382,14 @@ export default function AdminStaffPage() {
                         {viewStaffData.assets.length > 0 ? (
                           <div className="space-y-2">
                             {viewStaffData.assets.map((assignment: any) => (
-                              <div
-                                key={assignment.id}
-                                className="p-3 border rounded-lg"
-                              >
-                                <p className="font-medium">
-                                  {assignment.Asset?.asset_name || "N/A"}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                  {assignment.Asset?.asset_type || "N/A"}
-                                </p>
+                              <div key={assignment.id} className="rounded-lg border p-3">
+                                <p className="font-medium">{assignment.Asset?.asset_name || "N/A"}</p>
+                                <p className="text-muted-foreground text-sm">{assignment.Asset?.asset_type || "N/A"}</p>
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground">
-                            No assets assigned
-                          </p>
+                          <p className="text-muted-foreground text-sm">No assets assigned</p>
                         )}
                       </CardContent>
                     </Card>
@@ -1648,25 +1404,16 @@ export default function AdminStaffPage() {
                         {viewStaffData.documentation.length > 0 ? (
                           <div className="space-y-2">
                             {viewStaffData.documentation.map((doc: any) => (
-                              <div
-                                key={doc.id}
-                                className="p-3 border rounded-lg"
-                              >
-                                <p className="font-medium">
-                                  {doc.title || "Untitled"}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                  {new Date(
-                                    doc.created_at
-                                  ).toLocaleDateString()}
+                              <div key={doc.id} className="rounded-lg border p-3">
+                                <p className="font-medium">{doc.title || "Untitled"}</p>
+                                <p className="text-muted-foreground text-sm">
+                                  {new Date(doc.created_at).toLocaleDateString()}
                                 </p>
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground">
-                            No documentation
-                          </p>
+                          <p className="text-muted-foreground text-sm">No documentation</p>
                         )}
                       </CardContent>
                     </Card>
@@ -1676,15 +1423,12 @@ export default function AdminStaffPage() {
             </ScrollArea>
           )}
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsViewDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
               Close
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }

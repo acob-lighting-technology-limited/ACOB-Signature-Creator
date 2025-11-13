@@ -18,4 +18,3 @@ export function SidebarContent({ children }: { children: React.ReactNode }) {
     </main>
   )
 }
-

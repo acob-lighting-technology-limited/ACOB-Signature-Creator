@@ -37,7 +37,7 @@ export default async function AdminFeedbackPage() {
   let feedbackWithProfiles = feedbackData || []
   if (feedbackData && feedbackData.length > 0) {
     const userIds = Array.from(new Set(feedbackData.map((f) => f.user_id).filter(Boolean)))
-    
+
     if (userIds.length > 0) {
       const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
@@ -66,77 +66,75 @@ export default async function AdminFeedbackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 w-full overflow-x-hidden">
+    <div className="from-background via-background to-muted/20 min-h-screen w-full overflow-x-hidden bg-gradient-to-br">
       <div className="mx-auto max-w-7xl space-y-8 p-4 md:p-8">
         {/* Header */}
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <MessageSquare className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground">User Feedback</h1>
+          <div className="mb-2 flex items-center gap-3">
+            <MessageSquare className="text-primary h-8 w-8" />
+            <h1 className="text-foreground text-3xl font-bold md:text-4xl">User Feedback</h1>
           </div>
-          <p className="text-muted-foreground text-lg">
-            View and manage user concerns, complaints, and suggestions
-          </p>
+          <p className="text-muted-foreground text-lg">View and manage user concerns, complaints, and suggestions</p>
         </div>
 
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <Card className="border-2 shadow-lg">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Feedback</CardTitle>
+              <CardTitle className="text-muted-foreground text-sm font-medium">Total Feedback</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5 text-blue-600" />
-                <span className="text-3xl font-bold text-foreground">{stats.total}</span>
+                <span className="text-foreground text-3xl font-bold">{stats.total}</span>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-2 shadow-lg">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Open</CardTitle>
+              <CardTitle className="text-muted-foreground text-sm font-medium">Open</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-green-600" />
-                <span className="text-3xl font-bold text-foreground">{stats.open}</span>
+                <span className="text-foreground text-3xl font-bold">{stats.open}</span>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-2 shadow-lg">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
+              <CardTitle className="text-muted-foreground text-sm font-medium">In Progress</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-blue-600" />
-                <span className="text-3xl font-bold text-foreground">{stats.inProgress}</span>
+                <span className="text-foreground text-3xl font-bold">{stats.inProgress}</span>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-2 shadow-lg">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Resolved</CardTitle>
+              <CardTitle className="text-muted-foreground text-sm font-medium">Resolved</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-5 w-5 text-purple-600" />
-                <span className="text-3xl font-bold text-foreground">{stats.resolved}</span>
+                <span className="text-foreground text-3xl font-bold">{stats.resolved}</span>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-2 shadow-lg">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Closed</CardTitle>
+              <CardTitle className="text-muted-foreground text-sm font-medium">Closed</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
                 <XCircle className="h-5 w-5 text-gray-600" />
-                <span className="text-3xl font-bold text-foreground">{stats.closed}</span>
+                <span className="text-foreground text-3xl font-bold">{stats.closed}</span>
               </div>
             </CardContent>
           </Card>

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export default function AssetsLoading() {
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Header */}
       <div className="space-y-2">
         <Skeleton className="h-9 w-64" />
@@ -40,14 +40,14 @@ export default function AssetsLoading() {
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <div className="min-w-full divide-y divide-border">
-              <div className="flex gap-4 p-4 bg-muted/50">
+            <div className="divide-border min-w-full divide-y">
+              <div className="bg-muted/50 flex gap-4 p-4">
                 {[...Array(7)].map((_, i) => (
                   <Skeleton key={i} className="h-4 w-32" />
                 ))}
               </div>
               {[...Array(10)].map((_, i) => (
-                <div key={i} className="flex gap-4 p-4 border-t">
+                <div key={i} className="flex gap-4 border-t p-4">
                   {[...Array(7)].map((_, j) => (
                     <Skeleton key={j} className="h-4 w-32" />
                   ))}

@@ -3,10 +3,12 @@
 
 echo "✨ Running pre-commit checks..."
 
-# Format staged files with Prettier
-echo "🎨 Formatting code with Prettier..."
-npx prettier --write $(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g')
-git add -u
+# Format all files with Prettier
+echo "🎨 Formatting all files with Prettier..."
+npm run format
+
+# Stage all formatted files
+git add -A
 
 # Run linting
 echo "🔍 Linting code..."

@@ -25,9 +25,9 @@ export default function ForgotPasswordPage() {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/reset-password`,
       })
-      
+
       if (error) throw error
-      
+
       setEmailSent(true)
       toast.success("Password reset email sent! Check your inbox.")
     } catch (error: unknown) {
@@ -39,48 +39,42 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-4 md:p-6 bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="from-background via-background to-muted/20 flex min-h-screen w-full items-center justify-center bg-gradient-to-br p-4 md:p-6">
       <div className="w-full max-w-lg">
         <div className="flex flex-col gap-8">
           {/* Header Section */}
-          <div className="text-center space-y-2">
+          <div className="space-y-2 text-center">
             <h1 className="text-4xl font-bold tracking-tight">Forgot Password</h1>
-            <p className="text-muted-foreground text-lg">
-              Enter your email to receive a password reset link
-            </p>
+            <p className="text-muted-foreground text-lg">Enter your email to receive a password reset link</p>
           </div>
 
           <Card className="border-2 shadow-xl">
             <CardHeader className="space-y-3 pb-6">
-              <CardTitle className="text-2xl font-semibold flex items-center gap-2">
-                <Mail className="h-6 w-6 text-primary" />
+              <CardTitle className="flex items-center gap-2 text-2xl font-semibold">
+                <Mail className="text-primary h-6 w-6" />
                 Reset Your Password
               </CardTitle>
               <CardDescription className="text-base">
-                {emailSent 
-                  ? "We've sent you a password reset link" 
+                {emailSent
+                  ? "We've sent you a password reset link"
                   : "We'll send you instructions to reset your password"}
               </CardDescription>
             </CardHeader>
             <CardContent className="pb-8">
               {emailSent ? (
                 <div className="space-y-6">
-                  <div className="p-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-lg">
+                  <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900 dark:bg-green-950/30">
                     <p className="text-sm text-green-800 dark:text-green-200">
                       Check your email inbox for a password reset link. If you don't see it, check your spam folder.
                     </p>
                   </div>
                   <div className="space-y-3">
-                    <Button
-                      onClick={() => setEmailSent(false)}
-                      variant="outline"
-                      className="w-full h-11"
-                    >
+                    <Button onClick={() => setEmailSent(false)} variant="outline" className="h-11 w-full">
                       Send Another Email
                     </Button>
                     <Link href="/auth/login" className="block">
-                      <Button variant="ghost" className="w-full h-11">
-                        <ArrowLeft className="h-4 w-4 mr-2" />
+                      <Button variant="ghost" className="h-11 w-full">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Login
                       </Button>
                     </Link>
@@ -103,22 +97,18 @@ export default function ForgotPasswordPage() {
                         className="h-11 text-base"
                         autoFocus
                       />
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         Enter the email address associated with your account
                       </p>
                     </div>
 
-                    <Button 
-                      type="submit" 
-                      className="w-full h-11 text-base font-semibold" 
-                      disabled={isLoading}
-                    >
+                    <Button type="submit" className="h-11 w-full text-base font-semibold" disabled={isLoading}>
                       {isLoading ? "Sending..." : "Send Reset Link"}
                     </Button>
 
                     <Link href="/auth/login" className="block">
-                      <Button variant="ghost" className="w-full h-11">
-                        <ArrowLeft className="h-4 w-4 mr-2" />
+                      <Button variant="ghost" className="h-11 w-full">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Login
                       </Button>
                     </Link>
@@ -132,7 +122,7 @@ export default function ForgotPasswordPage() {
           <Card className="border bg-blue-50 dark:bg-blue-950/20">
             <CardContent className="p-4">
               <div className="flex gap-3">
-                <div className="text-blue-600 dark:text-blue-400 mt-0.5">
+                <div className="mt-0.5 text-blue-600 dark:text-blue-400">
                   <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
@@ -142,9 +132,10 @@ export default function ForgotPasswordPage() {
                   </svg>
                 </div>
                 <div className="text-sm text-blue-900 dark:text-blue-100">
-                  <p className="font-medium mb-1">Need help?</p>
+                  <p className="mb-1 font-medium">Need help?</p>
                   <p>
-                    If you're having trouble resetting your password, please contact your system administrator or IT support.
+                    If you're having trouble resetting your password, please contact your system administrator or IT
+                    support.
                   </p>
                 </div>
               </div>
@@ -155,4 +146,3 @@ export default function ForgotPasswordPage() {
     </div>
   )
 }
-

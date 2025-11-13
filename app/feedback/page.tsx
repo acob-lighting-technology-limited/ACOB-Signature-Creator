@@ -41,14 +41,14 @@ export default function FeedbackPage() {
   }
 
   if (!userId) {
-    return <div className="min-h-screen bg-background" />
+    return <div className="bg-background min-h-screen" />
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       <div className="mx-auto max-w-4xl p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Feedback & Suggestions</h1>
+          <h1 className="text-foreground text-3xl font-bold">Feedback & Suggestions</h1>
           <p className="text-muted-foreground">
             Share your concerns, complaints, suggestions, or required items with management
           </p>

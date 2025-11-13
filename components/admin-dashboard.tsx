@@ -46,7 +46,9 @@ export function AdminDashboard({ users, currentUserId, feedbackByUserId = {} }: 
   const [showModal, setShowModal] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
 
-  const [sortKey, setSortKey] = useState<"last_name" | "first_name" | "company_email" | "department" | "device_type" | "device_allocated" | null>(null)
+  const [sortKey, setSortKey] = useState<
+    "last_name" | "first_name" | "company_email" | "department" | "device_type" | "device_allocated" | null
+  >(null)
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
 
   const properCase = (s: string | null | undefined): string => {
@@ -60,7 +62,7 @@ export function AdminDashboard({ users, currentUserId, feedbackByUserId = {} }: 
   const cleanPhoneNumber = (phone: string | null | undefined): string => {
     if (!phone) return "-"
     // Remove all non-numeric characters except +
-    return phone.toString().replace(/[^0-9+]/g, '') || "-"
+    return phone.toString().replace(/[^0-9+]/g, "") || "-"
   }
 
   const applySort = (list: any[]) => {
@@ -104,7 +106,7 @@ export function AdminDashboard({ users, currentUserId, feedbackByUserId = {} }: 
       if (selectedDeviceBrand === "Others") {
         filtered = filtered.filter(
           (user) =>
-            user.device_allocated && !user.device_allocated.includes("Dell") && !user.device_allocated.includes("HP"),
+            user.device_allocated && !user.device_allocated.includes("Dell") && !user.device_allocated.includes("HP")
         )
       } else {
         filtered = filtered.filter((user) => user.device_allocated?.includes(selectedDeviceBrand))
@@ -116,7 +118,7 @@ export function AdminDashboard({ users, currentUserId, feedbackByUserId = {} }: 
         (user) =>
           user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.company_email?.toLowerCase().includes(searchTerm.toLowerCase()),
+          user.company_email?.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
@@ -189,7 +191,7 @@ export function AdminDashboard({ users, currentUserId, feedbackByUserId = {} }: 
           "Device Type": user.device_type,
           "Device Model": user.device_allocated,
           "Work Location": user.current_work_location,
-        })),
+        }))
       )
       const workbook = utils.book_new()
       utils.book_append_sheet(workbook, worksheet, "Staff")
@@ -302,13 +304,7 @@ export function AdminDashboard({ users, currentUserId, feedbackByUserId = {} }: 
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            <Button
-              onClick={handleImportCSV}
-              variant="default"
-              size="sm"
-              disabled={isImporting}
-              className="bg-primary"
-            >
+            <Button onClick={handleImportCSV} variant="default" size="sm" disabled={isImporting} className="bg-primary">
               <Upload className="mr-2 h-4 w-4" />
               {isImporting ? "Importing..." : "Import CSV"}
             </Button>
@@ -534,7 +530,9 @@ export function AdminDashboard({ users, currentUserId, feedbackByUserId = {} }: 
                       <div className="flex items-center gap-2">
                         <span>{properCase(user.device_type) || "-"}</span>
                         {getLatestFeedbackType(user.id) && (
-                          <span className={`inline-block h-2 w-2 rounded-full ${getTypeColor(getLatestFeedbackType(user.id)!)}`} />
+                          <span
+                            className={`inline-block h-2 w-2 rounded-full ${getTypeColor(getLatestFeedbackType(user.id)!)}`}
+                          />
                         )}
                       </div>
                     </TableCell>
@@ -558,7 +556,7 @@ export function AdminDashboard({ users, currentUserId, feedbackByUserId = {} }: 
                           onClick={() =>
                             copyToClipboard(
                               `${properCase(user.first_name)} ${properCase(user.last_name)} - ${(user.company_email || "").toLowerCase()}`,
-                              "User details",
+                              "User details"
                             )
                           }
                           aria-label="Copy user"
@@ -583,7 +581,7 @@ export function AdminDashboard({ users, currentUserId, feedbackByUserId = {} }: 
       {/* Details Modal */}
       {detailsUser && (
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <DialogHeader>
               <DialogTitle>Staff Details</DialogTitle>
               <DialogDescription>Full profile and recent feedback</DialogDescription>
@@ -592,19 +590,64 @@ export function AdminDashboard({ users, currentUserId, feedbackByUserId = {} }: 
               {/* Profile card */}
               <div className="rounded-lg border p-4">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div><Label>First Name</Label><div className="mt-1 font-medium">{formatName(detailsUser.first_name)}</div></div>
-                  <div><Label>Last Name</Label><div className="mt-1 font-medium">{formatName(detailsUser.last_name)}</div></div>
-                  <div className="sm:col-span-2"><Label>Email</Label><div className="mt-1 font-medium break-all">{(detailsUser.company_email || "").toLowerCase()}</div></div>
-                  <div><Label>Department</Label><div className="mt-1">{properCase(detailsUser.department)}</div></div>
-                  <div><Label>Phone</Label><div className="mt-1">{detailsUser.phone_number}</div></div>
-                  <div className="sm:col-span-2"><Label>Device</Label><div className="mt-1">{properCase(detailsUser.device_type)} {properCase(detailsUser.device_model)}</div></div>
-                  <div className="sm:col-span-2"><Label>Address</Label><div className="mt-1">{properCase(detailsUser.residential_address)}</div></div>
-                  <div><Label>Work Location</Label><div className="mt-1">{properCase(detailsUser.current_work_location)}</div></div>
-                  <div><Label>Site</Label><div className="mt-1">{properCase(detailsUser.site_name)} {properCase(detailsUser.site_state)}</div></div>
-                  <div><Label>Bank</Label><div className="mt-1">{properCase(detailsUser.bank_name)} {detailsUser.bank_account_number}</div></div>
-                  <div><Label>Account Name</Label><div className="mt-1">{properCase(detailsUser.bank_account_name)}</div></div>
-                  <div><Label>DOB</Label><div className="mt-1">{detailsUser.date_of_birth || ""}</div></div>
-                  <div><Label>Employment Date</Label><div className="mt-1">{detailsUser.employment_date || ""}</div></div>
+                  <div>
+                    <Label>First Name</Label>
+                    <div className="mt-1 font-medium">{formatName(detailsUser.first_name)}</div>
+                  </div>
+                  <div>
+                    <Label>Last Name</Label>
+                    <div className="mt-1 font-medium">{formatName(detailsUser.last_name)}</div>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Label>Email</Label>
+                    <div className="mt-1 font-medium break-all">{(detailsUser.company_email || "").toLowerCase()}</div>
+                  </div>
+                  <div>
+                    <Label>Department</Label>
+                    <div className="mt-1">{properCase(detailsUser.department)}</div>
+                  </div>
+                  <div>
+                    <Label>Phone</Label>
+                    <div className="mt-1">{detailsUser.phone_number}</div>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Label>Device</Label>
+                    <div className="mt-1">
+                      {properCase(detailsUser.device_type)} {properCase(detailsUser.device_model)}
+                    </div>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Label>Address</Label>
+                    <div className="mt-1">{properCase(detailsUser.residential_address)}</div>
+                  </div>
+                  <div>
+                    <Label>Work Location</Label>
+                    <div className="mt-1">{properCase(detailsUser.current_work_location)}</div>
+                  </div>
+                  <div>
+                    <Label>Site</Label>
+                    <div className="mt-1">
+                      {properCase(detailsUser.site_name)} {properCase(detailsUser.site_state)}
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Bank</Label>
+                    <div className="mt-1">
+                      {properCase(detailsUser.bank_name)} {detailsUser.bank_account_number}
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Account Name</Label>
+                    <div className="mt-1">{properCase(detailsUser.bank_account_name)}</div>
+                  </div>
+                  <div>
+                    <Label>DOB</Label>
+                    <div className="mt-1">{detailsUser.date_of_birth || ""}</div>
+                  </div>
+                  <div>
+                    <Label>Employment Date</Label>
+                    <div className="mt-1">{detailsUser.employment_date || ""}</div>
+                  </div>
                 </div>
               </div>
 
@@ -617,14 +660,16 @@ export function AdminDashboard({ users, currentUserId, feedbackByUserId = {} }: 
                       <div className="flex items-center gap-2">
                         <span className={`inline-block h-2 w-2 rounded-full ${getTypeColor(fb.feedback_type)}`} />
                         <span className="font-medium">{fb.feedback_type}</span>
-                        <span className="text-xs text-muted-foreground ml-auto">{new Date(fb.created_at).toLocaleString()}</span>
+                        <span className="text-muted-foreground ml-auto text-xs">
+                          {new Date(fb.created_at).toLocaleString()}
+                        </span>
                       </div>
                       <div className="mt-1 font-medium">{fb.title}</div>
                       <div className="text-muted-foreground">{fb.description}</div>
                     </div>
                   ))}
                   {(!feedbackByUserId[detailsUser.id] || feedbackByUserId[detailsUser.id].length === 0) && (
-                    <div className="text-sm text-muted-foreground">No feedback yet</div>
+                    <div className="text-muted-foreground text-sm">No feedback yet</div>
                   )}
                 </div>
               </div>

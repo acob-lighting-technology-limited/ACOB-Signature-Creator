@@ -3,9 +3,9 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export default function AssetsLoading() {
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Header skeleton */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div className="space-y-2">
           <Skeleton className="h-9 w-64" />
           <Skeleton className="h-5 w-96" />
@@ -44,16 +44,16 @@ export default function AssetsLoading() {
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <div className="min-w-full divide-y divide-border">
+            <div className="divide-border min-w-full divide-y">
               {/* Table header */}
-              <div className="grid grid-cols-8 gap-4 p-4 bg-muted/50">
+              <div className="bg-muted/50 grid grid-cols-8 gap-4 p-4">
                 {[...Array(8)].map((_, i) => (
                   <Skeleton key={i} className="h-4 w-full" />
                 ))}
               </div>
               {/* Table rows */}
               {[...Array(10)].map((_, i) => (
-                <div key={i} className="grid grid-cols-8 gap-4 p-4 border-t">
+                <div key={i} className="grid grid-cols-8 gap-4 border-t p-4">
                   {[...Array(8)].map((_, j) => (
                     <Skeleton key={j} className="h-4 w-full" />
                   ))}

@@ -6,10 +6,6 @@ export const metadata: Metadata = {
   description: "Submit feedback, concerns, complaints, or suggestions to ACOB Lighting Technology Limited",
 }
 
-export default function FeedbackLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function FeedbackLayout({ children }: { children: React.ReactNode }) {
   return <AppLayout>{children}</AppLayout>
 }

@@ -32,10 +32,13 @@ export const ASSET_TYPES: AssetType[] = [
   { label: "Generator", code: "GEN", requiresSerialModel: false },
 ]
 
-export const ASSET_TYPE_MAP = ASSET_TYPES.reduce((acc, type) => {
-  acc[type.code] = type
-  return acc
-}, {} as Record<string, AssetType>)
+export const ASSET_TYPE_MAP = ASSET_TYPES.reduce(
+  (acc, type) => {
+    acc[type.code] = type
+    return acc
+  },
+  {} as Record<string, AssetType>
+)
 
 export const ASSIGNMENT_TYPES = [
   { value: "individual", label: "Individual Staff" },
@@ -54,7 +57,7 @@ export function getAssetTypeByCode(code: string): AssetType | undefined {
  * Get asset type configuration by label
  */
 export function getAssetTypeByLabel(label: string): AssetType | undefined {
-  return ASSET_TYPES.find(type => type.label === label)
+  return ASSET_TYPES.find((type) => type.label === label)
 }
 
 /**
@@ -81,7 +84,7 @@ export function parseUniqueCode(uniqueCode: string): {
   year: string
   serial: string
 } | null {
-  const parts = uniqueCode.split('/')
+  const parts = uniqueCode.split("/")
   if (parts.length !== 5) return null
 
   return {

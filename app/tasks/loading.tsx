@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export default function TasksLoading() {
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Header */}
       <div className="space-y-2">
         <Skeleton className="h-9 w-48" />
@@ -41,7 +41,7 @@ export default function TasksLoading() {
           <Card key={i}>
             <CardContent className="p-6">
               <div className="flex items-start justify-between gap-4">
-                <div className="space-y-3 flex-1">
+                <div className="flex-1 space-y-3">
                   <div className="flex items-center gap-2">
                     <Skeleton className="h-6 w-48" />
                     <Skeleton className="h-5 w-20" />

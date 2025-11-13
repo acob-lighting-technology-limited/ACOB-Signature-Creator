@@ -32,11 +32,7 @@ async function HeaderWrapperWithData() {
   // Fetch admin status from profile
   let isAdmin = false
   if (data?.user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", data.user.id)
-      .single()
+    const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", data.user.id).single()
 
     isAdmin = profile?.is_admin === true
   }
@@ -62,19 +58,13 @@ export default function RootLayout({
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} overflow-x-hidden`}>
         <Suspense fallback={null}>
           {/* Theme follows system preference automatically (light/dark mode) */}
-          <ThemeProvider 
-            attribute="class" 
-            defaultTheme="system" 
-            enableSystem 
-            enableColorScheme
-            storageKey="acob-theme"
-          >
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem enableColorScheme storageKey="acob-theme">
             <SidebarProvider>
-            <NProgressProvider />
-            <NProgressHandler />
+              <NProgressProvider />
+              <NProgressHandler />
               <HeaderWrapperWithData />
-            {children}
-            <Toaster />
+              {children}
+              <Toaster />
             </SidebarProvider>
           </ThemeProvider>
         </Suspense>

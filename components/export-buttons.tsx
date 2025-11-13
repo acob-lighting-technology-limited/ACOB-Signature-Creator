@@ -20,10 +20,10 @@ export function ExportButtons({
   return (
     <Card className="border-2">
       <CardContent className="p-4">
-        <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Download className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">{label}</span>
+            <Download className="text-muted-foreground h-4 w-4" />
+            <span className="text-foreground text-sm font-medium">{label}</span>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={onExportExcel} className="gap-2" disabled={disabled}>
@@ -44,4 +44,3 @@ export function ExportButtons({
     </Card>
   )
 }
-

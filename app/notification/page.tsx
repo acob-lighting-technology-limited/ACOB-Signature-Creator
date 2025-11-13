@@ -7,13 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { createClient } from "@/lib/supabase/client"
@@ -92,7 +86,7 @@ function formatRelativeTime(dateString: string): string {
   const date = new Date(dateString)
   const now = new Date()
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-  
+
   if (diffInSeconds < 60) return "Just now"
   if (diffInSeconds < 3600) {
     const minutes = Math.floor(diffInSeconds / 60)
@@ -106,7 +100,7 @@ function formatRelativeTime(dateString: string): string {
     const days = Math.floor(diffInSeconds / 86400)
     return `${days} day${days > 1 ? "s" : ""} ago`
   }
-  
+
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
 }
 
@@ -123,7 +117,7 @@ function getInitials(name?: string): string {
 export default function NotificationPage() {
   const router = useRouter()
   const supabase = createClient()
-  
+
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("all")
@@ -133,7 +127,9 @@ export default function NotificationPage() {
   // Load notifications
   const loadNotifications = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) {
         router.push("/auth/login")
         return
@@ -161,28 +157,28 @@ export default function NotificationPage() {
 
     // Setup real-time subscription
     const setupSubscription = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
       const subscription = supabase
-        .channel('user_notifications')
+        .channel("user_notifications")
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: '*',
-            schema: 'public',
-            table: 'notifications',
-            filter: `user_id=eq.${user.id}`
+            event: "*",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
-            if (payload.eventType === 'INSERT') {
-              setNotifications(prev => [payload.new as Notification, ...prev])
-            } else if (payload.eventType === 'UPDATE') {
-              setNotifications(prev =>
-                prev.map(n => n.id === payload.new.id ? payload.new as Notification : n)
-              )
-            } else if (payload.eventType === 'DELETE') {
-              setNotifications(prev => prev.filter(n => n.id !== payload.old.id))
+            if (payload.eventType === "INSERT") {
+              setNotifications((prev) => [payload.new as Notification, ...prev])
+            } else if (payload.eventType === "UPDATE") {
+              setNotifications((prev) => prev.map((n) => (n.id === payload.new.id ? (payload.new as Notification) : n)))
+            } else if (payload.eventType === "DELETE") {
+              setNotifications((prev) => prev.filter((n) => n.id !== payload.old.id))
             }
           }
         )
@@ -206,9 +202,7 @@ export default function NotificationPage() {
 
       if (error) throw error
 
-      setNotifications(prev =>
-        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-      )
+      setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n)))
     } catch (error: any) {
       console.error("Error marking as read:", error)
       toast.error("Failed to mark as read")
@@ -218,17 +212,19 @@ export default function NotificationPage() {
   // Mark all as read
   const markAllAsRead = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
-      const { error } = await supabase.rpc('mark_notifications_read', {
+      const { error } = await supabase.rpc("mark_notifications_read", {
         p_user_id: user.id,
-        p_notification_ids: null
+        p_notification_ids: null,
       })
 
       if (error) throw error
 
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
       toast.success("All notifications marked as read")
     } catch (error: any) {
       console.error("Error:", error)
@@ -239,14 +235,11 @@ export default function NotificationPage() {
   // Delete notification
   const deleteNotification = async (notificationId: string) => {
     try {
-      const { error } = await supabase
-        .from("notifications")
-        .delete()
-        .eq("id", notificationId)
+      const { error } = await supabase.from("notifications").delete().eq("id", notificationId)
 
       if (error) throw error
 
-      setNotifications(prev => prev.filter(n => n.id !== notificationId))
+      setNotifications((prev) => prev.filter((n) => n.id !== notificationId))
       toast.success("Notification deleted")
     } catch (error: any) {
       console.error("Error:", error)
@@ -264,7 +257,7 @@ export default function NotificationPage() {
 
       if (error) throw error
 
-      setNotifications(prev => prev.filter(n => n.id !== notificationId))
+      setNotifications((prev) => prev.filter((n) => n.id !== notificationId))
       toast.success("Notification archived")
     } catch (error: any) {
       console.error("Error:", error)
@@ -289,7 +282,7 @@ export default function NotificationPage() {
   }
 
   // Filter notifications
-  const filteredNotifications = notifications.filter(n => {
+  const filteredNotifications = notifications.filter((n) => {
     // Tab filter
     if (activeTab === "unread" && n.read) return false
     if (activeTab !== "all" && activeTab !== "unread" && n.category !== activeTab) return false
@@ -311,23 +304,23 @@ export default function NotificationPage() {
   })
 
   // Calculate counts
-  const unreadCount = notifications.filter(n => !n.read).length
+  const unreadCount = notifications.filter((n) => !n.read).length
   const categoryCounts = {
     all: notifications.length,
     unread: unreadCount,
-    tasks: notifications.filter(n => n.category === 'tasks').length,
-    assets: notifications.filter(n => n.category === 'assets').length,
-    feedback: notifications.filter(n => n.category === 'feedback').length,
-    mentions: notifications.filter(n => n.category === 'mentions').length,
+    tasks: notifications.filter((n) => n.category === "tasks").length,
+    assets: notifications.filter((n) => n.category === "assets").length,
+    feedback: notifications.filter((n) => n.category === "feedback").length,
+    mentions: notifications.filter((n) => n.category === "mentions").length,
   }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-5xl mx-auto">
+      <div className="bg-background min-h-screen p-6">
+        <div className="mx-auto max-w-5xl">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-muted rounded w-1/3"></div>
-            <div className="h-64 bg-muted rounded"></div>
+            <div className="bg-muted h-8 w-1/3 rounded"></div>
+            <div className="bg-muted h-64 rounded"></div>
           </div>
         </div>
       </div>
@@ -335,10 +328,10 @@ export default function NotificationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div className="bg-background min-h-screen">
+      <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/dashboard">
               <Button variant="ghost" size="icon">
@@ -346,13 +339,11 @@ export default function NotificationPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2">
+              <h1 className="text-foreground flex items-center gap-2 text-2xl font-bold sm:text-3xl">
                 <Bell className="h-7 w-7" />
                 Notifications
               </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Stay updated with your tasks, assets, and more
-              </p>
+              <p className="text-muted-foreground mt-1 text-sm">Stay updated with your tasks, assets, and more</p>
             </div>
           </div>
 
@@ -365,29 +356,29 @@ export default function NotificationPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold">{categoryCounts.all}</div>
-              <div className="text-xs text-muted-foreground">Total</div>
+              <div className="text-muted-foreground text-xs">Total</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-blue-600">{categoryCounts.unread}</div>
-              <div className="text-xs text-muted-foreground">Unread</div>
+              <div className="text-muted-foreground text-xs">Unread</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-green-600">{categoryCounts.tasks}</div>
-              <div className="text-xs text-muted-foreground">Tasks</div>
+              <div className="text-muted-foreground text-xs">Tasks</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-purple-600">{categoryCounts.assets}</div>
-              <div className="text-xs text-muted-foreground">Assets</div>
+              <div className="text-muted-foreground text-xs">Assets</div>
             </CardContent>
           </Card>
         </div>
@@ -395,9 +386,9 @@ export default function NotificationPage() {
         {/* Main Content */}
         <Card>
           <CardHeader className="border-b">
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                 <Input
                   placeholder="Search notifications..."
                   value={searchQuery}
@@ -405,10 +396,10 @@ export default function NotificationPage() {
                   className="pl-9"
                 />
               </div>
-              
+
               <Select value={priorityFilter} onValueChange={setPriorityFilter}>
                 <SelectTrigger className="w-full sm:w-[180px]">
-                  <Filter className="h-4 w-4 mr-2" />
+                  <Filter className="mr-2 h-4 w-4" />
                   <SelectValue placeholder="Priority" />
                 </SelectTrigger>
                 <SelectContent>
@@ -424,10 +415,10 @@ export default function NotificationPage() {
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="border-b">
-              <TabsList className="w-full justify-start rounded-none border-b-0 bg-transparent p-0 h-auto">
-                <TabsTrigger 
-                  value="all" 
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
+              <TabsList className="h-auto w-full justify-start rounded-none border-b-0 bg-transparent p-0">
+                <TabsTrigger
+                  value="all"
+                  className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:bg-transparent"
                 >
                   All
                   {categoryCounts.all > 0 && (
@@ -436,10 +427,10 @@ export default function NotificationPage() {
                     </Badge>
                   )}
                 </TabsTrigger>
-                
-                <TabsTrigger 
+
+                <TabsTrigger
                   value="unread"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
+                  className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:bg-transparent"
                 >
                   Unread
                   {categoryCounts.unread > 0 && (
@@ -448,12 +439,12 @@ export default function NotificationPage() {
                     </Badge>
                   )}
                 </TabsTrigger>
-                
-                <TabsTrigger 
+
+                <TabsTrigger
                   value="tasks"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
+                  className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:bg-transparent"
                 >
-                  <User className="h-4 w-4 mr-1" />
+                  <User className="mr-1 h-4 w-4" />
                   Tasks
                   {categoryCounts.tasks > 0 && (
                     <Badge variant="secondary" className="ml-2">
@@ -461,12 +452,12 @@ export default function NotificationPage() {
                     </Badge>
                   )}
                 </TabsTrigger>
-                
-                <TabsTrigger 
+
+                <TabsTrigger
                   value="assets"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
+                  className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:bg-transparent"
                 >
-                  <Package className="h-4 w-4 mr-1" />
+                  <Package className="mr-1 h-4 w-4" />
                   Assets
                   {categoryCounts.assets > 0 && (
                     <Badge variant="secondary" className="ml-2">
@@ -483,19 +474,17 @@ export default function NotificationPage() {
                   <div className="divide-y">
                     {filteredNotifications.map((notification) => {
                       const Icon = typeIcons[notification.type as keyof typeof typeIcons] || Info
-                      
+
                       return (
                         <div
                           key={notification.id}
                           className={cn(
-                            "group relative p-6 hover:bg-muted/30 transition-all cursor-pointer",
+                            "group hover:bg-muted/30 relative cursor-pointer p-6 transition-all",
                             !notification.read && "bg-blue-50/30 dark:bg-blue-950/10"
                           )}
                           onClick={() => handleNotificationClick(notification)}
                         >
-                          {!notification.read && (
-                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
-                          )}
+                          {!notification.read && <div className="bg-primary absolute top-0 bottom-0 left-0 w-1" />}
 
                           <div className="flex gap-4 pl-2">
                             {notification.actor_avatar || notification.actor_name ? (
@@ -508,35 +497,32 @@ export default function NotificationPage() {
                                 </AvatarFallback>
                               </Avatar>
                             ) : (
-                              <div className={cn(
-                                "h-12 w-12 rounded-full flex items-center justify-center shrink-0 bg-muted",
-                                priorityColors[notification.priority as keyof typeof priorityColors]
-                              )}>
+                              <div
+                                className={cn(
+                                  "bg-muted flex h-12 w-12 shrink-0 items-center justify-center rounded-full",
+                                  priorityColors[notification.priority as keyof typeof priorityColors]
+                                )}
+                              >
                                 <Icon className="h-6 w-6" />
                               </div>
                             )}
 
-                            <div className="flex-1 min-w-0">
+                            <div className="min-w-0 flex-1">
                               <div className="flex items-start justify-between gap-4">
                                 <div className="flex-1">
-                                  <h3 className={cn(
-                                    "text-base leading-snug",
-                                    !notification.read && "font-semibold"
-                                  )}>
+                                  <h3 className={cn("text-base leading-snug", !notification.read && "font-semibold")}>
                                     {notification.title}
                                   </h3>
-                                  <p className="text-sm text-muted-foreground mt-1">
-                                    {notification.message}
-                                  </p>
-                                  
-                                  <div className="flex items-center gap-4 mt-2">
-                                    <span className="text-xs text-muted-foreground">
+                                  <p className="text-muted-foreground mt-1 text-sm">{notification.message}</p>
+
+                                  <div className="mt-2 flex items-center gap-4">
+                                    <span className="text-muted-foreground text-xs">
                                       {formatRelativeTime(notification.created_at)}
                                     </span>
                                     {notification.actor_name && (
                                       <>
                                         <span className="text-muted-foreground">•</span>
-                                        <span className="text-xs text-muted-foreground">
+                                        <span className="text-muted-foreground text-xs">
                                           by {notification.actor_name}
                                         </span>
                                       </>
@@ -547,7 +533,7 @@ export default function NotificationPage() {
                                   </div>
 
                                   {notification.link_url && (
-                                    <div className="flex items-center gap-1 mt-2 text-sm text-primary font-medium">
+                                    <div className="text-primary mt-2 flex items-center gap-1 text-sm font-medium">
                                       View details
                                       <ChevronRight className="h-4 w-4" />
                                     </div>
@@ -556,7 +542,7 @@ export default function NotificationPage() {
                               </div>
 
                               {/* Actions */}
-                              <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="mt-3 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                                 {!notification.read && (
                                   <Button
                                     variant="ghost"
@@ -566,11 +552,11 @@ export default function NotificationPage() {
                                       markAsRead(notification.id)
                                     }}
                                   >
-                                    <CheckCheck className="h-4 w-4 mr-1" />
+                                    <CheckCheck className="mr-1 h-4 w-4" />
                                     Mark read
                                   </Button>
                                 )}
-                                
+
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -579,10 +565,10 @@ export default function NotificationPage() {
                                     archiveNotification(notification.id)
                                   }}
                                 >
-                                  <Archive className="h-4 w-4 mr-1" />
+                                  <Archive className="mr-1 h-4 w-4" />
                                   Archive
                                 </Button>
-                                
+
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -592,7 +578,7 @@ export default function NotificationPage() {
                                     deleteNotification(notification.id)
                                   }}
                                 >
-                                  <Trash2 className="h-4 w-4 mr-1" />
+                                  <Trash2 className="mr-1 h-4 w-4" />
                                   Delete
                                 </Button>
                               </div>
@@ -603,18 +589,17 @@ export default function NotificationPage() {
                     })}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-16 px-4">
-                    <div className="p-6 rounded-full bg-muted mb-4">
-                      <Bell className="h-16 w-16 text-muted-foreground opacity-50" />
+                  <div className="flex flex-col items-center justify-center px-4 py-16">
+                    <div className="bg-muted mb-4 rounded-full p-6">
+                      <Bell className="text-muted-foreground h-16 w-16 opacity-50" />
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">
+                    <h3 className="mb-2 text-lg font-semibold">
                       {searchQuery ? "No matching notifications" : "No notifications"}
                     </h3>
-                    <p className="text-sm text-muted-foreground text-center max-w-md">
-                      {searchQuery 
+                    <p className="text-muted-foreground max-w-md text-center text-sm">
+                      {searchQuery
                         ? "Try adjusting your search terms or filters"
-                        : "You're all caught up! We'll notify you when something important happens."
-                      }
+                        : "You're all caught up! We'll notify you when something important happens."}
                     </p>
                   </div>
                 )}

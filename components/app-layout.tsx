@@ -16,11 +16,7 @@ export async function AppLayout({ children }: AppLayoutProps) {
   }
 
   // Fetch user profile
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", data.user.id)
-    .single()
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", data.user.id).single()
 
   const userData = {
     email: data.user.email,

@@ -8,13 +8,7 @@ import { toast } from "sonner"
 import { formatName } from "@/lib/utils"
 import { Package, Calendar, User, FileText, Building2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface Asset {
   id: string
@@ -37,7 +31,6 @@ interface AssetAssignment {
   }
 }
 
-
 export default function AssetsPage() {
   const [assignments, setAssignments] = useState<AssetAssignment[]>([])
   const supabase = createClient()
@@ -48,27 +41,27 @@ export default function AssetsPage() {
 
   const loadAssets = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
       // Get user's department
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("department")
-        .eq("id", user.id)
-        .single()
+      const { data: profile } = await supabase.from("profiles").select("department").eq("id", user.id).single()
 
       // Fetch individual assignments
       const { data: individualAssignments, error: individualError } = await supabase
         .from("asset_assignments")
-        .select(`
+        .select(
+          `
           id,
           assigned_at,
           assignment_notes,
           assigned_by,
           asset_id,
           department
-        `)
+        `
+        )
         .eq("assigned_to", user.id)
         .eq("is_current", true)
         .order("assigned_at", { ascending: false })
@@ -80,14 +73,16 @@ export default function AssetsPage() {
       if (profile?.department) {
         const { data: deptAssignments, error: deptError } = await supabase
           .from("asset_assignments")
-          .select(`
+          .select(
+            `
             id,
             assigned_at,
             assignment_notes,
             assigned_by,
             asset_id,
             department
-          `)
+          `
+          )
           .eq("department", profile.department)
           .eq("is_current", true)
           .is("assigned_to", null)
@@ -102,35 +97,34 @@ export default function AssetsPage() {
       const allAssignments = [...(individualAssignments || []), ...departmentAssignments]
 
       // Fetch Asset and assigner details separately
-      const assignmentsWithDetails = await Promise.all(allAssignments.map(async (assignment: any) => {
-        const [AssetResult, assignerResult] = await Promise.all([
-          supabase
-            .from("assets")
-            .select("id, asset_name, asset_type, asset_model, serial_number, status")
-            .eq("id", assignment.asset_id)
-            .single(),
-          assignment.assigned_by ? supabase
-            .from("profiles")
-            .select("first_name, last_name")
-            .eq("id", assignment.assigned_by)
-            .single() : Promise.resolve({ data: null })
-        ])
-        
-        return {
-          ...assignment,
-          Asset: AssetResult.data,
-          assigner: assignerResult.data
-        }
-      }))
-      
-      setAssignments(assignmentsWithDetails as any || [])
+      const assignmentsWithDetails = await Promise.all(
+        allAssignments.map(async (assignment: any) => {
+          const [AssetResult, assignerResult] = await Promise.all([
+            supabase
+              .from("assets")
+              .select("id, asset_name, asset_type, asset_model, serial_number, status")
+              .eq("id", assignment.asset_id)
+              .single(),
+            assignment.assigned_by
+              ? supabase.from("profiles").select("first_name, last_name").eq("id", assignment.assigned_by).single()
+              : Promise.resolve({ data: null }),
+          ])
+
+          return {
+            ...assignment,
+            Asset: AssetResult.data,
+            assigner: assignerResult.data,
+          }
+        })
+      )
+
+      setAssignments((assignmentsWithDetails as any) || [])
     } catch (error: any) {
       console.error("Error loading Assets:", error)
       const errorMessage = error?.message || error?.toString() || "Failed to load Assets"
       toast.error(`Failed to load Assets: ${errorMessage}`)
     }
   }
-
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -156,17 +150,15 @@ export default function AssetsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
+    <div className="from-background via-background to-muted/20 min-h-screen bg-gradient-to-br p-4 md:p-8">
       <div className="mx-auto max-w-6xl space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-            <Package className="h-8 w-8 text-primary" />
+          <h1 className="text-foreground flex items-center gap-3 text-3xl font-bold">
+            <Package className="text-primary h-8 w-8" />
             My Assets
           </h1>
-          <p className="text-muted-foreground mt-2">
-            View your currently assigned Assets and equipment
-          </p>
+          <p className="text-muted-foreground mt-2">View your currently assigned Assets and equipment</p>
         </div>
 
         {/* Stats */}
@@ -175,10 +167,10 @@ export default function AssetsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Active Assets</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{assignments.length}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Active Assets</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{assignments.length}</p>
                 </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <div className="rounded-lg bg-blue-100 p-3 dark:bg-blue-900/30">
                   <Package className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
@@ -190,12 +182,12 @@ export default function AssetsPage() {
         {assignments.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2">
             {assignments.map((assignment) => (
-              <Card key={assignment.id} className="border-2 shadow-lg hover:shadow-xl transition-shadow">
-                <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-background">
+              <Card key={assignment.id} className="border-2 shadow-lg transition-shadow hover:shadow-xl">
+                <CardHeader className="from-primary/5 to-background border-b bg-gradient-to-r">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3">
-                      <div className="p-3 bg-primary/10 rounded-lg">
-                        <Package className="h-6 w-6 text-primary" />
+                      <div className="bg-primary/10 rounded-lg p-3">
+                        <Package className="text-primary h-6 w-6" />
                       </div>
                       <div>
                         <CardTitle className="text-xl">{assignment.Asset.Asset_name}</CardTitle>
@@ -205,46 +197,46 @@ export default function AssetsPage() {
                         </CardDescription>
                       </div>
                     </div>
-                    <Badge className={getStatusColor(assignment.Asset.status)}>
-                      {assignment.Asset.status}
-                    </Badge>
+                    <Badge className={getStatusColor(assignment.Asset.status)}>{assignment.Asset.status}</Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="p-6 space-y-4">
+                <CardContent className="space-y-4 p-6">
                   {assignment.Asset.serial_number && (
                     <div className="flex items-center gap-2 text-sm">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <FileText className="text-muted-foreground h-4 w-4" />
                       <span className="text-muted-foreground">Serial:</span>
-                      <span className="font-mono text-foreground">{assignment.Asset.serial_number}</span>
+                      <span className="text-foreground font-mono">{assignment.Asset.serial_number}</span>
                     </div>
                   )}
 
                   <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Calendar className="text-muted-foreground h-4 w-4" />
                     <span className="text-muted-foreground">Assigned:</span>
                     <span className="text-foreground">{formatDate(assignment.assigned_at)}</span>
                   </div>
 
                   {(assignment as any).department ? (
                     <div className="flex items-center gap-2 text-sm">
-                      <Building2 className="h-4 w-4 text-muted-foreground" />
+                      <Building2 className="text-muted-foreground h-4 w-4" />
                       <span className="text-muted-foreground">Department Assignment:</span>
                       <span className="text-foreground font-medium">{(assignment as any).department}</span>
                     </div>
-                  ) : assignment.assigner && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Assigned by:</span>
-                      <span className="text-foreground">
-                        {formatName(assignment.assigner.first_name)} {formatName(assignment.assigner.last_name)}
-                      </span>
-                    </div>
+                  ) : (
+                    assignment.assigner && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <User className="text-muted-foreground h-4 w-4" />
+                        <span className="text-muted-foreground">Assigned by:</span>
+                        <span className="text-foreground">
+                          {formatName(assignment.assigner.first_name)} {formatName(assignment.assigner.last_name)}
+                        </span>
+                      </div>
+                    )
                   )}
 
                   {assignment.assignment_notes && (
-                    <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-                      <p className="text-sm font-medium text-foreground mb-1">Notes:</p>
-                      <p className="text-sm text-muted-foreground">{assignment.assignment_notes}</p>
+                    <div className="bg-muted/50 mt-4 rounded-lg p-3">
+                      <p className="text-foreground mb-1 text-sm font-medium">Notes:</p>
+                      <p className="text-muted-foreground text-sm">{assignment.assignment_notes}</p>
                     </div>
                   )}
                 </CardContent>
@@ -254,16 +246,13 @@ export default function AssetsPage() {
         ) : (
           <Card className="border-2">
             <CardContent className="p-12 text-center">
-              <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">No Assets Assigned</h3>
-              <p className="text-muted-foreground">
-                You don't have any Assets assigned to you at the moment.
-              </p>
+              <Package className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
+              <h3 className="text-foreground mb-2 text-xl font-semibold">No Assets Assigned</h3>
+              <p className="text-muted-foreground">You don't have any Assets assigned to you at the moment.</p>
             </CardContent>
           </Card>
         )}
       </div>
-
     </div>
   )
 }

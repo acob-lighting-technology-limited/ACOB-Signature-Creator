@@ -103,7 +103,7 @@ export function UserFeedbackList({ feedback }: UserFeedbackListProps) {
           <CardDescription>No feedback submitted yet</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Submit your first feedback using the form on the left to get started.
           </p>
         </CardContent>
@@ -120,11 +120,11 @@ export function UserFeedbackList({ feedback }: UserFeedbackListProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           {feedbackList.map((item) => (
-            <div key={item.id} className="rounded-lg border p-4 space-y-3">
+            <div key={item.id} className="space-y-3 rounded-lg border p-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-foreground">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+                  <h3 className="text-foreground font-semibold">{item.title}</h3>
+                  <p className="text-muted-foreground mt-1 text-sm">{item.description}</p>
                 </div>
                 <div className="flex gap-2">
                   <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
@@ -141,7 +141,7 @@ export function UserFeedbackList({ feedback }: UserFeedbackListProps) {
                 <Badge className={getStatusColor(item.status)}>{item.status.replace("_", " ")}</Badge>
               </div>
 
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {new Date(item.created_at).toLocaleDateString()} at {new Date(item.created_at).toLocaleTimeString()}
               </p>
             </div>

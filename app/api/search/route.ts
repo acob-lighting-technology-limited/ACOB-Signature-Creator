@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
 // Mark this route as dynamic since it uses search params
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic"
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,18 +14,16 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     // Check if user is admin
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, is_admin")
-      .eq("id", user.id)
-      .single()
+    const { data: profile } = await supabase.from("profiles").select("role, is_admin").eq("id", user.id).single()
 
     if (!profile?.is_admin && !["super_admin", "admin", "lead"].includes(profile?.role || "")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
@@ -46,13 +44,16 @@ export async function GET(request: NextRequest) {
     const { data: profiles } = await supabase
       .from("profiles")
       .select("id, first_name, last_name, company_email, department, role")
-      .or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,company_email.ilike.%${searchQuery}%,department.ilike.%${searchQuery}%`)
+      .or(
+        `first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,company_email.ilike.%${searchQuery}%,department.ilike.%${searchQuery}%`
+      )
       .limit(5)
 
     if (profiles) {
       for (const profile of profiles) {
-        const name = `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.company_email || "Unknown"
-        
+        const name =
+          `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.company_email || "Unknown"
+
         // Add the profile itself
         results.push({
           id: profile.id,
@@ -107,7 +108,11 @@ export async function GET(request: NextRequest) {
                 type: "asset",
                 title: asset.unique_code || asset.asset_type || "Asset",
                 subtitle: `Assigned to ${name}`,
-                description: asset.asset_model ? `Model: ${asset.asset_model}` : asset.serial_number ? `SN: ${asset.serial_number}` : undefined,
+                description: asset.asset_model
+                  ? `Model: ${asset.asset_model}`
+                  : asset.serial_number
+                    ? `SN: ${asset.serial_number}`
+                    : undefined,
                 href: `/admin/assets?assetId=${asset.id}`,
                 metadata: { ...asset, related_user: profile.id },
               })
@@ -142,7 +147,9 @@ export async function GET(request: NextRequest) {
     const { data: assets } = await supabase
       .from("assets")
       .select("id, unique_code, asset_type, asset_model, serial_number, status, acquisition_year")
-      .or(`unique_code.ilike.%${searchQuery}%,asset_type.ilike.%${searchQuery}%,asset_model.ilike.%${searchQuery}%,serial_number.ilike.%${searchQuery}%`)
+      .or(
+        `unique_code.ilike.%${searchQuery}%,asset_type.ilike.%${searchQuery}%,asset_model.ilike.%${searchQuery}%,serial_number.ilike.%${searchQuery}%`
+      )
       .limit(5)
 
     if (assets) {
@@ -152,7 +159,11 @@ export async function GET(request: NextRequest) {
           type: "asset",
           title: asset.unique_code || "Asset",
           subtitle: asset.asset_type || undefined,
-          description: asset.asset_model ? `Model: ${asset.asset_model}` : asset.serial_number ? `SN: ${asset.serial_number}` : asset.status || undefined,
+          description: asset.asset_model
+            ? `Model: ${asset.asset_model}`
+            : asset.serial_number
+              ? `SN: ${asset.serial_number}`
+              : asset.status || undefined,
           href: `/admin/assets?assetId=${asset.id}`,
           metadata: asset,
         })
@@ -245,4 +256,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
-

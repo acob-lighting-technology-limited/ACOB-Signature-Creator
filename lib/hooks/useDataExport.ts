@@ -23,13 +23,7 @@ export function useDataExport<T extends Record<string, any>>() {
       // Auto-size columns
       const maxWidth = 50
       const cols = Object.keys(data[0] || {}).map((key) => ({
-        wch: Math.min(
-          Math.max(
-            key.length,
-            ...data.map((row) => String(row[key]).length)
-          ),
-          maxWidth
-        ),
+        wch: Math.min(Math.max(key.length, ...data.map((row) => String(row[key]).length)), maxWidth),
       }))
       ws["!cols"] = cols
 
@@ -45,11 +39,7 @@ export function useDataExport<T extends Record<string, any>>() {
     }
   }
 
-  const exportToPDF = async (
-    data: T[],
-    columns: { header: string; key: keyof T }[],
-    options: ExportOptions
-  ) => {
+  const exportToPDF = async (data: T[], columns: { header: string; key: keyof T }[], options: ExportOptions) => {
     try {
       if (data.length === 0) {
         toast.error("No data to export")
@@ -78,11 +68,7 @@ export function useDataExport<T extends Record<string, any>>() {
     }
   }
 
-  const exportToWord = async (
-    data: T[],
-    columns: { header: string; key: keyof T }[],
-    options: ExportOptions
-  ) => {
+  const exportToWord = async (data: T[], columns: { header: string; key: keyof T }[], options: ExportOptions) => {
     try {
       if (data.length === 0) {
         toast.error("No data to export")
@@ -135,4 +121,3 @@ export function useDataExport<T extends Record<string, any>>() {
 
   return { exportToExcel, exportToPDF, exportToWord }
 }
-

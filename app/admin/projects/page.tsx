@@ -15,13 +15,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SearchableSelect } from "@/components/ui/searchable-select"
 import {
   AlertDialog,
@@ -123,7 +117,8 @@ export default function AdminProjectsPage() {
       const [projectsData, staffData] = await Promise.all([
         supabase
           .from("projects")
-          .select(`
+          .select(
+            `
             *,
             project_manager:profiles!projects_project_manager_id_fkey (
               first_name,
@@ -133,7 +128,8 @@ export default function AdminProjectsPage() {
               first_name,
               last_name
             )
-          `)
+          `
+          )
           .order("created_at", { ascending: false }),
         supabase
           .from("profiles")
@@ -146,7 +142,7 @@ export default function AdminProjectsPage() {
         data: projectsData.data,
         count: projectsData.data?.length,
         status: projectsData.status,
-        statusText: projectsData.statusText
+        statusText: projectsData.statusText,
       })
 
       console.log("👥 Staff query result:", {
@@ -154,7 +150,7 @@ export default function AdminProjectsPage() {
         data: staffData.data,
         count: staffData.data?.length,
         status: staffData.status,
-        statusText: staffData.statusText
+        statusText: staffData.statusText,
       })
 
       if (projectsData.error) {
@@ -172,7 +168,7 @@ export default function AdminProjectsPage() {
     } catch (error) {
       console.error("❌ Error loading data:", error)
       console.error("Error details:", JSON.stringify(error, null, 2))
-      toast.error(`Failed to load data: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Failed to load data: ${error instanceof Error ? error.message : "Unknown error"}`)
     } finally {
       setIsLoading(false)
     }
@@ -210,7 +206,12 @@ export default function AdminProjectsPage() {
   }
 
   const handleSaveProject = async () => {
-    if (!projectForm.project_name || !projectForm.location || !projectForm.deployment_start_date || !projectForm.deployment_end_date) {
+    if (
+      !projectForm.project_name ||
+      !projectForm.location ||
+      !projectForm.deployment_start_date ||
+      !projectForm.deployment_end_date
+    ) {
       toast.error("Please fill in all required fields")
       return
     }
@@ -254,10 +255,7 @@ export default function AdminProjectsPage() {
       if (selectedProject) {
         // Update existing project
         console.log("🔄 Updating project:", selectedProject.id)
-        const { error, data } = await supabase
-          .from("projects")
-          .update(projectData)
-          .eq("id", selectedProject.id)
+        const { error, data } = await supabase.from("projects").update(projectData).eq("id", selectedProject.id)
 
         console.log("Update result:", { error, data })
         if (error) throw error
@@ -297,7 +295,7 @@ export default function AdminProjectsPage() {
     } catch (error) {
       console.error("❌ Error saving project:", error)
       console.error("Error details:", JSON.stringify(error, null, 2))
-      toast.error(`Failed to save project: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Failed to save project: ${error instanceof Error ? error.message : "Unknown error"}`)
     } finally {
       setIsSaving(false)
     }
@@ -329,7 +327,7 @@ export default function AdminProjectsPage() {
     } catch (error) {
       console.error("❌ Error deleting project:", error)
       console.error("Error details:", JSON.stringify(error, null, 2))
-      toast.error(`Failed to delete project: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Failed to delete project: ${error instanceof Error ? error.message : "Unknown error"}`)
     }
   }
 
@@ -374,7 +372,7 @@ export default function AdminProjectsPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -392,7 +390,7 @@ export default function AdminProjectsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
-            <FolderKanban className="h-4 w-4 text-muted-foreground" />
+            <FolderKanban className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
@@ -433,9 +431,9 @@ export default function AdminProjectsPage() {
       {/* Search and Filter */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col gap-4 md:flex-row">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
               <Input
                 placeholder="Search projects..."
                 value={searchQuery}
@@ -464,9 +462,9 @@ export default function AdminProjectsPage() {
       {filteredProjects.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <FolderKanban className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No projects found</h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <FolderKanban className="text-muted-foreground mb-4 h-12 w-12" />
+            <h3 className="mb-2 text-lg font-semibold">No projects found</h3>
+            <p className="text-muted-foreground mb-4 text-sm">
               {searchQuery || statusFilter !== "all"
                 ? "Try adjusting your search or filters"
                 : "Get started by creating your first project"}
@@ -482,20 +480,16 @@ export default function AdminProjectsPage() {
       ) : (
         <div className="grid gap-4">
           {filteredProjects.map((project) => (
-            <Card key={project.id} className="hover:shadow-md transition-shadow">
+            <Card key={project.id} className="transition-shadow hover:shadow-md">
               <CardHeader>
                 <div className="flex items-start justify-between">
-                  <div className="space-y-1 flex-1">
+                  <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
                       <CardTitle className="text-xl">{project.project_name}</CardTitle>
-                      <Badge className={getStatusColor(project.status)}>
-                        {project.status.replace("_", " ")}
-                      </Badge>
+                      <Badge className={getStatusColor(project.status)}>{project.status.replace("_", " ")}</Badge>
                     </div>
                     {project.description && (
-                      <CardDescription className="line-clamp-2">
-                        {project.description}
-                      </CardDescription>
+                      <CardDescription className="line-clamp-2">{project.description}</CardDescription>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
@@ -505,11 +499,7 @@ export default function AdminProjectsPage() {
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </Link>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleOpenProjectDialog(project)}
-                    >
+                    <Button variant="outline" size="icon" onClick={() => handleOpenProjectDialog(project)}>
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
@@ -526,9 +516,9 @@ export default function AdminProjectsPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <MapPin className="text-muted-foreground h-4 w-4" />
                     <div>
                       <p className="text-muted-foreground text-xs">Location</p>
                       <p className="font-medium">{project.location}</p>
@@ -536,7 +526,7 @@ export default function AdminProjectsPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Calendar className="text-muted-foreground h-4 w-4" />
                     <div>
                       <p className="text-muted-foreground text-xs">Duration</p>
                       <p className="font-medium">
@@ -547,7 +537,7 @@ export default function AdminProjectsPage() {
 
                   {project.project_manager && (
                     <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-muted-foreground" />
+                      <User className="text-muted-foreground h-4 w-4" />
                       <div>
                         <p className="text-muted-foreground text-xs">Project Manager</p>
                         <p className="font-medium">
@@ -559,7 +549,7 @@ export default function AdminProjectsPage() {
 
                   {project.capacity_w && (
                     <div className="flex items-center gap-2">
-                      <Package className="h-4 w-4 text-muted-foreground" />
+                      <Package className="text-muted-foreground h-4 w-4" />
                       <div>
                         <p className="text-muted-foreground text-xs">Capacity</p>
                         <p className="font-medium">{project.capacity_w.toLocaleString()} W</p>
@@ -575,7 +565,7 @@ export default function AdminProjectsPage() {
 
       {/* Create/Edit Project Dialog */}
       <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedProject ? "Edit Project" : "Create New Project"}</DialogTitle>
             <DialogDescription>
@@ -619,9 +609,7 @@ export default function AdminProjectsPage() {
                   id="deployment_start_date"
                   type="date"
                   value={projectForm.deployment_start_date}
-                  onChange={(e) =>
-                    setProjectForm({ ...projectForm, deployment_start_date: e.target.value })
-                  }
+                  onChange={(e) => setProjectForm({ ...projectForm, deployment_start_date: e.target.value })}
                 />
               </div>
 
@@ -634,9 +622,7 @@ export default function AdminProjectsPage() {
                   type="date"
                   min={projectForm.deployment_start_date}
                   value={projectForm.deployment_end_date}
-                  onChange={(e) =>
-                    setProjectForm({ ...projectForm, deployment_end_date: e.target.value })
-                  }
+                  onChange={(e) => setProjectForm({ ...projectForm, deployment_end_date: e.target.value })}
                 />
               </div>
             </div>
@@ -658,9 +644,7 @@ export default function AdminProjectsPage() {
                 <Input
                   id="technology_type"
                   value={projectForm.technology_type}
-                  onChange={(e) =>
-                    setProjectForm({ ...projectForm, technology_type: e.target.value })
-                  }
+                  onChange={(e) => setProjectForm({ ...projectForm, technology_type: e.target.value })}
                   placeholder="e.g., Solar, Wind, Hybrid"
                 />
               </div>
@@ -734,8 +718,7 @@ export default function AdminProjectsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the project "{projectToDelete?.project_name}". This
-              action cannot be undone.
+              This will permanently delete the project "{projectToDelete?.project_name}". This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

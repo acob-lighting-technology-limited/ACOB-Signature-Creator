@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function ProjectDetailLoading() {
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Back button and header */}
       <div className="space-y-4">
         <Skeleton className="h-10 w-32" />
@@ -26,7 +26,7 @@ export default function ProjectDetailLoading() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="space-y-1">
                 <Skeleton className="h-4 w-24" />
@@ -58,9 +58,9 @@ export default function ProjectDetailLoading() {
               <Card key={i}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1">
+                    <div className="flex flex-1 items-center gap-3">
                       <Skeleton className="h-10 w-10 rounded-full" />
-                      <div className="space-y-1 flex-1">
+                      <div className="flex-1 space-y-1">
                         <Skeleton className="h-5 w-32" />
                         <Skeleton className="h-4 w-24" />
                       </div>
@@ -87,16 +87,16 @@ export default function ProjectDetailLoading() {
           <Card>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
-                <div className="min-w-full divide-y divide-border">
+                <div className="divide-border min-w-full divide-y">
                   {/* Table header */}
-                  <div className="flex gap-4 p-4 bg-muted/50">
+                  <div className="bg-muted/50 flex gap-4 p-4">
                     {[...Array(6)].map((_, i) => (
                       <Skeleton key={i} className="h-4 w-24" />
                     ))}
                   </div>
                   {/* Table rows */}
                   {[...Array(5)].map((_, i) => (
-                    <div key={i} className="flex gap-4 p-4 border-t">
+                    <div key={i} className="flex gap-4 border-t p-4">
                       {[...Array(6)].map((_, j) => (
                         <Skeleton key={j} className="h-4 w-24" />
                       ))}

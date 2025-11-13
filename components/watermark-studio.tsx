@@ -120,13 +120,19 @@ export function WatermarkStudio() {
               const resp = await fetch(url)
               const blob = await resp.blob()
               const arrayBuffer = await blob.arrayBuffer()
-              const originalExt = file.name.split('.').pop()?.toLowerCase() || 'png'
-              const outExt = blob.type.includes('png') ? 'png' : blob.type.includes('jpeg') ? 'jpg' : blob.type.includes('webp') ? 'webp' : originalExt
-              zip.file(`watermarked-${file.name.replace(/\.[^.]+$/, '')}.${outExt}`, arrayBuffer)
+              const originalExt = file.name.split(".").pop()?.toLowerCase() || "png"
+              const outExt = blob.type.includes("png")
+                ? "png"
+                : blob.type.includes("jpeg")
+                  ? "jpg"
+                  : blob.type.includes("webp")
+                    ? "webp"
+                    : originalExt
+              zip.file(`watermarked-${file.name.replace(/\.[^.]+$/, "")}.${outExt}`, arrayBuffer)
               successCount += 1
               URL.revokeObjectURL(url)
             } catch (err) {
-              console.warn('Failed to process', file.name, err)
+              console.warn("Failed to process", file.name, err)
             }
           }
           if (successCount !== total) {
@@ -188,13 +194,13 @@ export function WatermarkStudio() {
       <motion.aside
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className="w-full lg:w-96  border-b lg:border-r border-border bg-card p-6 overflow-y-auto"
+        className="border-border bg-card w-full overflow-y-auto border-b p-6 lg:w-96 lg:border-r"
       >
         <div className="space-y-6">
           {/* Header */}
           <div>
-            <h1 className="text-2xl font-bold text-foreground">ACOB Watermark Studio</h1>
-            <p className="text-sm text-muted-foreground mt-1">Add watermarks to images and videos</p>
+            <h1 className="text-foreground text-2xl font-bold">ACOB Watermark Studio</h1>
+            <p className="text-muted-foreground mt-1 text-sm">Add watermarks to images and videos</p>
           </div>
 
           {/* Media Upload */}
@@ -247,9 +253,9 @@ export function WatermarkStudio() {
 
           {/* Opacity Slider */}
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <Label>Opacity</Label>
-              <span className="text-sm font-medium text-foreground">{Math.round(config.opacity * 100)}%</span>
+              <span className="text-foreground text-sm font-medium">{Math.round(config.opacity * 100)}%</span>
             </div>
             <div className="px-1">
               <Slider
@@ -265,9 +271,9 @@ export function WatermarkStudio() {
 
           {/* Size Slider */}
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <Label>Size</Label>
-              <span className="text-sm font-medium text-foreground">{config.size}%</span>
+              <span className="text-foreground text-sm font-medium">{config.size}%</span>
             </div>
             <div className="px-1">
               <Slider
@@ -302,7 +308,7 @@ export function WatermarkStudio() {
       </motion.aside>
 
       {/* Right Section - Preview */}
-      <main className="flex-1 p-6 overflow-auto">
+      <main className="flex-1 overflow-auto p-6">
         <MediaPreview
           mediaFile={mediaFile}
           mediaType={mediaType}

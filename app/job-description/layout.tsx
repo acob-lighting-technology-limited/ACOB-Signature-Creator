@@ -6,10 +6,6 @@ export const metadata: Metadata = {
   description: "Manage your job description",
 }
 
-export default function JobDescriptionLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function JobDescriptionLayout({ children }: { children: React.ReactNode }) {
   return <AppLayout>{children}</AppLayout>
 }

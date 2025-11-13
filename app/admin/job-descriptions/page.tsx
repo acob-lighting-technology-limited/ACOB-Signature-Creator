@@ -5,28 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SearchableSelect } from "@/components/ui/searchable-select"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
@@ -90,7 +71,9 @@ export default function AdminJobDescriptionsPage() {
 
   const loadData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
       // Get user profile
@@ -103,10 +86,7 @@ export default function AdminJobDescriptionsPage() {
       setUserProfile(profile)
 
       // Fetch profiles based on role
-      let query = supabase
-        .from("profiles")
-        .select("*")
-        .order("last_name", { ascending: true })
+      let query = supabase.from("profiles").select("*").order("last_name", { ascending: true })
 
       // Role-based filtering
       if (profile?.role === "lead" && profile.lead_departments) {
@@ -141,11 +121,9 @@ export default function AdminJobDescriptionsPage() {
         profile.company_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         profile.company_role?.toLowerCase().includes(searchQuery.toLowerCase())
 
-      const matchesDepartment =
-        departmentFilter === "all" || profile.department === departmentFilter
+      const matchesDepartment = departmentFilter === "all" || profile.department === departmentFilter
 
-      const matchesStaff =
-        staffFilter === "all" || profile.id === staffFilter
+      const matchesStaff = staffFilter === "all" || profile.id === staffFilter
 
       const matchesStatus =
         statusFilter === "all" ||
@@ -157,7 +135,7 @@ export default function AdminJobDescriptionsPage() {
     .sort((a, b) => {
       const lastNameA = formatName(a.last_name).toLowerCase()
       const lastNameB = formatName(b.last_name).toLowerCase()
-      
+
       if (nameSortOrder === "asc") {
         return lastNameA.localeCompare(lastNameB)
       } else {
@@ -165,9 +143,7 @@ export default function AdminJobDescriptionsPage() {
       }
     })
 
-  const departments = Array.from(
-    new Set(profiles.map((p) => p.department).filter(Boolean))
-  ) as string[]
+  const departments = Array.from(new Set(profiles.map((p) => p.department).filter(Boolean))) as string[]
 
   const stats = {
     total: profiles.length,
@@ -201,20 +177,18 @@ export default function AdminJobDescriptionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 w-full overflow-x-hidden">
+    <div className="from-background via-background to-muted/20 min-h-screen w-full overflow-x-hidden bg-gradient-to-br">
       <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-              <Briefcase className="h-8 w-8 text-primary" />
+            <h1 className="text-foreground flex items-center gap-3 text-3xl font-bold">
+              <Briefcase className="text-primary h-8 w-8" />
               Job Descriptions
             </h1>
-            <p className="text-muted-foreground mt-2">
-              View and manage staff job descriptions
-            </p>
+            <p className="text-muted-foreground mt-2">View and manage staff job descriptions</p>
           </div>
-          <div className="flex items-center border rounded-lg p-1">
+          <div className="flex items-center rounded-lg border p-1">
             <Button
               variant={viewMode === "list" ? "default" : "ghost"}
               size="sm"
@@ -242,10 +216,10 @@ export default function AdminJobDescriptionsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Total Staff</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.total}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Total Staff</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{stats.total}</p>
                 </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <div className="rounded-lg bg-blue-100 p-3 dark:bg-blue-900/30">
                   <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
@@ -256,10 +230,10 @@ export default function AdminJobDescriptionsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Completed</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.completed}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Completed</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{stats.completed}</p>
                 </div>
-                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <div className="rounded-lg bg-green-100 p-3 dark:bg-green-900/30">
                   <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
               </div>
@@ -270,10 +244,10 @@ export default function AdminJobDescriptionsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Pending</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.pending}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Pending</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{stats.pending}</p>
                 </div>
-                <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                <div className="rounded-lg bg-orange-100 p-3 dark:bg-orange-900/30">
                   <XCircle className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                 </div>
               </div>
@@ -284,10 +258,10 @@ export default function AdminJobDescriptionsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Updated This Month</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.thisMonth}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Updated This Month</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{stats.thisMonth}</p>
                 </div>
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                <div className="rounded-lg bg-purple-100 p-3 dark:bg-purple-900/30">
                   <Calendar className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
@@ -298,9 +272,9 @@ export default function AdminJobDescriptionsPage() {
         {/* Filters */}
         <Card className="border-2">
           <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="flex flex-col gap-4 md:flex-row">
+              <div className="relative flex-1">
+                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
                 <Input
                   placeholder="Search staff..."
                   value={searchQuery}
@@ -360,54 +334,52 @@ export default function AdminJobDescriptionsPage() {
             <Card className="border-2">
               <CardContent className="p-6">
                 <Table>
-                                      <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12">#</TableHead>
-                        <TableHead>
-                          <div className="flex items-center gap-2">
-                            <span>Name</span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setNameSortOrder(nameSortOrder === "asc" ? "desc" : "asc")}
-                              className="h-6 w-6 p-0"
-                            >
-                              {nameSortOrder === "asc" ? (
-                                <ArrowUp className="h-3 w-3" />
-                              ) : (
-                                <ArrowDown className="h-3 w-3" />
-                              )}
-                            </Button>
-                          </div>
-                        </TableHead>
-                        <TableHead>Department</TableHead>
-                        <TableHead>Company Role</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Last Updated</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">#</TableHead>
+                      <TableHead>
+                        <div className="flex items-center gap-2">
+                          <span>Name</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setNameSortOrder(nameSortOrder === "asc" ? "desc" : "asc")}
+                            className="h-6 w-6 p-0"
+                          >
+                            {nameSortOrder === "asc" ? (
+                              <ArrowUp className="h-3 w-3" />
+                            ) : (
+                              <ArrowDown className="h-3 w-3" />
+                            )}
+                          </Button>
+                        </div>
+                      </TableHead>
+                      <TableHead>Department</TableHead>
+                      <TableHead>Company Role</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Last Updated</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
                   <TableBody>
-                                          {filteredProfiles.map((profile, index) => (
-                        <TableRow key={profile.id}>
-                          <TableCell className="text-muted-foreground font-medium">{index + 1}</TableCell>
-                          <TableCell className="font-medium">
-                            {formatName(profile.last_name)}, {formatName(profile.first_name)}
-                          </TableCell>
+                    {filteredProfiles.map((profile, index) => (
+                      <TableRow key={profile.id}>
+                        <TableCell className="text-muted-foreground font-medium">{index + 1}</TableCell>
+                        <TableCell className="font-medium">
+                          {formatName(profile.last_name)}, {formatName(profile.first_name)}
+                        </TableCell>
                         <TableCell>{profile.department}</TableCell>
                         <TableCell>{profile.company_role || "-"}</TableCell>
                         <TableCell>
-                          <Badge className={getRoleBadgeColor(profile.role)}>
-                            {getRoleDisplayName(profile.role)}
-                          </Badge>
+                          <Badge className={getRoleBadgeColor(profile.role)}>{getRoleDisplayName(profile.role)}</Badge>
                         </TableCell>
                         <TableCell>
                           <Badge className={getCompletionColor(!!profile.job_description)}>
                             {profile.job_description ? "Completed" : "Pending"}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="text-muted-foreground text-sm">
                           {formatDate(profile.job_description_updated_at)}
                         </TableCell>
                         <TableCell>
@@ -431,18 +403,18 @@ export default function AdminJobDescriptionsPage() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredProfiles.map((profile) => (
-                <Card key={profile.id} className="border-2 hover:shadow-lg transition-shadow">
-                  <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-background">
+                <Card key={profile.id} className="border-2 transition-shadow hover:shadow-lg">
+                  <CardHeader className="from-primary/5 to-background border-b bg-gradient-to-r">
                     <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                          <User className="h-5 w-5 text-primary" />
+                      <div className="flex flex-1 items-start gap-3">
+                        <div className="bg-primary/10 rounded-lg p-2">
+                          <User className="text-primary h-5 w-5" />
                         </div>
-                                                  <div className="flex-1 min-w-0">
-                            <CardTitle className="text-lg">
-                              {formatName(profile.last_name)}, {formatName(profile.first_name)}
-                            </CardTitle>
-                          <div className="flex items-center gap-2 mt-2">
+                        <div className="min-w-0 flex-1">
+                          <CardTitle className="text-lg">
+                            {formatName(profile.last_name)}, {formatName(profile.first_name)}
+                          </CardTitle>
+                          <div className="mt-2 flex items-center gap-2">
                             <Badge className={getCompletionColor(!!profile.job_description)}>
                               {profile.job_description ? "Completed" : "Pending"}
                             </Badge>
@@ -454,20 +426,20 @@ export default function AdminJobDescriptionsPage() {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CardContent className="space-y-3 p-4">
+                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
                       <Building2 className="h-4 w-4" />
                       <span>{profile.department}</span>
                     </div>
 
                     {profile.company_role && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="text-muted-foreground flex items-center gap-2 text-sm">
                         <Briefcase className="h-4 w-4" />
                         <span>{profile.company_role}</span>
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
                       <Calendar className="h-4 w-4" />
                       <span>Updated: {formatDate(profile.job_description_updated_at)}</span>
                     </div>
@@ -490,10 +462,8 @@ export default function AdminJobDescriptionsPage() {
         ) : (
           <Card className="border-2">
             <CardContent className="p-12 text-center">
-              <Briefcase className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">
-                No Staff Found
-              </h3>
+              <Briefcase className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
+              <h3 className="text-foreground mb-2 text-xl font-semibold">No Staff Found</h3>
               <p className="text-muted-foreground">
                 {searchQuery || departmentFilter !== "all" || staffFilter !== "all" || statusFilter !== "all"
                   ? "No staff matches your filters"
@@ -506,8 +476,10 @@ export default function AdminJobDescriptionsPage() {
 
       {/* View Job Description Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-          <style dangerouslySetInnerHTML={{__html: `
+        <DialogContent className="max-h-[80vh] max-w-3xl overflow-y-auto">
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
             @media print {
               body {
                 background: white !important;
@@ -516,7 +488,9 @@ export default function AdminJobDescriptionsPage() {
                 display: none !important;
               }
             }
-          `}} />
+          `,
+            }}
+          />
           <DialogHeader className="no-print">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-2xl">
@@ -530,13 +504,9 @@ export default function AdminJobDescriptionsPage() {
               )}
             </div>
             <DialogDescription>
-              <div className="flex flex-wrap items-center gap-3 mt-2">
-                <span className="text-sm">
-                  {selectedProfile?.department}
-                </span>
-                {selectedProfile?.company_role && (
-                  <span className="text-sm">" {selectedProfile.company_role}</span>
-                )}
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <span className="text-sm">{selectedProfile?.department}</span>
+                {selectedProfile?.company_role && <span className="text-sm">" {selectedProfile.company_role}</span>}
                 <Badge className={getRoleBadgeColor(selectedProfile?.role || "staff")}>
                   {getRoleDisplayName(selectedProfile?.role || "staff")}
                 </Badge>
@@ -546,23 +516,25 @@ export default function AdminJobDescriptionsPage() {
               </div>
             </DialogDescription>
           </DialogHeader>
-          
+
           {/* Print Letterhead - Hidden on screen, visible when printing */}
-          <div className="hidden print:block print:mb-8 print:border-b print:pb-4">
-            <div className="flex justify-between items-start">
+          <div className="hidden print:mb-8 print:block print:border-b print:pb-4">
+            <div className="flex items-start justify-between">
               <div>
                 <img src="/acob-logo.webp" alt="ACOB Lighting" className="h-16 w-auto" />
               </div>
               <div className="text-right text-sm">
                 {selectedProfile?.first_name && selectedProfile?.last_name && (
-                  <p className="font-semibold mb-1">
+                  <p className="mb-1 font-semibold">
                     {formatName(selectedProfile.first_name)} {formatName(selectedProfile.last_name)}
                   </p>
                 )}
                 {selectedProfile?.company_email && <p className="mb-1">{selectedProfile.company_email}</p>}
                 {selectedProfile?.department && <p className="mb-1">{selectedProfile.department}</p>}
                 {selectedProfile?.phone_number && <p className="mb-1">{selectedProfile.phone_number}</p>}
-                <p className="mt-2">{new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</p>
+                <p className="mt-2">
+                  {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                </p>
               </div>
             </div>
           </div>
@@ -570,14 +542,14 @@ export default function AdminJobDescriptionsPage() {
           <div className="mt-4 print:mt-0">
             {selectedProfile?.job_description ? (
               <div className="prose dark:prose-invert max-w-none">
-                <div className="whitespace-pre-wrap bg-muted/50 p-6 rounded-lg print:bg-transparent print:p-0 print:rounded-none">
-                  <h2 className="text-xl font-bold mb-4 print:mb-2">Job Description</h2>
+                <div className="bg-muted/50 rounded-lg p-6 whitespace-pre-wrap print:rounded-none print:bg-transparent print:p-0">
+                  <h2 className="mb-4 text-xl font-bold print:mb-2">Job Description</h2>
                   <div className="whitespace-pre-wrap">{selectedProfile.job_description}</div>
                 </div>
               </div>
             ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                <XCircle className="h-12 w-12 mx-auto mb-4" />
+              <div className="text-muted-foreground py-12 text-center">
+                <XCircle className="mx-auto mb-4 h-12 w-12" />
                 <p>No job description has been added yet.</p>
               </div>
             )}

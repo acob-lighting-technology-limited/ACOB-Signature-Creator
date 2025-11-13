@@ -48,7 +48,7 @@ export default async function DashboardPage() {
     .in("status", ["pending", "in_progress"])
 
   if (assignedTasks && assignedTasks.length > 0) {
-    const pendingTasks = assignedTasks.filter(t => t.status === "pending")
+    const pendingTasks = assignedTasks.filter((t) => t.status === "pending")
     if (pendingTasks.length > 0) {
       notifications.push({
         id: "pending-tasks",
@@ -62,7 +62,7 @@ export default async function DashboardPage() {
     }
 
     // Urgent tasks
-    const urgentTasks = assignedTasks.filter(t => t.priority === "urgent")
+    const urgentTasks = assignedTasks.filter((t) => t.priority === "urgent")
     if (urgentTasks.length > 0) {
       notifications.push({
         id: "urgent-tasks",
@@ -77,9 +77,7 @@ export default async function DashboardPage() {
 
     // Overdue tasks
     const today = new Date().toISOString().split("T")[0]
-    const overdueTasks = assignedTasks.filter(
-      t => t.due_date && t.due_date < today
-    )
+    const overdueTasks = assignedTasks.filter((t) => t.due_date && t.due_date < today)
     if (overdueTasks.length > 0) {
       notifications.push({
         id: "overdue-tasks",
@@ -96,7 +94,7 @@ export default async function DashboardPage() {
     const threeDaysFromNow = new Date()
     threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3)
     const dueSoonTasks = assignedTasks.filter(
-      t => t.due_date && t.due_date >= today && t.due_date <= threeDaysFromNow.toISOString().split("T")[0]
+      (t) => t.due_date && t.due_date >= today && t.due_date <= threeDaysFromNow.toISOString().split("T")[0]
     )
     if (dueSoonTasks.length > 0) {
       notifications.push({
@@ -121,7 +119,7 @@ export default async function DashboardPage() {
     .limit(3)
 
   if (resolvedFeedback && resolvedFeedback.length > 0) {
-    const recentResolved = resolvedFeedback.filter(f => {
+    const recentResolved = resolvedFeedback.filter((f) => {
       const updatedAt = new Date(f.updated_at)
       const oneDayAgo = new Date()
       oneDayAgo.setDate(oneDayAgo.getDate() - 1)
@@ -218,53 +216,53 @@ export default async function DashboardPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <div className="mx-auto max-w-7xl p-4 md:p-8 space-y-8">
+    <div className="from-background via-background to-muted/20 min-h-screen bg-gradient-to-br">
+      <div className="mx-auto max-w-7xl space-y-8 p-4 md:p-8">
         {/* Header */}
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+          <h1 className="text-foreground text-3xl font-bold md:text-4xl">
             Welcome back, {profile?.first_name || "Staff Member"}!
           </h1>
-          <p className="mt-2 text-muted-foreground">Here's what's happening with your account today.</p>
+          <p className="text-muted-foreground mt-2">Here's what's happening with your account today.</p>
         </div>
 
         {/* User Info Card */}
-        <Card className="border-2 shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-background p-6 md:p-8">
-            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-              <Avatar className="h-20 w-20 ring-4 ring-background shadow-xl">
+        <Card className="overflow-hidden border-2 shadow-lg">
+          <div className="from-primary/10 via-primary/5 to-background bg-gradient-to-r p-6 md:p-8">
+            <div className="flex flex-col items-start gap-6 md:flex-row md:items-center">
+              <Avatar className="ring-background h-20 w-20 shadow-xl ring-4">
                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
                   {getInitials(profile?.first_name, profile?.last_name, data?.user?.email)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 space-y-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-foreground text-2xl font-bold">
                     {formatName(profile?.first_name)} {formatName(profile?.last_name)}
                     {profile?.other_names && ` ${formatName(profile.other_names)}`}
                   </h2>
                   <p className="text-muted-foreground">{profile?.company_role || "Staff Member"}</p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="flex items-center gap-2 text-sm">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <Mail className="text-muted-foreground h-4 w-4" />
                     <span className="text-foreground">{profile?.company_email || data?.user?.email}</span>
                   </div>
                   {profile?.phone_number && (
                     <div className="flex items-center gap-2 text-sm">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <Phone className="text-muted-foreground h-4 w-4" />
                       <span className="text-foreground">{profile.phone_number}</span>
                     </div>
                   )}
                   {profile?.department && (
                     <div className="flex items-center gap-2 text-sm">
-                      <Building2 className="h-4 w-4 text-muted-foreground" />
+                      <Building2 className="text-muted-foreground h-4 w-4" />
                       <span className="text-foreground">{profile.department}</span>
                     </div>
                   )}
                   {profile?.current_work_location && (
                     <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <MapPin className="text-muted-foreground h-4 w-4" />
                       <span className="text-foreground">{profile.current_work_location}</span>
                     </div>
                   )}
@@ -282,23 +280,23 @@ export default async function DashboardPage() {
 
         {/* Quick Actions */}
         <div>
-          <h3 className="text-xl font-semibold mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <h3 className="mb-4 text-xl font-semibold">Quick Actions</h3>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {quickActions.map((action) => (
               <Link key={action.name} href={action.href}>
-                <Card className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary">
+                <Card className="group hover:border-primary cursor-pointer border-2 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className={`${action.color} p-3 rounded-lg text-white`}>
+                      <div className={`${action.color} rounded-lg p-3 text-white`}>
                         <action.icon className="h-6 w-6" />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                        <h4 className="text-foreground group-hover:text-primary font-semibold transition-colors">
                           {action.name}
                         </h4>
-                        <p className="text-sm text-muted-foreground mt-1">{action.description}</p>
+                        <p className="text-muted-foreground mt-1 text-sm">{action.description}</p>
                       </div>
-                      <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                      <ArrowRight className="text-muted-foreground group-hover:text-primary h-5 w-5 transition-all group-hover:translate-x-1" />
                     </div>
                   </CardContent>
                 </Card>
@@ -309,10 +307,10 @@ export default async function DashboardPage() {
 
         {/* Recent Feedbacks */}
         <Card className="border-2 shadow-lg">
-          <CardHeader className="border-b bg-muted/30">
+          <CardHeader className="bg-muted/30 border-b">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-primary" />
+                <MessageSquare className="text-primary h-5 w-5" />
                 Recent Feedback
               </CardTitle>
               <Link href="/feedback">
@@ -329,20 +327,22 @@ export default async function DashboardPage() {
                 {feedbacks.map((feedback) => (
                   <div
                     key={feedback.id}
-                    className="flex items-center justify-between gap-3 p-2.5 rounded-lg border hover:bg-muted/50 transition-colors"
+                    className="hover:bg-muted/50 flex items-center justify-between gap-3 rounded-lg border p-2.5 transition-colors"
                   >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="p-1.5 bg-primary/10 rounded">
-                        <MessageSquare className="h-3.5 w-3.5 text-primary" />
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <div className="bg-primary/10 rounded p-1.5">
+                        <MessageSquare className="text-primary h-3.5 w-3.5" />
                       </div>
-                      <p className="font-medium text-sm text-foreground truncate flex-1">{feedback.title}</p>
+                      <p className="text-foreground flex-1 truncate text-sm font-medium">{feedback.title}</p>
                       <Badge className={`text-xs ${getStatusColor(feedback.status)}`}>
                         {feedback.status?.replace("_", " ") || "Pending"}
                       </Badge>
                       {feedback.feedback_type && (
-                        <Badge variant="outline" className="text-xs">{feedback.feedback_type}</Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {feedback.feedback_type}
+                        </Badge>
                       )}
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      <span className="text-muted-foreground text-xs whitespace-nowrap">
                         {formatDate(feedback.created_at)}
                       </span>
                     </div>
@@ -355,9 +355,9 @@ export default async function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12">
-                <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">No feedback yet</h3>
+              <div className="py-12 text-center">
+                <MessageSquare className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                <h3 className="text-foreground mb-2 text-lg font-semibold">No feedback yet</h3>
                 <p className="text-muted-foreground mb-4">Start by submitting your first feedback</p>
                 <Link href="/feedback">
                   <Button className="gap-2">
@@ -371,15 +371,15 @@ export default async function DashboardPage() {
         </Card>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card className="border-2">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Total Feedback</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{feedbacks?.length || 0}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Total Feedback</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{feedbacks?.length || 0}</p>
                 </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <div className="rounded-lg bg-blue-100 p-3 dark:bg-blue-900/30">
                   <MessageSquare className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
@@ -389,10 +389,10 @@ export default async function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Department</p>
-                  <p className="text-2xl font-bold text-foreground mt-2">{profile?.department || "N/A"}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Department</p>
+                  <p className="text-foreground mt-2 text-2xl font-bold">{profile?.department || "N/A"}</p>
                 </div>
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                <div className="rounded-lg bg-purple-100 p-3 dark:bg-purple-900/30">
                   <Building2 className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
@@ -402,12 +402,10 @@ export default async function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Work Location</p>
-                  <p className="text-2xl font-bold text-foreground mt-2">
-                    {profile?.current_work_location || "N/A"}
-                  </p>
+                  <p className="text-muted-foreground text-sm font-medium">Work Location</p>
+                  <p className="text-foreground mt-2 text-2xl font-bold">{profile?.current_work_location || "N/A"}</p>
                 </div>
-                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <div className="rounded-lg bg-green-100 p-3 dark:bg-green-900/30">
                   <MapPin className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
               </div>

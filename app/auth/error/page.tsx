@@ -12,7 +12,7 @@ export default function AuthErrorPage() {
             <CardDescription>Something went wrong during authentication</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               There was an issue with your authentication. Please try again or contact support if the problem persists.
             </p>
             <div className="flex gap-2">

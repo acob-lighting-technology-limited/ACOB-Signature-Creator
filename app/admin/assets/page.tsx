@@ -8,14 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   Dialog,
   DialogContent,
@@ -38,11 +31,7 @@ import {
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import { formatName } from "@/lib/utils"
-import {
-  ASSET_TYPES,
-  ASSET_TYPE_MAP,
-  generateUniqueCodePreview
-} from "@/lib/asset-types"
+import { ASSET_TYPES, ASSET_TYPE_MAP, generateUniqueCodePreview } from "@/lib/asset-types"
 import { DEPARTMENTS, OFFICE_LOCATIONS } from "@/lib/permissions"
 import { assignmentValidation } from "@/lib/validation"
 import {
@@ -220,7 +209,9 @@ export default function AdminAssetsPage() {
   const loadData = async () => {
     try {
       // Get current user profile to check if they're a lead
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
       const { data: userProfile } = await supabase
@@ -246,21 +237,23 @@ export default function AdminAssetsPage() {
       if (assignmentsError) throw assignmentsError
 
       // Fetch user details for assignments
-      const assignmentsWithUsers = await Promise.all((assignmentsData || []).map(async (assignment: any) => {
-        if (assignment.assigned_to) {
-          const { data: userProfile } = await supabase
-            .from("profiles")
-            .select("first_name, last_name, department")
-            .eq("id", assignment.assigned_to)
-            .single()
+      const assignmentsWithUsers = await Promise.all(
+        (assignmentsData || []).map(async (assignment: any) => {
+          if (assignment.assigned_to) {
+            const { data: userProfile } = await supabase
+              .from("profiles")
+              .select("first_name, last_name, department")
+              .eq("id", assignment.assigned_to)
+              .single()
 
-          return {
-            ...assignment,
-            user: userProfile
+            return {
+              ...assignment,
+              user: userProfile,
+            }
           }
-        }
-        return assignment
-      }))
+          return assignment
+        })
+      )
 
       // Fetch staff - leads can only see staff in their departments
       let staffQuery = supabase
@@ -300,9 +293,7 @@ export default function AdminAssetsPage() {
       }
 
       // Fetch unresolved issue counts for all assets
-      const { data: issuesData, error: issuesError } = await supabase
-        .from("asset_issues")
-        .select("asset_id, resolved")
+      const { data: issuesData, error: issuesError } = await supabase.from("asset_issues").select("asset_id, resolved")
 
       if (issuesError) console.error("Error fetching issues:", issuesError)
 
@@ -319,13 +310,15 @@ export default function AdminAssetsPage() {
         const assignment = (assignmentsWithUsers || []).find((a: any) => a.asset_id === asset.id)
         return {
           ...asset,
-          current_assignment: assignment ? {
-            assigned_to: assignment.assigned_to,
-            department: assignment.department,
-            office_location: assignment.office_location,
-            user: assignment.user || null
-          } : undefined,
-          unresolved_issues_count: issueCountsByAsset[asset.id] || 0
+          current_assignment: assignment
+            ? {
+                assigned_to: assignment.assigned_to,
+                department: assignment.department,
+                office_location: assignment.office_location,
+                user: assignment.user || null,
+              }
+            : undefined,
+          unresolved_issues_count: issueCountsByAsset[asset.id] || 0,
         }
       })
 
@@ -385,12 +378,12 @@ export default function AdminAssetsPage() {
 
           setCurrentAssignment({
             ...data,
-            user: userProfile
+            user: userProfile,
           } as any)
         } else if (data.department) {
           setCurrentAssignment({
             ...data,
-            department: data.department
+            department: data.department,
           } as any)
         }
       } else {
@@ -406,41 +399,39 @@ export default function AdminAssetsPage() {
     try {
       const { data, error } = await supabase
         .from("asset_assignments")
-        .select("id, assigned_at, handed_over_at, assignment_notes, handover_notes, assigned_from, assigned_by, assigned_to, department")
+        .select(
+          "id, assigned_at, handed_over_at, assignment_notes, handover_notes, assigned_from, assigned_by, assigned_to, department"
+        )
         .eq("asset_id", asset.id)
         .order("assigned_at", { ascending: false })
 
       if (error) throw error
 
       // Fetch user details separately for each assignment
-      const historyWithUsers = await Promise.all((data || []).map(async (assignment: any) => {
-        const [assignedFromResult, assignedByResult, assignedToResult] = await Promise.all([
-          assignment.assigned_from ? supabase
-            .from("profiles")
-            .select("first_name, last_name")
-            .eq("id", assignment.assigned_from)
-            .single() : Promise.resolve({ data: null }),
-          assignment.assigned_by ? supabase
-            .from("profiles")
-            .select("first_name, last_name")
-            .eq("id", assignment.assigned_by)
-            .single() : Promise.resolve({ data: null }),
-          assignment.assigned_to ? supabase
-            .from("profiles")
-            .select("first_name, last_name")
-            .eq("id", assignment.assigned_to)
-            .single() : Promise.resolve({ data: null })
-        ])
+      const historyWithUsers = await Promise.all(
+        (data || []).map(async (assignment: any) => {
+          const [assignedFromResult, assignedByResult, assignedToResult] = await Promise.all([
+            assignment.assigned_from
+              ? supabase.from("profiles").select("first_name, last_name").eq("id", assignment.assigned_from).single()
+              : Promise.resolve({ data: null }),
+            assignment.assigned_by
+              ? supabase.from("profiles").select("first_name, last_name").eq("id", assignment.assigned_by).single()
+              : Promise.resolve({ data: null }),
+            assignment.assigned_to
+              ? supabase.from("profiles").select("first_name, last_name").eq("id", assignment.assigned_to).single()
+              : Promise.resolve({ data: null }),
+          ])
 
-        return {
-          ...assignment,
-          assigned_from_user: assignedFromResult.data,
-          assigned_by_user: assignedByResult.data,
-          assigned_to_user: assignedToResult.data
-        }
-      }))
+          return {
+            ...assignment,
+            assigned_from_user: assignedFromResult.data,
+            assigned_by_user: assignedByResult.data,
+            assigned_to_user: assignedToResult.data,
+          }
+        })
+      )
 
-      setAssetHistory(historyWithUsers as any || [])
+      setAssetHistory((historyWithUsers as any) || [])
       setSelectedAsset(asset)
       setIsHistoryOpen(true)
     } catch (error: any) {
@@ -470,16 +461,16 @@ export default function AdminAssetsPage() {
     if (!newIssueDescription.trim() || !selectedAsset) return
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
-      const { error } = await supabase
-        .from("asset_issues")
-        .insert({
-          asset_id: selectedAsset.id,
-          description: newIssueDescription.trim(),
-          created_by: user.id,
-        })
+      const { error } = await supabase.from("asset_issues").insert({
+        asset_id: selectedAsset.id,
+        description: newIssueDescription.trim(),
+        created_by: user.id,
+      })
 
       if (error) throw error
 
@@ -495,10 +486,7 @@ export default function AdminAssetsPage() {
 
   const handleToggleIssue = async (issue: AssetIssue) => {
     try {
-      const { error } = await supabase
-        .from("asset_issues")
-        .update({ resolved: !issue.resolved })
-        .eq("id", issue.id)
+      const { error } = await supabase.from("asset_issues").update({ resolved: !issue.resolved }).eq("id", issue.id)
 
       if (error) throw error
 
@@ -515,10 +503,7 @@ export default function AdminAssetsPage() {
 
   const handleDeleteIssue = async (issueId: string) => {
     try {
-      const { error } = await supabase
-        .from("asset_issues")
-        .delete()
-        .eq("id", issueId)
+      const { error } = await supabase.from("asset_issues").delete().eq("id", issueId)
 
       if (error) throw error
 
@@ -589,7 +574,9 @@ export default function AdminAssetsPage() {
 
   const handleSaveAsset = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
       // Validate required fields
@@ -613,13 +600,18 @@ export default function AdminAssetsPage() {
 
         // If status is changing from "assigned" to something else (except "retired" or "maintenance")
         // End active assignments. For "retired" and "maintenance", we keep the assignment to show who had it last.
-        if (selectedAsset.status === "assigned" && assetForm.status !== "assigned" && assetForm.status !== "retired" && assetForm.status !== "maintenance") {
+        if (
+          selectedAsset.status === "assigned" &&
+          assetForm.status !== "assigned" &&
+          assetForm.status !== "retired" &&
+          assetForm.status !== "maintenance"
+        ) {
           const { error: endAssignmentError } = await supabase
             .from("asset_assignments")
             .update({
               is_current: false,
               handed_over_at: new Date().toISOString(),
-              handover_notes: `Asset status changed to ${assetForm.status}`
+              handover_notes: `Asset status changed to ${assetForm.status}`,
             })
             .eq("asset_id", selectedAsset.id)
             .eq("is_current", true)
@@ -632,10 +624,7 @@ export default function AdminAssetsPage() {
           updateData.office_location = null
         }
 
-        const { error } = await supabase
-          .from("assets")
-          .update(updateData)
-          .eq("id", selectedAsset.id)
+        const { error } = await supabase.from("assets").update(updateData).eq("id", selectedAsset.id)
 
         if (error) throw error
 
@@ -668,18 +657,17 @@ export default function AdminAssetsPage() {
           const assetTypeName = ASSET_TYPE_MAP[assetForm.asset_type]?.label || assetForm.asset_type
           toast.error(
             `Cannot create ${assetTypeName} with year ${assetForm.acquisition_year}. ` +
-            `Latest ${assetTypeName} was acquired in ${latestAsset.acquisition_year}. ` +
-            `New assets must be from year ${latestAsset.acquisition_year} or later.`
+              `Latest ${assetTypeName} was acquired in ${latestAsset.acquisition_year}. ` +
+              `New assets must be from year ${latestAsset.acquisition_year} or later.`
           )
           return
         }
 
         // Create new asset - get next serial number
-        const { data: uniqueCodeData, error: serialError } = await supabase
-          .rpc("get_next_asset_serial", {
-            asset_code: assetForm.asset_type,
-            year: assetForm.acquisition_year,
-          })
+        const { data: uniqueCodeData, error: serialError } = await supabase.rpc("get_next_asset_serial", {
+          asset_code: assetForm.asset_type,
+          year: assetForm.acquisition_year,
+        })
 
         if (serialError) throw serialError
 
@@ -694,11 +682,7 @@ export default function AdminAssetsPage() {
           created_by: user.id,
         }
 
-        const { data: newAsset, error } = await supabase
-          .from("assets")
-          .insert(insertData)
-          .select()
-          .single()
+        const { data: newAsset, error } = await supabase.from("assets").insert(insertData).select().single()
 
         if (error) throw error
 
@@ -742,9 +726,7 @@ export default function AdminAssetsPage() {
             assignmentData.office_location = assetForm.office_location
           }
 
-          const { error: assignError } = await supabase
-            .from("asset_assignments")
-            .insert(assignmentData)
+          const { error: assignError } = await supabase.from("asset_assignments").insert(assignmentData)
 
           if (assignError) throw assignError
 
@@ -763,10 +745,7 @@ export default function AdminAssetsPage() {
             assetUpdate.office_location = null
           }
 
-          const { error: assetError } = await supabase
-            .from("assets")
-            .update(assetUpdate)
-            .eq("id", newAsset.id)
+          const { error: assetError } = await supabase.from("assets").update(assetUpdate).eq("id", newAsset.id)
 
           if (assetError) throw assetError
 
@@ -805,7 +784,9 @@ export default function AdminAssetsPage() {
 
       setIsAssigning(true)
 
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
       // Mark all existing assignments as not current
@@ -836,9 +817,7 @@ export default function AdminAssetsPage() {
         assignmentData.office_location = assignForm.office_location
       }
 
-      const { error: assignError } = await supabase
-        .from("asset_assignments")
-        .insert(assignmentData)
+      const { error: assignError } = await supabase.from("asset_assignments").insert(assignmentData)
 
       if (assignError) throw assignError
 
@@ -859,10 +838,7 @@ export default function AdminAssetsPage() {
         assetUpdate.office_location = null
       }
 
-      const { error: assetError } = await supabase
-        .from("assets")
-        .update(assetUpdate)
-        .eq("id", selectedAsset.id)
+      const { error: assetError } = await supabase.from("assets").update(assetUpdate).eq("id", selectedAsset.id)
 
       if (assetError) throw assetError
 
@@ -870,8 +846,8 @@ export default function AdminAssetsPage() {
       const oldValues = previousAssignedTo
         ? { assigned_to: previousAssignedTo }
         : previousDepartment
-        ? { department: previousDepartment }
-        : null
+          ? { department: previousDepartment }
+          : null
 
       const newValues: any = { assignment_type: assignForm.assignment_type, notes: assignForm.assignment_notes }
       if (assignForm.assignment_type === "individual") {
@@ -907,7 +883,9 @@ export default function AdminAssetsPage() {
     try {
       if (!assetToDelete) return
 
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
       // Only check for active assignments if the asset status is "assigned"
@@ -956,18 +934,15 @@ export default function AdminAssetsPage() {
             const assetTypeName = ASSET_TYPE_MAP[assetType]?.label || assetType
             toast.error(
               `Cannot delete ${assetToDelete.unique_code}. ` +
-              `Higher-numbered ${assetTypeName} assets exist (serial number ${currentSerialNumber + 1} or higher). ` +
-              `Delete assets in reverse order (highest number first) to maintain sequential numbering.`
+                `Higher-numbered ${assetTypeName} assets exist (serial number ${currentSerialNumber + 1} or higher). ` +
+                `Delete assets in reverse order (highest number first) to maintain sequential numbering.`
             )
             return
           }
         }
       }
 
-      const { error } = await supabase
-        .from("assets")
-        .delete()
-        .eq("id", assetToDelete.id)
+      const { error } = await supabase.from("assets").delete().eq("id", assetToDelete.id)
 
       if (error) throw error
 
@@ -1048,9 +1023,7 @@ export default function AdminAssetsPage() {
       }
 
       if (typeof aValue === "string" && typeof bValue === "string") {
-        return sortConfig.direction === "asc"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue)
+        return sortConfig.direction === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
       }
 
       if (sortConfig.direction === "asc") {
@@ -1073,19 +1046,23 @@ export default function AdminAssetsPage() {
         "#": index + 1,
         "Unique Code": asset.unique_code,
         "Asset Type": ASSET_TYPE_MAP[asset.asset_type]?.label || asset.asset_type,
-        "Model": asset.asset_model || "-",
+        Model: asset.asset_model || "-",
         "Serial Number": asset.serial_number || "-",
-        "Year": asset.acquisition_year,
-        "Status": asset.status,
-        "Assigned To": (asset.status === "assigned" || asset.status === "retired" || asset.status === "maintenance") ? (
-          asset.assignment_type === "office" ? `${asset.office_location || "Office"}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}` :
-          asset.current_assignment?.user ? `${formatName(asset.current_assignment.user.first_name)} ${formatName(asset.current_assignment.user.last_name)}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}` :
-          asset.current_assignment?.department ? `${asset.current_assignment.department}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}` :
-          "Unassigned"
-        ) : "Unassigned",
-        "Department": asset.department || "-",
+        Year: asset.acquisition_year,
+        Status: asset.status,
+        "Assigned To":
+          asset.status === "assigned" || asset.status === "retired" || asset.status === "maintenance"
+            ? asset.assignment_type === "office"
+              ? `${asset.office_location || "Office"}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}`
+              : asset.current_assignment?.user
+                ? `${formatName(asset.current_assignment.user.first_name)} ${formatName(asset.current_assignment.user.last_name)}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}`
+                : asset.current_assignment?.department
+                  ? `${asset.current_assignment.department}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}`
+                  : "Unassigned"
+            : "Unassigned",
+        Department: asset.department || "-",
         "Office Location": asset.office_location || "-",
-        "Notes": asset.notes || "-",
+        Notes: asset.notes || "-",
       }))
 
       const ws = XLSX.utils.json_to_sheet(dataToExport)
@@ -1094,20 +1071,19 @@ export default function AdminAssetsPage() {
 
       // Auto-size columns
       const maxWidth = 50
-      const cols = Object.keys(dataToExport[0] || {}).map(key => ({
+      const cols = Object.keys(dataToExport[0] || {}).map((key) => ({
         wch: Math.min(
-          Math.max(
-            key.length,
-            ...dataToExport.map(row => String(row[key as keyof typeof row]).length)
-          ),
+          Math.max(key.length, ...dataToExport.map((row) => String(row[key as keyof typeof row]).length)),
           maxWidth
-        )
+        ),
       }))
       ws["!cols"] = cols
 
       const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" })
-      const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
-      saveAs(data, `assets-export-${new Date().toISOString().split('T')[0]}.xlsx`)
+      const data = new Blob([excelBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      })
+      saveAs(data, `assets-export-${new Date().toISOString().split("T")[0]}.xlsx`)
       toast.success("Assets exported to Excel successfully")
     } catch (error: any) {
       console.error("Error exporting to Excel:", error)
@@ -1137,12 +1113,15 @@ export default function AdminAssetsPage() {
         asset.asset_model || "-",
         asset.acquisition_year,
         asset.status,
-        (asset.status === "assigned" || asset.status === "retired" || asset.status === "maintenance") ? (
-          asset.assignment_type === "office" ? `${asset.office_location || "Office"}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}` :
-          asset.current_assignment?.user ? `${formatName(asset.current_assignment.user.first_name)} ${formatName(asset.current_assignment.user.last_name)}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}` :
-          asset.current_assignment?.department ? `${asset.current_assignment.department}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}` :
-          "Unassigned"
-        ) : "Unassigned",
+        asset.status === "assigned" || asset.status === "retired" || asset.status === "maintenance"
+          ? asset.assignment_type === "office"
+            ? `${asset.office_location || "Office"}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}`
+            : asset.current_assignment?.user
+              ? `${formatName(asset.current_assignment.user.first_name)} ${formatName(asset.current_assignment.user.last_name)}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}`
+              : asset.current_assignment?.department
+                ? `${asset.current_assignment.department}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}`
+                : "Unassigned"
+          : "Unassigned",
       ])
 
       autoTable(doc, {
@@ -1154,7 +1133,7 @@ export default function AdminAssetsPage() {
         alternateRowStyles: { fillColor: [245, 247, 250] },
       })
 
-      doc.save(`assets-export-${new Date().toISOString().split('T')[0]}.pdf`)
+      doc.save(`assets-export-${new Date().toISOString().split("T")[0]}.pdf`)
       toast.success("Assets exported to PDF successfully")
     } catch (error: any) {
       console.error("Error exporting to PDF:", error)
@@ -1164,7 +1143,18 @@ export default function AdminAssetsPage() {
 
   const exportToWord = async () => {
     try {
-      const { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, WidthType, AlignmentType, HeadingLevel } = await import("docx")
+      const {
+        Document,
+        Packer,
+        Paragraph,
+        TextRun,
+        Table,
+        TableCell,
+        TableRow,
+        WidthType,
+        AlignmentType,
+        HeadingLevel,
+      } = await import("docx")
       const { default: saveAs } = await import("file-saver")
 
       const dataToExport = getSortedAssets(filteredAssets)
@@ -1174,33 +1164,49 @@ export default function AdminAssetsPage() {
         new TableRow({
           children: [
             new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "#", bold: true })] })] }),
-            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Unique Code", bold: true })] })] }),
-            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Asset Type", bold: true })] })] }),
+            new TableCell({
+              children: [new Paragraph({ children: [new TextRun({ text: "Unique Code", bold: true })] })],
+            }),
+            new TableCell({
+              children: [new Paragraph({ children: [new TextRun({ text: "Asset Type", bold: true })] })],
+            }),
             new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Model", bold: true })] })] }),
             new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Year", bold: true })] })] }),
             new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Status", bold: true })] })] }),
-            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Assigned To", bold: true })] })] }),
+            new TableCell({
+              children: [new Paragraph({ children: [new TextRun({ text: "Assigned To", bold: true })] })],
+            }),
           ],
         }),
-        ...dataToExport.map((asset, index) =>
-          new TableRow({
-            children: [
-              new TableCell({ children: [new Paragraph((index + 1).toString())] }),
-              new TableCell({ children: [new Paragraph(asset.unique_code)] }),
-              new TableCell({ children: [new Paragraph(ASSET_TYPE_MAP[asset.asset_type]?.label || asset.asset_type)] }),
-              new TableCell({ children: [new Paragraph(asset.asset_model || "-")] }),
-              new TableCell({ children: [new Paragraph(asset.acquisition_year?.toString() || "-")] }),
-              new TableCell({ children: [new Paragraph(asset.status)] }),
-              new TableCell({ children: [new Paragraph(
-                (asset.status === "assigned" || asset.status === "retired" || asset.status === "maintenance") ? (
-                  asset.assignment_type === "office" ? `${asset.office_location || "Office"}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}` :
-                  asset.current_assignment?.user ? `${formatName(asset.current_assignment.user.first_name)} ${formatName(asset.current_assignment.user.last_name)}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}` :
-                  asset.current_assignment?.department ? `${asset.current_assignment.department}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}` :
-                  "Unassigned"
-                ) : "Unassigned"
-              )] }),
-            ],
-          })
+        ...dataToExport.map(
+          (asset, index) =>
+            new TableRow({
+              children: [
+                new TableCell({ children: [new Paragraph((index + 1).toString())] }),
+                new TableCell({ children: [new Paragraph(asset.unique_code)] }),
+                new TableCell({
+                  children: [new Paragraph(ASSET_TYPE_MAP[asset.asset_type]?.label || asset.asset_type)],
+                }),
+                new TableCell({ children: [new Paragraph(asset.asset_model || "-")] }),
+                new TableCell({ children: [new Paragraph(asset.acquisition_year?.toString() || "-")] }),
+                new TableCell({ children: [new Paragraph(asset.status)] }),
+                new TableCell({
+                  children: [
+                    new Paragraph(
+                      asset.status === "assigned" || asset.status === "retired" || asset.status === "maintenance"
+                        ? asset.assignment_type === "office"
+                          ? `${asset.office_location || "Office"}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}`
+                          : asset.current_assignment?.user
+                            ? `${formatName(asset.current_assignment.user.first_name)} ${formatName(asset.current_assignment.user.last_name)}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}`
+                            : asset.current_assignment?.department
+                              ? `${asset.current_assignment.department}${asset.status === "retired" ? " (retired)" : asset.status === "maintenance" ? " (maintenance)" : ""}`
+                              : "Unassigned"
+                        : "Unassigned"
+                    ),
+                  ],
+                }),
+              ],
+            })
         ),
       ]
 
@@ -1232,7 +1238,7 @@ export default function AdminAssetsPage() {
       })
 
       const blob = await Packer.toBlob(doc)
-      saveAs(blob, `assets-export-${new Date().toISOString().split('T')[0]}.docx`)
+      saveAs(blob, `assets-export-${new Date().toISOString().split("T")[0]}.docx`)
       toast.success("Assets exported to Word successfully")
     } catch (error: any) {
       console.error("Error exporting to Word:", error)
@@ -1244,29 +1250,35 @@ export default function AdminAssetsPage() {
     const assetTypeLabel = ASSET_TYPE_MAP[asset.asset_type]?.label || asset.asset_type
 
     // Enhanced search - now searches across all relevant fields
-    const matchesSearch = searchQuery === "" || [
-      asset.unique_code,
-      assetTypeLabel,
-      asset.asset_model,
-      asset.serial_number,
-      asset.acquisition_year?.toString(),
-      asset.status,
-      asset.notes,
-      asset.department,
-      asset.office_location,
-      asset.current_assignment?.user ? `${asset.current_assignment.user.first_name} ${asset.current_assignment.user.last_name}` : "",
-      asset.current_assignment?.department
-    ].some(field => field?.toLowerCase().includes(searchQuery.toLowerCase()))
+    const matchesSearch =
+      searchQuery === "" ||
+      [
+        asset.unique_code,
+        assetTypeLabel,
+        asset.asset_model,
+        asset.serial_number,
+        asset.acquisition_year?.toString(),
+        asset.status,
+        asset.notes,
+        asset.department,
+        asset.office_location,
+        asset.current_assignment?.user
+          ? `${asset.current_assignment.user.first_name} ${asset.current_assignment.user.last_name}`
+          : "",
+        asset.current_assignment?.department,
+      ].some((field) => field?.toLowerCase().includes(searchQuery.toLowerCase()))
 
     const matchesStatus = statusFilter === "all" || asset.status === statusFilter
     const matchesYear = yearFilter === "all" || asset.acquisition_year?.toString() === yearFilter
     const matchesAssetType = assetTypeFilter === "all" || asset.asset_type === assetTypeFilter
-    const matchesOfficeLocation = officeLocationFilter === "all" || 
+    const matchesOfficeLocation =
+      officeLocationFilter === "all" ||
       asset.office_location === officeLocationFilter ||
       asset.current_assignment?.office_location === officeLocationFilter
 
     // Filter by issue status
-    const matchesIssueStatus = issueStatusFilter === "all" || 
+    const matchesIssueStatus =
+      issueStatusFilter === "all" ||
       (issueStatusFilter === "has_issues" && (asset.unresolved_issues_count || 0) > 0) ||
       (issueStatusFilter === "no_issues" && (asset.unresolved_issues_count || 0) === 0)
 
@@ -1280,20 +1292,30 @@ export default function AdminAssetsPage() {
           ? staff.find((s) => s.id === asset.current_assignment?.assigned_to)?.department
           : null
 
-        matchesDepartment = assignmentDept ? userProfile.lead_departments.includes(assignmentDept) :
-          assignedUserDept ? userProfile.lead_departments.includes(assignedUserDept) : false
+        matchesDepartment = assignmentDept
+          ? userProfile.lead_departments.includes(assignmentDept)
+          : assignedUserDept
+            ? userProfile.lead_departments.includes(assignedUserDept)
+            : false
       }
     } else {
       // Admins: use department filter
-      matchesDepartment = departmentFilter === "all" ||
-        asset.current_assignment?.department === departmentFilter
+      matchesDepartment = departmentFilter === "all" || asset.current_assignment?.department === departmentFilter
     }
 
     // Filter by user
-    const matchesUser = userFilter === "all" ||
-      asset.current_assignment?.assigned_to === userFilter
+    const matchesUser = userFilter === "all" || asset.current_assignment?.assigned_to === userFilter
 
-    return matchesSearch && matchesStatus && matchesDepartment && matchesUser && matchesYear && matchesAssetType && matchesOfficeLocation && matchesIssueStatus
+    return (
+      matchesSearch &&
+      matchesStatus &&
+      matchesDepartment &&
+      matchesUser &&
+      matchesYear &&
+      matchesAssetType &&
+      matchesOfficeLocation &&
+      matchesIssueStatus
+    )
   })
 
   const stats = {
@@ -1329,7 +1351,6 @@ export default function AdminAssetsPage() {
     }
   }
 
-
   const getUniqueCodePreview = () => {
     if (!assetForm.asset_type || !assetForm.acquisition_year) {
       return "ACOB/HQ/???/????/???"
@@ -1338,21 +1359,19 @@ export default function AdminAssetsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 w-full overflow-x-hidden">
+    <div className="from-background via-background to-muted/20 min-h-screen w-full overflow-x-hidden bg-gradient-to-br">
       <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2 sm:gap-3">
-              <Package className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            <h1 className="text-foreground flex items-center gap-2 text-2xl font-bold sm:gap-3 sm:text-3xl">
+              <Package className="text-primary h-6 w-6 sm:h-8 sm:w-8" />
               Asset Management
             </h1>
-            <p className="text-muted-foreground mt-2 text-sm sm:text-base">
-              Manage asset inventory and assignments
-            </p>
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base">Manage asset inventory and assignments</p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center border rounded-lg p-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center rounded-lg border p-1">
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
@@ -1383,16 +1402,16 @@ export default function AdminAssetsPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 md:grid-cols-5">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 md:grid-cols-5 md:gap-4">
           <Card className="border-2">
             <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] xs:text-xs text-muted-foreground font-medium truncate">Total assets</p>
-                  <p className="text-lg sm:text-xl md:text-3xl font-bold text-foreground mt-1 md:mt-2">{stats.total}</p>
+                  <p className="xs:text-xs text-muted-foreground truncate text-[10px] font-medium">Total assets</p>
+                  <p className="text-foreground mt-1 text-lg font-bold sm:text-xl md:mt-2 md:text-3xl">{stats.total}</p>
                 </div>
-                <div className="p-1.5 sm:p-2 md:p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg shrink-0 ml-1">
-                  <Package className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-blue-600 dark:text-blue-400" />
+                <div className="ml-1 shrink-0 rounded-lg bg-blue-100 p-1.5 sm:p-2 md:p-3 dark:bg-blue-900/30">
+                  <Package className="h-4 w-4 text-blue-600 sm:h-5 sm:w-5 md:h-6 md:w-6 dark:text-blue-400" />
                 </div>
               </div>
             </CardContent>
@@ -1402,25 +1421,13 @@ export default function AdminAssetsPage() {
             <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] xs:text-xs text-muted-foreground font-medium truncate">Available</p>
-                  <p className="text-lg sm:text-xl md:text-3xl font-bold text-foreground mt-1 md:mt-2">{stats.available}</p>
+                  <p className="xs:text-xs text-muted-foreground truncate text-[10px] font-medium">Available</p>
+                  <p className="text-foreground mt-1 text-lg font-bold sm:text-xl md:mt-2 md:text-3xl">
+                    {stats.available}
+                  </p>
                 </div>
-                <div className="p-1.5 sm:p-2 md:p-3 bg-green-100 dark:bg-green-900/30 rounded-lg flex-shrink-0 ml-1">
-                  <Package className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-green-600 dark:text-green-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2">
-            <CardContent className="p-3 sm:p-4 md:p-6">
-              <div className="flex items-center justify-between">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] xs:text-xs text-muted-foreground font-medium truncate">Assigned</p>
-                  <p className="text-lg sm:text-xl md:text-3xl font-bold text-foreground mt-1 md:mt-2">{stats.assigned}</p>
-                </div>
-                <div className="p-1.5 sm:p-2 md:p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0 ml-1">
-                  <Package className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-purple-600 dark:text-purple-400" />
+                <div className="ml-1 flex-shrink-0 rounded-lg bg-green-100 p-1.5 sm:p-2 md:p-3 dark:bg-green-900/30">
+                  <Package className="h-4 w-4 text-green-600 sm:h-5 sm:w-5 md:h-6 md:w-6 dark:text-green-400" />
                 </div>
               </div>
             </CardContent>
@@ -1430,28 +1437,48 @@ export default function AdminAssetsPage() {
             <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] xs:text-xs text-muted-foreground font-medium truncate">Maintenance</p>
-                  <p className="text-lg sm:text-xl md:text-3xl font-bold text-foreground mt-1 md:mt-2">{stats.maintenance}</p>
+                  <p className="xs:text-xs text-muted-foreground truncate text-[10px] font-medium">Assigned</p>
+                  <p className="text-foreground mt-1 text-lg font-bold sm:text-xl md:mt-2 md:text-3xl">
+                    {stats.assigned}
+                  </p>
                 </div>
-                <div className="p-1.5 sm:p-2 md:p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex-shrink-0 ml-1">
-                  <Package className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-yellow-600 dark:text-yellow-400" />
+                <div className="ml-1 flex-shrink-0 rounded-lg bg-purple-100 p-1.5 sm:p-2 md:p-3 dark:bg-purple-900/30">
+                  <Package className="h-4 w-4 text-purple-600 sm:h-5 sm:w-5 md:h-6 md:w-6 dark:text-purple-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card 
-            className="border-2 cursor-pointer hover:shadow-lg transition-all hover:border-orange-300 dark:hover:border-orange-700"
-            onClick={() => router.push('/admin/assets/issues')}
+          <Card className="border-2">
+            <CardContent className="p-3 sm:p-4 md:p-6">
+              <div className="flex items-center justify-between">
+                <div className="min-w-0 flex-1">
+                  <p className="xs:text-xs text-muted-foreground truncate text-[10px] font-medium">Maintenance</p>
+                  <p className="text-foreground mt-1 text-lg font-bold sm:text-xl md:mt-2 md:text-3xl">
+                    {stats.maintenance}
+                  </p>
+                </div>
+                <div className="ml-1 flex-shrink-0 rounded-lg bg-yellow-100 p-1.5 sm:p-2 md:p-3 dark:bg-yellow-900/30">
+                  <Package className="h-4 w-4 text-yellow-600 sm:h-5 sm:w-5 md:h-6 md:w-6 dark:text-yellow-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card
+            className="cursor-pointer border-2 transition-all hover:border-orange-300 hover:shadow-lg dark:hover:border-orange-700"
+            onClick={() => router.push("/admin/assets/issues")}
           >
             <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] xs:text-xs text-muted-foreground font-medium truncate">Issues</p>
-                  <p className="text-lg sm:text-xl md:text-3xl font-bold text-orange-600 dark:text-orange-400 mt-1 md:mt-2">{stats.unresolvedIssues}</p>
+                  <p className="xs:text-xs text-muted-foreground truncate text-[10px] font-medium">Issues</p>
+                  <p className="mt-1 text-lg font-bold text-orange-600 sm:text-xl md:mt-2 md:text-3xl dark:text-orange-400">
+                    {stats.unresolvedIssues}
+                  </p>
                 </div>
-                <div className="p-1.5 sm:p-2 md:p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex-shrink-0 ml-1">
-                  <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-orange-600 dark:text-orange-400" />
+                <div className="ml-1 flex-shrink-0 rounded-lg bg-orange-100 p-1.5 sm:p-2 md:p-3 dark:bg-orange-900/30">
+                  <AlertCircle className="h-4 w-4 text-orange-600 sm:h-5 sm:w-5 md:h-6 md:w-6 dark:text-orange-400" />
                 </div>
               </div>
             </CardContent>
@@ -1461,10 +1488,10 @@ export default function AdminAssetsPage() {
         {/* Export Buttons */}
         <Card className="border-2">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Download className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">Export Filtered Data:</span>
+                <Download className="text-muted-foreground h-4 w-4" />
+                <span className="text-foreground text-sm font-medium">Export Filtered Data:</span>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -1507,8 +1534,8 @@ export default function AdminAssetsPage() {
           <CardContent className="p-6">
             <div className="space-y-4">
               {/* First row - Search */}
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <div className="relative flex-1">
+                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
                 <Input
                   placeholder="Search assets by code, type, model, serial, year, status, notes, location, or assigned user..."
                   value={searchQuery}
@@ -1518,7 +1545,7 @@ export default function AdminAssetsPage() {
               </div>
 
               {/* Second row - Filters */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                 <SearchableSelect
                   value={assetTypeFilter}
                   onValueChange={setAssetTypeFilter}
@@ -1558,7 +1585,7 @@ export default function AdminAssetsPage() {
                   className="w-full"
                   options={[
                     { value: "all", label: "All Years" },
-                    ...Array.from(new Set(assets.map(a => a.acquisition_year)))
+                    ...Array.from(new Set(assets.map((a) => a.acquisition_year)))
                       .filter(Boolean)
                       .sort((a, b) => (b || 0) - (a || 0))
                       .map((year) => ({
@@ -1592,8 +1619,16 @@ export default function AdminAssetsPage() {
                   className="w-full"
                   options={[
                     { value: "all", label: "All Assets" },
-                    { value: "has_issues", label: "Has Issues", icon: <AlertCircle className="h-3 w-3 text-orange-500" /> },
-                    { value: "no_issues", label: "No Issues", icon: <CheckCircle2 className="h-3 w-3 text-green-500" /> },
+                    {
+                      value: "has_issues",
+                      label: "Has Issues",
+                      icon: <AlertCircle className="h-3 w-3 text-orange-500" />,
+                    },
+                    {
+                      value: "no_issues",
+                      label: "No Issues",
+                      icon: <CheckCircle2 className="h-3 w-3 text-green-500" />,
+                    },
                   ]}
                 />
                 {/* Department filter - hidden for leads */}
@@ -1629,9 +1664,10 @@ export default function AdminAssetsPage() {
                   options={[
                     {
                       value: "all",
-                      label: userProfile?.role === "lead" && departments.length > 0
-                        ? `All ${departments.length === 1 ? departments[0] : "Department"} Users`
-                        : "All Users"
+                      label:
+                        userProfile?.role === "lead" && departments.length > 0
+                          ? `All ${departments.length === 1 ? departments[0] : "Department"} Users`
+                          : "All Users",
                     },
                     ...staff.map((member) => ({
                       value: member.id,
@@ -1655,80 +1691,104 @@ export default function AdminAssetsPage() {
                     <TableRow>
                       <TableHead className="w-12">#</TableHead>
                       <TableHead
-                        className="cursor-pointer hover:bg-muted/50 select-none"
+                        className="hover:bg-muted/50 cursor-pointer select-none"
                         onClick={() => handleSort("unique_code")}
                       >
                         <div className="flex items-center gap-2">
                           Unique Code
                           {sortConfig?.key === "unique_code" ? (
-                            sortConfig.direction === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                            sortConfig.direction === "asc" ? (
+                              <ArrowUp className="h-3 w-3" />
+                            ) : (
+                              <ArrowDown className="h-3 w-3" />
+                            )
                           ) : (
-                            <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+                            <ArrowUpDown className="text-muted-foreground h-3 w-3" />
                           )}
                         </div>
                       </TableHead>
                       <TableHead
-                        className="cursor-pointer hover:bg-muted/50 select-none"
+                        className="hover:bg-muted/50 cursor-pointer select-none"
                         onClick={() => handleSort("asset_type")}
                       >
                         <div className="flex items-center gap-2">
                           Asset Type
                           {sortConfig?.key === "asset_type" ? (
-                            sortConfig.direction === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                            sortConfig.direction === "asc" ? (
+                              <ArrowUp className="h-3 w-3" />
+                            ) : (
+                              <ArrowDown className="h-3 w-3" />
+                            )
                           ) : (
-                            <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+                            <ArrowUpDown className="text-muted-foreground h-3 w-3" />
                           )}
                         </div>
                       </TableHead>
                       <TableHead
-                        className="cursor-pointer hover:bg-muted/50 select-none"
+                        className="hover:bg-muted/50 cursor-pointer select-none"
                         onClick={() => handleSort("model")}
                       >
                         <div className="flex items-center gap-2">
                           Model / Serial
                           {sortConfig?.key === "model" ? (
-                            sortConfig.direction === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                            sortConfig.direction === "asc" ? (
+                              <ArrowUp className="h-3 w-3" />
+                            ) : (
+                              <ArrowDown className="h-3 w-3" />
+                            )
                           ) : (
-                            <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+                            <ArrowUpDown className="text-muted-foreground h-3 w-3" />
                           )}
                         </div>
                       </TableHead>
                       <TableHead
-                        className="cursor-pointer hover:bg-muted/50 select-none"
+                        className="hover:bg-muted/50 cursor-pointer select-none"
                         onClick={() => handleSort("year")}
                       >
                         <div className="flex items-center gap-2">
                           Year
                           {sortConfig?.key === "year" ? (
-                            sortConfig.direction === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                            sortConfig.direction === "asc" ? (
+                              <ArrowUp className="h-3 w-3" />
+                            ) : (
+                              <ArrowDown className="h-3 w-3" />
+                            )
                           ) : (
-                            <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+                            <ArrowUpDown className="text-muted-foreground h-3 w-3" />
                           )}
                         </div>
                       </TableHead>
                       <TableHead
-                        className="cursor-pointer hover:bg-muted/50 select-none"
+                        className="hover:bg-muted/50 cursor-pointer select-none"
                         onClick={() => handleSort("status")}
                       >
                         <div className="flex items-center gap-2">
                           Status
                           {sortConfig?.key === "status" ? (
-                            sortConfig.direction === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                            sortConfig.direction === "asc" ? (
+                              <ArrowUp className="h-3 w-3" />
+                            ) : (
+                              <ArrowDown className="h-3 w-3" />
+                            )
                           ) : (
-                            <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+                            <ArrowUpDown className="text-muted-foreground h-3 w-3" />
                           )}
                         </div>
                       </TableHead>
                       <TableHead
-                        className="cursor-pointer hover:bg-muted/50 select-none"
+                        className="hover:bg-muted/50 cursor-pointer select-none"
                         onClick={() => handleSort("assigned_to")}
                       >
                         <div className="flex items-center gap-2">
                           Assigned To
                           {sortConfig?.key === "assigned_to" ? (
-                            sortConfig.direction === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                            sortConfig.direction === "asc" ? (
+                              <ArrowUp className="h-3 w-3" />
+                            ) : (
+                              <ArrowDown className="h-3 w-3" />
+                            )
                           ) : (
-                            <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+                            <ArrowUpDown className="text-muted-foreground h-3 w-3" />
                           )}
                         </div>
                       </TableHead>
@@ -1741,15 +1801,13 @@ export default function AdminAssetsPage() {
                         <TableCell className="text-muted-foreground font-medium">{index + 1}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                              <Package className="h-4 w-4 text-primary" />
+                            <div className="bg-primary/10 rounded-lg p-2">
+                              <Package className="text-primary h-4 w-4" />
                             </div>
                             <div className="flex items-center gap-1.5">
-                              <span className="font-medium text-foreground font-mono text-xs">
-                                {asset.unique_code}
-                              </span>
+                              <span className="text-foreground font-mono text-xs font-medium">{asset.unique_code}</span>
                               {asset.unresolved_issues_count! > 0 && (
-                                <div className="flex items-center gap-0.5 px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/30 rounded-full">
+                                <div className="flex items-center gap-0.5 rounded-full bg-orange-100 px-1.5 py-0.5 dark:bg-orange-900/30">
                                   <AlertCircle className="h-3 w-3 text-orange-600 dark:text-orange-400" />
                                   <span className="text-[10px] font-medium text-orange-700 dark:text-orange-300">
                                     {asset.unresolved_issues_count}
@@ -1760,86 +1818,90 @@ export default function AdminAssetsPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-sm font-medium text-foreground">
+                          <div className="text-foreground text-sm font-medium">
                             {ASSET_TYPE_MAP[asset.asset_type]?.label || asset.asset_type}
                           </div>
                         </TableCell>
                         <TableCell>
                           {asset.asset_model || asset.serial_number ? (
                             <div className="text-sm">
-                              {asset.asset_model && (
-                                <div className="text-foreground">{asset.asset_model}</div>
-                              )}
+                              {asset.asset_model && <div className="text-foreground">{asset.asset_model}</div>}
                               {asset.serial_number && (
-                                <div className="text-xs text-muted-foreground font-mono">
-                                  {asset.serial_number}
-                                </div>
+                                <div className="text-muted-foreground font-mono text-xs">{asset.serial_number}</div>
                               )}
                             </div>
                           ) : (
-                            <span className="text-sm text-muted-foreground">-</span>
+                            <span className="text-muted-foreground text-sm">-</span>
                           )}
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-foreground">{asset.acquisition_year}</span>
+                          <span className="text-foreground text-sm">{asset.acquisition_year}</span>
                         </TableCell>
                         <TableCell>
                           <Badge className={getStatusColor(asset.status)}>{asset.status}</Badge>
                         </TableCell>
                         <TableCell>
-                          {asset.status === "assigned" || asset.status === "retired" || asset.status === "maintenance" ? (
+                          {asset.status === "assigned" ||
+                          asset.status === "retired" ||
+                          asset.status === "maintenance" ? (
                             asset.assignment_type === "office" ? (
                               <div className="flex items-center gap-2 text-sm">
-                                <Building className="h-3 w-3 text-muted-foreground" />
+                                <Building className="text-muted-foreground h-3 w-3" />
                                 <span className="text-foreground">{asset.office_location || "Office"}</span>
                                 {(asset.status === "retired" || asset.status === "maintenance") && (
-                                  <span className="text-xs text-muted-foreground">({asset.status})</span>
+                                  <span className="text-muted-foreground text-xs">({asset.status})</span>
                                 )}
                               </div>
                             ) : asset.current_assignment ? (
                               asset.current_assignment.department ? (
                                 <div className="flex items-center gap-2 text-sm">
-                                  <Building2 className="h-3 w-3 text-muted-foreground" />
+                                  <Building2 className="text-muted-foreground h-3 w-3" />
                                   <span className="text-foreground">{asset.current_assignment.department}</span>
                                   {(asset.status === "retired" || asset.status === "maintenance") && (
-                                    <span className="text-xs text-muted-foreground">({asset.status})</span>
+                                    <span className="text-muted-foreground text-xs">({asset.status})</span>
                                   )}
                                 </div>
                               ) : asset.current_assignment.user ? (
                                 <div className="flex items-center gap-2 text-sm">
-                                  <User className="h-3 w-3 text-muted-foreground" />
+                                  <User className="text-muted-foreground h-3 w-3" />
                                   <span className="text-foreground">
-                                    {formatName(asset.current_assignment.user.first_name)} {formatName(asset.current_assignment.user.last_name)}
+                                    {formatName(asset.current_assignment.user.first_name)}{" "}
+                                    {formatName(asset.current_assignment.user.last_name)}
                                   </span>
                                   {(asset.status === "retired" || asset.status === "maintenance") && (
-                                    <span className="text-xs text-muted-foreground">({asset.status})</span>
+                                    <span className="text-muted-foreground text-xs">({asset.status})</span>
                                   )}
                                 </div>
                               ) : (
-                                <span className="text-sm text-muted-foreground">Unassigned</span>
+                                <span className="text-muted-foreground text-sm">Unassigned</span>
                               )
                             ) : (
-                              <span className="text-sm text-muted-foreground">Unassigned</span>
+                              <span className="text-muted-foreground text-sm">Unassigned</span>
                             )
                           ) : (
-                            <span className="text-sm text-muted-foreground">Unassigned</span>
+                            <span className="text-muted-foreground text-sm">Unassigned</span>
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1 sm:gap-2 flex-nowrap">
+                          <div className="flex flex-nowrap items-center justify-end gap-1 sm:gap-2">
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleOpenAssignDialog(asset)}
                               title={
-                                asset.status === "retired" ? "Cannot reassign retired asset" :
-                                (asset.status === "assigned" && asset.current_assignment) ? "Reassign Asset" : "Assign Asset"
+                                asset.status === "retired"
+                                  ? "Cannot reassign retired asset"
+                                  : asset.status === "assigned" && asset.current_assignment
+                                    ? "Reassign Asset"
+                                    : "Assign Asset"
                               }
                               disabled={asset.status === "retired"}
-                              className="h-8 w-8 sm:h-auto sm:w-auto p-0 sm:p-2"
+                              className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:p-2"
                             >
                               <UserPlus className="h-3 w-3 sm:mr-1" />
-                              <span className="hidden sm:inline">{(asset.status === "assigned" && asset.current_assignment) ? "Reassign" : "Assign"}</span>
+                              <span className="hidden sm:inline">
+                                {asset.status === "assigned" && asset.current_assignment ? "Reassign" : "Assign"}
+                              </span>
                             </Button>
                             {userProfile?.role !== "lead" && (
                               <Button
@@ -1886,98 +1948,110 @@ export default function AdminAssetsPage() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {getSortedAssets(filteredAssets).map((asset) => (
-                <Card key={asset.id} className="border-2 hover:shadow-lg transition-shadow">
-                  <CardHeader className="border-b bg-linear-to-r from-primary/5 to-background">
+                <Card key={asset.id} className="border-2 transition-shadow hover:shadow-lg">
+                  <CardHeader className="from-primary/5 to-background border-b bg-linear-to-r">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                          <Package className="h-5 w-5 text-primary" />
+                        <div className="bg-primary/10 rounded-lg p-2">
+                          <Package className="text-primary h-5 w-5" />
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <CardTitle className="text-sm font-mono">{asset.unique_code}</CardTitle>
+                            <CardTitle className="font-mono text-sm">{asset.unique_code}</CardTitle>
                             {asset.unresolved_issues_count! > 0 && (
-                              <div className="flex items-center gap-1 px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 rounded-full">
+                              <div className="flex items-center gap-1 rounded-full bg-orange-100 px-2 py-0.5 dark:bg-orange-900/30">
                                 <AlertCircle className="h-3 w-3 text-orange-600 dark:text-orange-400" />
                                 <span className="text-xs font-medium text-orange-700 dark:text-orange-300">
-                                  {asset.unresolved_issues_count || 0} issue{(asset.unresolved_issues_count || 0) > 1 ? 's' : ''}
+                                  {asset.unresolved_issues_count || 0} issue
+                                  {(asset.unresolved_issues_count || 0) > 1 ? "s" : ""}
                                 </span>
                               </div>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1">
+                          <p className="text-muted-foreground mt-1 text-sm">
                             {ASSET_TYPE_MAP[asset.asset_type]?.label || asset.asset_type}
                           </p>
                         </div>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-4 space-y-3">
+                  <CardContent className="space-y-3 p-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Status:</span>
+                      <span className="text-muted-foreground text-sm">Status:</span>
                       <Badge className={getStatusColor(asset.status)}>{asset.status}</Badge>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Year:</span>
-                      <span className="text-sm text-foreground font-medium">
-                        {asset.acquisition_year}
-                      </span>
+                      <span className="text-muted-foreground text-sm">Year:</span>
+                      <span className="text-foreground text-sm font-medium">{asset.acquisition_year}</span>
                     </div>
 
                     {asset.asset_model && (
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Model:</span>
-                        <span className="text-sm text-foreground">{asset.asset_model}</span>
+                        <span className="text-muted-foreground text-sm">Model:</span>
+                        <span className="text-foreground text-sm">{asset.asset_model}</span>
                       </div>
                     )}
 
                     {asset.serial_number && (
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Serial:</span>
-                        <span className="text-sm font-mono text-foreground">
-                          {asset.serial_number}
-                        </span>
+                        <span className="text-muted-foreground text-sm">Serial:</span>
+                        <span className="text-foreground font-mono text-sm">{asset.serial_number}</span>
                       </div>
                     )}
 
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Assigned To:</span>
+                      <span className="text-muted-foreground text-sm">Assigned To:</span>
                       {asset.status === "assigned" || asset.status === "retired" || asset.status === "maintenance" ? (
                         asset.assignment_type === "office" ? (
                           <div className="flex items-center gap-2">
-                            <Building className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-sm text-foreground font-medium">{asset.office_location || "Office"}</span>
-                            {asset.status === "retired" && <span className="text-xs text-muted-foreground">(retired)</span>}
-                            {asset.status === "maintenance" && <span className="text-xs text-muted-foreground">(maintenance)</span>}
+                            <Building className="text-muted-foreground h-3 w-3" />
+                            <span className="text-foreground text-sm font-medium">
+                              {asset.office_location || "Office"}
+                            </span>
+                            {asset.status === "retired" && (
+                              <span className="text-muted-foreground text-xs">(retired)</span>
+                            )}
+                            {asset.status === "maintenance" && (
+                              <span className="text-muted-foreground text-xs">(maintenance)</span>
+                            )}
                           </div>
                         ) : asset.current_assignment ? (
                           asset.current_assignment.department ? (
                             <div className="flex items-center gap-2">
-                              <Building2 className="h-3 w-3 text-muted-foreground" />
-                              <span className="text-sm text-foreground font-medium">
+                              <Building2 className="text-muted-foreground h-3 w-3" />
+                              <span className="text-foreground text-sm font-medium">
                                 {asset.current_assignment.department}
                               </span>
-                              {asset.status === "retired" && <span className="text-xs text-muted-foreground">(retired)</span>}
-                              {asset.status === "maintenance" && <span className="text-xs text-muted-foreground">(maintenance)</span>}
+                              {asset.status === "retired" && (
+                                <span className="text-muted-foreground text-xs">(retired)</span>
+                              )}
+                              {asset.status === "maintenance" && (
+                                <span className="text-muted-foreground text-xs">(maintenance)</span>
+                              )}
                             </div>
                           ) : asset.current_assignment.user ? (
                             <div className="flex items-center gap-2">
-                              <User className="h-3 w-3 text-muted-foreground" />
-                              <span className="text-sm text-foreground font-medium">
-                                {formatName(asset.current_assignment.user.first_name)} {formatName(asset.current_assignment.user.last_name)}
+                              <User className="text-muted-foreground h-3 w-3" />
+                              <span className="text-foreground text-sm font-medium">
+                                {formatName(asset.current_assignment.user.first_name)}{" "}
+                                {formatName(asset.current_assignment.user.last_name)}
                               </span>
-                              {asset.status === "retired" && <span className="text-xs text-muted-foreground">(retired)</span>}
-                              {asset.status === "maintenance" && <span className="text-xs text-muted-foreground">(maintenance)</span>}
+                              {asset.status === "retired" && (
+                                <span className="text-muted-foreground text-xs">(retired)</span>
+                              )}
+                              {asset.status === "maintenance" && (
+                                <span className="text-muted-foreground text-xs">(maintenance)</span>
+                              )}
                             </div>
                           ) : (
-                            <span className="text-sm text-muted-foreground">Unassigned</span>
+                            <span className="text-muted-foreground text-sm">Unassigned</span>
                           )
                         ) : (
-                          <span className="text-sm text-muted-foreground">Unassigned</span>
+                          <span className="text-muted-foreground text-sm">Unassigned</span>
                         )
                       ) : (
-                        <span className="text-sm text-muted-foreground">Unassigned</span>
+                        <span className="text-muted-foreground text-sm">Unassigned</span>
                       )}
                     </div>
 
@@ -1991,7 +2065,7 @@ export default function AdminAssetsPage() {
                         title={asset.status === "retired" ? "Cannot reassign retired asset" : ""}
                       >
                         <UserPlus className="h-3 w-3" />
-                        {(asset.status === "assigned" && asset.current_assignment) ? "Reassign" : "Assign"}
+                        {asset.status === "assigned" && asset.current_assignment ? "Reassign" : "Assign"}
                       </Button>
                       {userProfile?.role !== "lead" && (
                         <Button
@@ -2034,8 +2108,8 @@ export default function AdminAssetsPage() {
         ) : (
           <Card className="border-2">
             <CardContent className="p-12 text-center">
-              <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">No Assets Found</h3>
+              <Package className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
+              <h3 className="text-foreground mb-2 text-xl font-semibold">No Assets Found</h3>
               <p className="text-muted-foreground">
                 {searchQuery || statusFilter !== "all" || departmentFilter !== "all" || userFilter !== "all"
                   ? "No assets match your filters"
@@ -2048,15 +2122,11 @@ export default function AdminAssetsPage() {
 
       {/* asset Dialog */}
       <Dialog open={isAssetDialogOpen} onOpenChange={setIsAssetDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {selectedAsset ? "Edit Asset" : "Add New Asset"}
-            </DialogTitle>
+            <DialogTitle>{selectedAsset ? "Edit Asset" : "Add New Asset"}</DialogTitle>
             <DialogDescription>
-              {selectedAsset
-                ? "Update the asset information below"
-                : "Enter the details for the new asset"}
+              {selectedAsset ? "Update the asset information below" : "Enter the details for the new asset"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -2065,9 +2135,7 @@ export default function AdminAssetsPage() {
                 <Label htmlFor="asset_type">Asset Type *</Label>
                 <SearchableSelect
                   value={assetForm.asset_type}
-                  onValueChange={(value) =>
-                    setAssetForm({ ...assetForm, asset_type: value })
-                  }
+                  onValueChange={(value) => setAssetForm({ ...assetForm, asset_type: value })}
                   placeholder="Select asset type"
                   searchPlaceholder="Search asset types..."
                   disabled={!!selectedAsset}
@@ -2077,9 +2145,7 @@ export default function AdminAssetsPage() {
                   }))}
                 />
                 {selectedAsset && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Asset type cannot be changed after creation
-                  </p>
+                  <p className="text-muted-foreground mt-1 text-xs">Asset type cannot be changed after creation</p>
                 )}
               </div>
               <div>
@@ -2096,7 +2162,7 @@ export default function AdminAssetsPage() {
                   disabled={!!selectedAsset}
                 />
                 {selectedAsset && (
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-muted-foreground mt-1 text-xs">
                     Year cannot be changed after creation (it's part of the unique code)
                   </p>
                 )}
@@ -2110,9 +2176,9 @@ export default function AdminAssetsPage() {
                 id="unique_code"
                 value={selectedAsset ? assetForm.unique_code : getUniqueCodePreview()}
                 readOnly
-                className="font-mono text-sm bg-muted"
+                className="bg-muted font-mono text-sm"
               />
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 text-xs">
                 {selectedAsset
                   ? "Asset unique code (auto-generated at creation)"
                   : "Preview - Serial number (001, 002...) is unique across all years for this asset type"}
@@ -2126,28 +2192,20 @@ export default function AdminAssetsPage() {
                 <Input
                   id="asset_model"
                   value={assetForm.asset_model}
-                  onChange={(e) =>
-                    setAssetForm({ ...assetForm, asset_model: e.target.value })
-                  }
+                  onChange={(e) => setAssetForm({ ...assetForm, asset_model: e.target.value })}
                   placeholder="e.g., Dell Latitude 5420"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Can be added later if not available now
-                </p>
+                <p className="text-muted-foreground mt-1 text-xs">Can be added later if not available now</p>
               </div>
               <div>
                 <Label htmlFor="serial_number">Serial Number (Optional)</Label>
                 <Input
                   id="serial_number"
                   value={assetForm.serial_number}
-                  onChange={(e) =>
-                    setAssetForm({ ...assetForm, serial_number: e.target.value })
-                  }
+                  onChange={(e) => setAssetForm({ ...assetForm, serial_number: e.target.value })}
                   placeholder="e.g., ABC123XYZ"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Can be added later if not available now
-                </p>
+                <p className="text-muted-foreground mt-1 text-xs">Can be added later if not available now</p>
               </div>
             </div>
 
@@ -2180,14 +2238,14 @@ export default function AdminAssetsPage() {
 
             {/* Issue Tracker - only show when editing existing asset */}
             {selectedAsset && (
-              <div className="border-t pt-4 space-y-4">
+              <div className="space-y-4 border-t pt-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <AlertCircle className="h-5 w-5 text-orange-500" />
-                    <h4 className="font-semibold text-foreground">Asset Issues Tracker</h4>
+                    <h4 className="text-foreground font-semibold">Asset Issues Tracker</h4>
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {assetIssues.filter(i => !i.resolved).length} unresolved
+                  <span className="text-muted-foreground text-xs">
+                    {assetIssues.filter((i) => !i.resolved).length} unresolved
                   </span>
                 </div>
 
@@ -2198,42 +2256,38 @@ export default function AdminAssetsPage() {
                     value={newIssueDescription}
                     onChange={(e) => setNewIssueDescription(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
+                      if (e.key === "Enter" && !e.shiftKey) {
                         e.preventDefault()
                         handleAddIssue()
                       }
                     }}
                   />
-                  <Button
-                    onClick={handleAddIssue}
-                    disabled={!newIssueDescription.trim()}
-                    size="sm"
-                  >
+                  <Button onClick={handleAddIssue} disabled={!newIssueDescription.trim()} size="sm">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
 
                 {/* Issues list */}
-                <div className="space-y-2 max-h-60 overflow-y-auto">
+                <div className="max-h-60 space-y-2 overflow-y-auto">
                   {assetIssues.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">
+                    <p className="text-muted-foreground py-4 text-center text-sm">
                       No issues tracked. Add one above if there's a problem with this asset.
                     </p>
                   ) : (
                     assetIssues.map((issue) => (
                       <div
                         key={issue.id}
-                        className={`flex items-start gap-2 p-2 rounded border ${
+                        className={`flex items-start gap-2 rounded border p-2 ${
                           issue.resolved
-                            ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900'
-                            : 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900'
+                            ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/20"
+                            : "border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/20"
                         }`}
                       >
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleToggleIssue(issue)}
-                          className="h-5 w-5 p-0 mt-0.5"
+                          className="mt-0.5 h-5 w-5 p-0"
                         >
                           {issue.resolved ? (
                             <CheckCircle2 className="h-4 w-4 text-green-600" />
@@ -2241,11 +2295,13 @@ export default function AdminAssetsPage() {
                             <div className="h-4 w-4 rounded-full border-2 border-orange-500" />
                           )}
                         </Button>
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-sm ${issue.resolved ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                        <div className="min-w-0 flex-1">
+                          <p
+                            className={`text-sm ${issue.resolved ? "text-muted-foreground line-through" : "text-foreground"}`}
+                          >
                             {issue.description}
                           </p>
-                          <p className="text-xs text-muted-foreground mt-1">
+                          <p className="text-muted-foreground mt-1 text-xs">
                             {new Date(issue.created_at).toLocaleDateString()}
                             {issue.resolved && issue.resolved_at && (
                               <span> • Resolved {new Date(issue.resolved_at).toLocaleDateString()}</span>
@@ -2265,7 +2321,7 @@ export default function AdminAssetsPage() {
                   )}
                 </div>
 
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   💡 Track hardware issues, faults, or needed maintenance. Check items off when resolved.
                 </p>
               </div>
@@ -2273,10 +2329,10 @@ export default function AdminAssetsPage() {
 
             {/* Assignment section - only show when creating new asset and status is 'assigned' */}
             {!selectedAsset && assetForm.status === "assigned" && (
-              <div className="border-t pt-4 space-y-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="h-8 w-1 bg-primary rounded" />
-                  <h4 className="font-semibold text-foreground">Assignment Details</h4>
+              <div className="space-y-4 border-t pt-4">
+                <div className="mb-2 flex items-center gap-2">
+                  <div className="bg-primary h-8 w-1 rounded" />
+                  <h4 className="text-foreground font-semibold">Assignment Details</h4>
                 </div>
 
                 <div>
@@ -2284,7 +2340,13 @@ export default function AdminAssetsPage() {
                   <SearchableSelect
                     value={assetForm.assignment_type}
                     onValueChange={(value) =>
-                      setAssetForm({ ...assetForm, assignment_type: value as "individual" | "department" | "office", assigned_to: "", assignment_department: "", office_location: "" })
+                      setAssetForm({
+                        ...assetForm,
+                        assignment_type: value as "individual" | "department" | "office",
+                        assigned_to: "",
+                        assignment_department: "",
+                        office_location: "",
+                      })
                     }
                     placeholder="Select assignment type"
                     searchPlaceholder="Search assignment types..."
@@ -2301,9 +2363,7 @@ export default function AdminAssetsPage() {
                     <Label htmlFor="assigned_to">Assign To *</Label>
                     <SearchableSelect
                       value={assetForm.assigned_to}
-                      onValueChange={(value) =>
-                        setAssetForm({ ...assetForm, assigned_to: value })
-                      }
+                      onValueChange={(value) => setAssetForm({ ...assetForm, assigned_to: value })}
                       placeholder="Select staff member"
                       searchPlaceholder="Search staff..."
                       icon={<User className="h-4 w-4" />}
@@ -2321,9 +2381,7 @@ export default function AdminAssetsPage() {
                     <Label htmlFor="assignment_department">Department *</Label>
                     <SearchableSelect
                       value={assetForm.assignment_department}
-                      onValueChange={(value) =>
-                        setAssetForm({ ...assetForm, assignment_department: value })
-                      }
+                      onValueChange={(value) => setAssetForm({ ...assetForm, assignment_department: value })}
                       placeholder="Select department"
                       searchPlaceholder="Search departments..."
                       icon={<Building2 className="h-4 w-4" />}
@@ -2341,9 +2399,7 @@ export default function AdminAssetsPage() {
                     <Label htmlFor="office_location">Office Location *</Label>
                     <SearchableSelect
                       value={assetForm.office_location}
-                      onValueChange={(value) =>
-                        setAssetForm({ ...assetForm, office_location: value })
-                      }
+                      onValueChange={(value) => setAssetForm({ ...assetForm, office_location: value })}
                       placeholder="Select office location"
                       searchPlaceholder="Search office locations..."
                       icon={<Building className="h-4 w-4" />}
@@ -2361,9 +2417,7 @@ export default function AdminAssetsPage() {
                   <Textarea
                     id="assignment_notes"
                     value={assetForm.assignment_notes}
-                    onChange={(e) =>
-                      setAssetForm({ ...assetForm, assignment_notes: e.target.value })
-                    }
+                    onChange={(e) => setAssetForm({ ...assetForm, assignment_notes: e.target.value })}
                     placeholder="Notes about this assignment..."
                     rows={2}
                   />
@@ -2381,9 +2435,15 @@ export default function AdminAssetsPage() {
                 // For both create and edit: asset_type is required
                 !assetForm.asset_type ||
                 // For "assigned" status: validate assignment fields
-                (assetForm.status === "assigned" && assetForm.assignment_type === "individual" && !assetForm.assigned_to) ||
-                (assetForm.status === "assigned" && assetForm.assignment_type === "department" && !assetForm.assignment_department) ||
-                (assetForm.status === "assigned" && assetForm.assignment_type === "office" && !assetForm.office_location)
+                (assetForm.status === "assigned" &&
+                  assetForm.assignment_type === "individual" &&
+                  !assetForm.assigned_to) ||
+                (assetForm.status === "assigned" &&
+                  assetForm.assignment_type === "department" &&
+                  !assetForm.assignment_department) ||
+                (assetForm.status === "assigned" &&
+                  assetForm.assignment_type === "office" &&
+                  !assetForm.office_location)
               }
             >
               {selectedAsset ? "Update Asset" : "Create Asset"}
@@ -2398,22 +2458,21 @@ export default function AdminAssetsPage() {
           <DialogHeader>
             <DialogTitle>{currentAssignment ? "Reassign" : "Assign"} Asset</DialogTitle>
             <DialogDescription>
-              {currentAssignment ? "Reassign" : "Assign"} {selectedAsset?.unique_code} ({ASSET_TYPE_MAP[selectedAsset?.asset_type || ""]?.label})
+              {currentAssignment ? "Reassign" : "Assign"} {selectedAsset?.unique_code} (
+              {ASSET_TYPE_MAP[selectedAsset?.asset_type || ""]?.label})
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {!currentAssignment && selectedAsset?.status !== "assigned" && (
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <p className="text-sm font-medium text-blue-900 dark:text-blue-200">
-                  New Assignment
-                </p>
-                <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
+                <p className="text-sm font-medium text-blue-900 dark:text-blue-200">New Assignment</p>
+                <p className="mt-1 text-xs text-blue-700 dark:text-blue-300">
                   When you assign this asset, its status will automatically be changed to "assigned"
                 </p>
               </div>
             )}
             {currentAssignment && (
-              <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-900/20">
                 <p className="text-sm font-medium text-yellow-900 dark:text-yellow-200">
                   Currently assigned to:{" "}
                   {selectedAsset?.assignment_type === "office" ? (
@@ -2422,13 +2481,14 @@ export default function AdminAssetsPage() {
                     <span>{currentAssignment.department} (Department)</span>
                   ) : currentAssignment.user ? (
                     <span>
-                      {formatName((currentAssignment.user as any)?.first_name)} {formatName((currentAssignment.user as any)?.last_name)}
+                      {formatName((currentAssignment.user as any)?.first_name)}{" "}
+                      {formatName((currentAssignment.user as any)?.last_name)}
                     </span>
                   ) : (
                     "Unknown"
                   )}
                 </p>
-                <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                <p className="mt-1 text-xs text-yellow-700 dark:text-yellow-300">
                   This assignment will be marked as handed over
                 </p>
               </div>
@@ -2439,7 +2499,13 @@ export default function AdminAssetsPage() {
               <SearchableSelect
                 value={assignForm.assignment_type}
                 onValueChange={(value) =>
-                  setAssignForm({ ...assignForm, assignment_type: value as "individual" | "department" | "office", assigned_to: "", department: "", office_location: "" })
+                  setAssignForm({
+                    ...assignForm,
+                    assignment_type: value as "individual" | "department" | "office",
+                    assigned_to: "",
+                    department: "",
+                    office_location: "",
+                  })
                 }
                 placeholder="Select assignment type"
                 searchPlaceholder="Search assignment types..."
@@ -2456,9 +2522,7 @@ export default function AdminAssetsPage() {
                 <Label htmlFor="assigned_to">Assign To *</Label>
                 <SearchableSelect
                   value={assignForm.assigned_to}
-                  onValueChange={(value) =>
-                    setAssignForm({ ...assignForm, assigned_to: value })
-                  }
+                  onValueChange={(value) => setAssignForm({ ...assignForm, assigned_to: value })}
                   placeholder="Select staff member"
                   searchPlaceholder="Search staff..."
                   icon={<User className="h-4 w-4" />}
@@ -2468,9 +2532,7 @@ export default function AdminAssetsPage() {
                     icon: <User className="h-3 w-3" />,
                   }))}
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {staff.length} staff members available
-                </p>
+                <p className="text-muted-foreground mt-1 text-xs">{staff.length} staff members available</p>
               </div>
             )}
 
@@ -2479,9 +2541,7 @@ export default function AdminAssetsPage() {
                 <Label htmlFor="department">Department *</Label>
                 <SearchableSelect
                   value={assignForm.department}
-                  onValueChange={(value) =>
-                    setAssignForm({ ...assignForm, department: value })
-                  }
+                  onValueChange={(value) => setAssignForm({ ...assignForm, department: value })}
                   placeholder="Select department"
                   searchPlaceholder="Search departments..."
                   icon={<Building2 className="h-4 w-4" />}
@@ -2491,9 +2551,7 @@ export default function AdminAssetsPage() {
                     icon: <Building2 className="h-3 w-3" />,
                   }))}
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {departments.length} departments available
-                </p>
+                <p className="text-muted-foreground mt-1 text-xs">{departments.length} departments available</p>
               </div>
             )}
 
@@ -2502,9 +2560,7 @@ export default function AdminAssetsPage() {
                 <Label htmlFor="office_location">Office Location *</Label>
                 <SearchableSelect
                   value={assignForm.office_location}
-                  onValueChange={(value) =>
-                    setAssignForm({ ...assignForm, office_location: value })
-                  }
+                  onValueChange={(value) => setAssignForm({ ...assignForm, office_location: value })}
                   placeholder="Select office location"
                   searchPlaceholder="Search office locations..."
                   icon={<Building className="h-4 w-4" />}
@@ -2514,7 +2570,7 @@ export default function AdminAssetsPage() {
                     icon: <Building className="h-3 w-3" />,
                   }))}
                 />
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-muted-foreground mt-1 text-xs">
                   {OFFICE_LOCATIONS.length} office locations available
                 </p>
               </div>
@@ -2525,9 +2581,7 @@ export default function AdminAssetsPage() {
               <Textarea
                 id="assignment_notes"
                 value={assignForm.assignment_notes}
-                onChange={(e) =>
-                  setAssignForm({ ...assignForm, assignment_notes: e.target.value })
-                }
+                onChange={(e) => setAssignForm({ ...assignForm, assignment_notes: e.target.value })}
                 placeholder="Any notes about this assignment (e.g., faults, accessories included)..."
                 rows={3}
               />
@@ -2558,17 +2612,13 @@ export default function AdminAssetsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete "{assetToDelete?.unique_code}" ({ASSET_TYPE_MAP[assetToDelete?.asset_type || ""]?.label}). This action cannot be undone.
+              This will permanently delete "{assetToDelete?.unique_code}" (
+              {ASSET_TYPE_MAP[assetToDelete?.asset_type || ""]?.label}). This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setAssetToDelete(null)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteAsset}
-              className="bg-red-600 hover:bg-red-700"
-            >
+            <AlertDialogCancel onClick={() => setAssetToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteAsset} className="bg-red-600 hover:bg-red-700">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -2577,31 +2627,30 @@ export default function AdminAssetsPage() {
 
       {/* asset History Dialog */}
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
-        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-h-[85vh] max-w-3xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <History className="h-5 w-5 text-primary" />
+              <History className="text-primary h-5 w-5" />
               Asset Assignment History
             </DialogTitle>
             <DialogDescription>
-              Complete history of assignments for {selectedAsset?.unique_code} ({ASSET_TYPE_MAP[selectedAsset?.asset_type || ""]?.label})
+              Complete history of assignments for {selectedAsset?.unique_code} (
+              {ASSET_TYPE_MAP[selectedAsset?.asset_type || ""]?.label})
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 mt-4">
+          <div className="mt-4 space-y-4">
             {assetHistory.map((history, index) => (
               <div
                 key={history.id}
-                className={`p-4 rounded-lg border-2 ${
-                  index === 0
-                    ? "bg-primary/5 border-primary/30 shadow-sm"
-                    : "bg-muted/30 border-muted"
+                className={`rounded-lg border-2 p-4 ${
+                  index === 0 ? "bg-primary/5 border-primary/30 shadow-sm" : "bg-muted/30 border-muted"
                 }`}
               >
-                <div className="flex items-center justify-between mb-3">
+                <div className="mb-3 flex items-center justify-between">
                   <Badge variant={index === 0 ? "default" : "outline"} className="text-xs">
                     {index === 0 ? "Current Assignment" : `Assignment ${assetHistory.length - index}`}
                   </Badge>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="text-muted-foreground flex items-center gap-2 text-sm">
                     <Calendar className="h-3 w-3" />
                     {formatDate(history.assigned_at)}
                   </div>
@@ -2609,16 +2658,17 @@ export default function AdminAssetsPage() {
 
                 {(history.assigned_to_user || (history as any).department) && (
                   <div className="mb-2">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Assigned to:{" "}
                       {(history as any).department ? (
-                        <span className="text-foreground font-semibold flex items-center gap-1">
+                        <span className="text-foreground flex items-center gap-1 font-semibold">
                           <Building2 className="h-3 w-3" />
                           {(history as any).department} (Department)
                         </span>
                       ) : history.assigned_to_user ? (
                         <span className="text-foreground font-semibold">
-                          {formatName(history.assigned_to_user.first_name)} {formatName(history.assigned_to_user.last_name)}
+                          {formatName(history.assigned_to_user.first_name)}{" "}
+                          {formatName(history.assigned_to_user.last_name)}
                         </span>
                       ) : (
                         <span className="text-foreground font-semibold">Office</span>
@@ -2628,7 +2678,7 @@ export default function AdminAssetsPage() {
                 )}
 
                 {history.assigned_by_user && (
-                  <p className="text-sm text-muted-foreground mb-2">
+                  <p className="text-muted-foreground mb-2 text-sm">
                     Assigned by:{" "}
                     <span className="text-foreground font-medium">
                       {formatName(history.assigned_by_user.first_name)} {formatName(history.assigned_by_user.last_name)}
@@ -2637,39 +2687,40 @@ export default function AdminAssetsPage() {
                 )}
 
                 {history.assigned_from_user && (
-                  <p className="text-sm text-muted-foreground mb-2">
+                  <p className="text-muted-foreground mb-2 text-sm">
                     Transferred from:{" "}
                     <span className="text-foreground font-medium">
-                      {formatName(history.assigned_from_user.first_name)} {formatName(history.assigned_from_user.last_name)}
+                      {formatName(history.assigned_from_user.first_name)}{" "}
+                      {formatName(history.assigned_from_user.last_name)}
                     </span>
                   </p>
                 )}
 
                 {history.assignment_notes && (
-                  <div className="mt-3 p-3 bg-background/50 rounded border">
-                    <p className="text-xs font-semibold text-foreground mb-1 flex items-center gap-1">
+                  <div className="bg-background/50 mt-3 rounded border p-3">
+                    <p className="text-foreground mb-1 flex items-center gap-1 text-xs font-semibold">
                       <FileText className="h-3 w-3" />
                       Assignment Notes:
                     </p>
-                    <p className="text-sm text-muted-foreground">{history.assignment_notes}</p>
+                    <p className="text-muted-foreground text-sm">{history.assignment_notes}</p>
                   </div>
                 )}
 
                 {history.handed_over_at && (
-                  <div className="mt-3 pt-3 border-t">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="secondary" className="text-xs">Handed Over</Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {formatDate(history.handed_over_at)}
-                      </span>
+                  <div className="mt-3 border-t pt-3">
+                    <div className="mb-2 flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">
+                        Handed Over
+                      </Badge>
+                      <span className="text-muted-foreground text-xs">{formatDate(history.handed_over_at)}</span>
                     </div>
                     {history.handover_notes && (
-                      <div className="p-3 bg-background/50 rounded border">
-                        <p className="text-xs font-semibold text-foreground mb-1 flex items-center gap-1">
+                      <div className="bg-background/50 rounded border p-3">
+                        <p className="text-foreground mb-1 flex items-center gap-1 text-xs font-semibold">
                           <FileText className="h-3 w-3" />
                           Handover Notes:
                         </p>
-                        <p className="text-sm text-muted-foreground">{history.handover_notes}</p>
+                        <p className="text-muted-foreground text-sm">{history.handover_notes}</p>
                       </div>
                     )}
                   </div>

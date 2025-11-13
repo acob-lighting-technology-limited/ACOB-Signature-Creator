@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export default function DocumentationLoading() {
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Header */}
       <div className="space-y-2">
         <Skeleton className="h-9 w-64" />
@@ -23,7 +23,7 @@ export default function DocumentationLoading() {
           <Card key={i}>
             <CardHeader>
               <div className="flex items-start justify-between">
-                <div className="space-y-2 flex-1">
+                <div className="flex-1 space-y-2">
                   <Skeleton className="h-6 w-48" />
                   <Skeleton className="h-4 w-32" />
                 </div>

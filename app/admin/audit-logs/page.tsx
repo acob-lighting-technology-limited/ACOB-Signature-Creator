@@ -5,34 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SearchableSelect } from "@/components/ui/searchable-select"
 import { Building2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import { ScrollText, Search, Filter, Calendar, User, FileText, LayoutGrid, List, Eye, Download } from "lucide-react"
 import { formatName } from "@/lib/utils"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 
 interface AuditLog {
@@ -107,7 +88,9 @@ export default function AuditLogsPage() {
   const loadLogs = async () => {
     try {
       // Get current user profile to check if they're a lead
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
       const { data: userProfile } = await supabase
@@ -139,47 +122,55 @@ export default function AuditLogsPage() {
         throw logsError
       }
 
-
       // If we have logs, fetch user details for each unique user_id and entity_id
       if (logsData && logsData.length > 0) {
         // Fetch users who performed actions
-        const userIdsSet = new Set(logsData.map(log => log.user_id).filter(Boolean))
+        const userIdsSet = new Set(logsData.map((log) => log.user_id).filter(Boolean))
         const uniqueUserIds = Array.from(userIdsSet)
 
         // Separate entity IDs by type
         const userEntityIds = new Set(
           logsData
-            .filter(log => 
-              log.entity_id && 
-              (log.entity_type === 'profile' || log.entity_type === 'user' || log.entity_type === 'pending_user')
+            .filter(
+              (log) =>
+                log.entity_id &&
+                (log.entity_type === "profile" || log.entity_type === "user" || log.entity_type === "pending_user")
             )
-            .map(log => log.entity_id)
+            .map((log) => log.entity_id)
             .filter(Boolean)
         )
 
-        const taskEntityIds = Array.from(new Set(
-          logsData
-            .filter(log => log.entity_id && log.entity_type === 'task')
-            .map(log => log.entity_id)
-            .filter(Boolean)
-        ))
-
-                  const deviceEntityIds = Array.from(new Set(
+        const taskEntityIds = Array.from(
+          new Set(
             logsData
-              .filter(log => log.entity_id && (log.entity_type === 'device' || log.entity_type === 'device_assignment'))
-              .map(log => log.entity_id)
+              .filter((log) => log.entity_id && log.entity_type === "task")
+              .map((log) => log.entity_id)
               .filter(Boolean)
-          ))
+          )
+        )
 
-          const assetEntityIds = Array.from(new Set(
+        const deviceEntityIds = Array.from(
+          new Set(
             logsData
-              .filter(log => log.entity_id && (log.entity_type === 'asset' || log.entity_type === 'asset_assignment'))
-              .map(log => log.entity_id)
+              .filter(
+                (log) => log.entity_id && (log.entity_type === "device" || log.entity_type === "device_assignment")
+              )
+              .map((log) => log.entity_id)
               .filter(Boolean)
-          ))
+          )
+        )
 
-          // Combine all user IDs for a single query
-        const allUserIds = Array.from(new Set([...uniqueUserIds, ...Array.from(userEntityIds) as string[]]))
+        const assetEntityIds = Array.from(
+          new Set(
+            logsData
+              .filter((log) => log.entity_id && (log.entity_type === "asset" || log.entity_type === "asset_assignment"))
+              .map((log) => log.entity_id)
+              .filter(Boolean)
+          )
+        )
+
+        // Combine all user IDs for a single query
+        const allUserIds = Array.from(new Set([...uniqueUserIds, ...(Array.from(userEntityIds) as string[])]))
 
         // Fetch all users
         const { data: usersData } = await supabase
@@ -187,7 +178,7 @@ export default function AuditLogsPage() {
           .select("id, first_name, last_name, company_email")
           .in("id", allUserIds)
 
-        const usersMap = new Map(usersData?.map(user => [user.id, user]))
+        const usersMap = new Map(usersData?.map((user) => [user.id, user]))
 
         // Fetch tasks if needed
         let tasksMap = new Map()
@@ -199,25 +190,27 @@ export default function AuditLogsPage() {
 
           if (tasksData) {
             // Get assigned users for tasks
-            const taskUserIds = Array.from(new Set(tasksData.map(t => t.assigned_to).filter(Boolean)))
+            const taskUserIds = Array.from(new Set(tasksData.map((t) => t.assigned_to).filter(Boolean)))
             if (taskUserIds.length > 0) {
               const { data: taskUsersData } = await supabase
                 .from("profiles")
                 .select("id, first_name, last_name")
                 .in("id", taskUserIds)
 
-              const taskUsersMap = new Map(taskUsersData?.map(u => [u.id, u]))
-              
-              tasksMap = new Map(tasksData.map(task => [
-                task.id,
-                {
-                  title: task.title,
-                  assigned_to: task.assigned_to,
-                  assigned_to_user: task.assigned_to ? taskUsersMap.get(task.assigned_to) : null
-                }
-              ]))
+              const taskUsersMap = new Map(taskUsersData?.map((u) => [u.id, u]))
+
+              tasksMap = new Map(
+                tasksData.map((task) => [
+                  task.id,
+                  {
+                    title: task.title,
+                    assigned_to: task.assigned_to,
+                    assigned_to_user: task.assigned_to ? taskUsersMap.get(task.assigned_to) : null,
+                  },
+                ])
+              )
             } else {
-              tasksMap = new Map(tasksData.map(task => [task.id, { title: task.title }]))
+              tasksMap = new Map(tasksData.map((task) => [task.id, { title: task.title }]))
             }
           }
         }
@@ -238,8 +231,8 @@ export default function AuditLogsPage() {
               .in("device_id", deviceEntityIds)
               .eq("is_current", true)
 
-            const assignmentsMap = new Map(assignmentsData?.map(a => [a.device_id, a.assigned_to]))
-            
+            const assignmentsMap = new Map(assignmentsData?.map((a) => [a.device_id, a.assigned_to]))
+
             // Get assigned users
             const deviceUserIds = Array.from(new Set(Array.from(assignmentsMap.values()).filter(Boolean)))
             let deviceUsersMap = new Map()
@@ -249,91 +242,106 @@ export default function AuditLogsPage() {
                 .select("id, first_name, last_name")
                 .in("id", deviceUserIds)
 
-              deviceUsersMap = new Map(deviceUsersData?.map(u => [u.id, u]))
+              deviceUsersMap = new Map(deviceUsersData?.map((u) => [u.id, u]))
             }
 
-                          devicesMap = new Map(devicesData.map(device => {
+            devicesMap = new Map(
+              devicesData.map((device) => {
                 const assignedTo = assignmentsMap.get(device.id)
                 return [
                   device.id,
                   {
                     device_name: device.device_name,
                     assigned_to: assignedTo,
-                    assigned_to_user: assignedTo ? deviceUsersMap.get(assignedTo) : null
-                  }
+                    assigned_to_user: assignedTo ? deviceUsersMap.get(assignedTo) : null,
+                  },
                 ]
-              }))
-            }
+              })
+            )
           }
+        }
 
-          // Fetch assets and their current assignments if needed
-          let assetsMap = new Map()
-          if (assetEntityIds.length > 0) {
-            const { data: assetsData } = await supabase
-              .from("assets")
-              .select("id, asset_name")
-              .in("id", assetEntityIds)
+        // Fetch assets and their current assignments if needed
+        let assetsMap = new Map()
+        if (assetEntityIds.length > 0) {
+          const { data: assetsData } = await supabase.from("assets").select("id, asset_name").in("id", assetEntityIds)
 
-            if (assetsData) {
-              // Get current asset assignments
-              const { data: assignmentsData } = await supabase
-                .from("asset_assignments")
-                .select("asset_id, assigned_to")
-                .in("asset_id", assetEntityIds)
-                .eq("is_current", true)
+          if (assetsData) {
+            // Get current asset assignments
+            const { data: assignmentsData } = await supabase
+              .from("asset_assignments")
+              .select("asset_id, assigned_to")
+              .in("asset_id", assetEntityIds)
+              .eq("is_current", true)
 
-              const assignmentsMap = new Map(assignmentsData?.map(a => [a.asset_id, a.assigned_to]))
-              
-              // Get assigned users
-              const assetUserIds = Array.from(new Set(Array.from(assignmentsMap.values()).filter(Boolean)))
-              let assetUsersMap = new Map()
-              if (assetUserIds.length > 0) {
-                const { data: assetUsersData } = await supabase
-                  .from("profiles")
-                  .select("id, first_name, last_name")
-                  .in("id", assetUserIds)
+            const assignmentsMap = new Map(assignmentsData?.map((a) => [a.asset_id, a.assigned_to]))
 
-                assetUsersMap = new Map(assetUsersData?.map(u => [u.id, u]))
-              }
+            // Get assigned users
+            const assetUserIds = Array.from(new Set(Array.from(assignmentsMap.values()).filter(Boolean)))
+            let assetUsersMap = new Map()
+            if (assetUserIds.length > 0) {
+              const { data: assetUsersData } = await supabase
+                .from("profiles")
+                .select("id, first_name, last_name")
+                .in("id", assetUserIds)
 
-              assetsMap = new Map(assetsData.map(asset => {
+              assetUsersMap = new Map(assetUsersData?.map((u) => [u.id, u]))
+            }
+
+            assetsMap = new Map(
+              assetsData.map((asset) => {
                 const assignedTo = assignmentsMap.get(asset.id)
                 return [
                   asset.id,
                   {
                     asset_name: asset.asset_name,
                     assigned_to: assignedTo,
-                    assigned_to_user: assignedTo ? assetUsersMap.get(assignedTo) : null
-                  }
+                    assigned_to_user: assignedTo ? assetUsersMap.get(assignedTo) : null,
+                  },
                 ]
-              }))
-            }
+              })
+            )
           }
+        }
 
-          // Combine logs with all fetched data
-        const logsWithUsers = logsData.map(log => {
+        // Combine logs with all fetched data
+        const logsWithUsers = logsData.map((log) => {
           let targetFromNewValues = null
-          
+
           // Check new_values for assigned_to if we don't have task/device/asset info yet
-          if (log.entity_type === 'task' && !tasksMap.get(log.entity_id) && log.new_values?.assigned_to) {
-            targetFromNewValues = usersMap.get(log.new_values.assigned_to)
-          }
-          
-          if ((log.entity_type === 'device' || log.entity_type === 'device_assignment') && !devicesMap.get(log.entity_id) && log.new_values?.assigned_to) {
+          if (log.entity_type === "task" && !tasksMap.get(log.entity_id) && log.new_values?.assigned_to) {
             targetFromNewValues = usersMap.get(log.new_values.assigned_to)
           }
 
-          if ((log.entity_type === 'asset' || log.entity_type === 'asset_assignment') && !assetsMap.get(log.entity_id) && log.new_values?.assigned_to) {
+          if (
+            (log.entity_type === "device" || log.entity_type === "device_assignment") &&
+            !devicesMap.get(log.entity_id) &&
+            log.new_values?.assigned_to
+          ) {
             targetFromNewValues = usersMap.get(log.new_values.assigned_to)
           }
-          
+
+          if (
+            (log.entity_type === "asset" || log.entity_type === "asset_assignment") &&
+            !assetsMap.get(log.entity_id) &&
+            log.new_values?.assigned_to
+          ) {
+            targetFromNewValues = usersMap.get(log.new_values.assigned_to)
+          }
+
           return {
             ...log,
             user: log.user_id ? usersMap.get(log.user_id) : null,
-            target_user: log.entity_id ? usersMap.get(log.entity_id) : (targetFromNewValues || null),
-            task_info: log.entity_id && log.entity_type === 'task' ? tasksMap.get(log.entity_id) : null,
-            device_info: log.entity_id && (log.entity_type === 'device' || log.entity_type === 'device_assignment') ? devicesMap.get(log.entity_id) : null,
-            asset_info: log.entity_id && (log.entity_type === 'asset' || log.entity_type === 'asset_assignment') ? assetsMap.get(log.entity_id) : null
+            target_user: log.entity_id ? usersMap.get(log.entity_id) : targetFromNewValues || null,
+            task_info: log.entity_id && log.entity_type === "task" ? tasksMap.get(log.entity_id) : null,
+            device_info:
+              log.entity_id && (log.entity_type === "device" || log.entity_type === "device_assignment")
+                ? devicesMap.get(log.entity_id)
+                : null,
+            asset_info:
+              log.entity_id && (log.entity_type === "asset" || log.entity_type === "asset_assignment")
+                ? assetsMap.get(log.entity_id)
+                : null,
           }
         })
 
@@ -357,15 +365,13 @@ export default function AuditLogsPage() {
 
       const { data: staffData } = await staffQuery
       setStaff(staffData || [])
-      
+
       // Extract unique departments - for leads, only show their lead departments
       let uniqueDepartments: string[] = []
       if (userProfile?.role === "lead" && userProfile.lead_departments && userProfile.lead_departments.length > 0) {
         uniqueDepartments = userProfile.lead_departments.sort()
       } else {
-        uniqueDepartments = Array.from(
-          new Set(staffData?.map((s: any) => s.department).filter(Boolean))
-        ) as string[]
+        uniqueDepartments = Array.from(new Set(staffData?.map((s: any) => s.department).filter(Boolean))) as string[]
         uniqueDepartments.sort()
       }
       setDepartments(uniqueDepartments)
@@ -396,7 +402,8 @@ export default function AuditLogsPage() {
       }
     } else {
       // Admins: use department filter
-      matchesDepartment = departmentFilter === "all" || 
+      matchesDepartment =
+        departmentFilter === "all" ||
         (log.user ? staff.find((s) => s.id === log.user_id)?.department === departmentFilter : false)
     }
 
@@ -438,7 +445,7 @@ export default function AuditLogsPage() {
       }
     }
 
-      return matchesSearch && matchesAction && matchesEntity && matchesDate && matchesDepartment && matchesStaff
+    return matchesSearch && matchesAction && matchesEntity && matchesDate && matchesDepartment && matchesStaff
   })
 
   const getActionColor = (action: string) => {
@@ -469,23 +476,34 @@ export default function AuditLogsPage() {
   const getTargetDescription = (log: AuditLog) => {
     const action = log.action.toLowerCase()
     const entityType = log.entity_type.toLowerCase()
-    
+
     // First priority: Check if we have target_user (this handles all user-related targets including tasks)
-    if (log.target_user && (entityType === 'profile' || entityType === 'user' || entityType === 'pending_user' || entityType === 'task' || entityType === 'device' || entityType === 'device_assignment' || entityType === 'asset' || entityType === 'asset_assignment' || entityType === 'job_description')) {
+    if (
+      log.target_user &&
+      (entityType === "profile" ||
+        entityType === "user" ||
+        entityType === "pending_user" ||
+        entityType === "task" ||
+        entityType === "device" ||
+        entityType === "device_assignment" ||
+        entityType === "asset" ||
+        entityType === "asset_assignment" ||
+        entityType === "job_description")
+    ) {
       const name = `${formatName(log.target_user.first_name)} ${formatName(log.target_user.last_name)}`
       return name
     }
-    
+
     // Handle task-related logs with task_info
-    if (entityType === 'task' && log.task_info) {
+    if (entityType === "task" && log.task_info) {
       if (log.task_info.assigned_to_user) {
         const name = `${formatName(log.task_info.assigned_to_user.first_name)} ${formatName(log.task_info.assigned_to_user.last_name)}`
         return name
       }
     }
-    
+
     // Handle device-related logs with device_info
-    if ((entityType === 'device' || entityType === 'device_assignment') && log.device_info) {
+    if ((entityType === "device" || entityType === "device_assignment") && log.device_info) {
       if (log.device_info.assigned_to_user) {
         const name = `${formatName(log.device_info.assigned_to_user.first_name)} ${formatName(log.device_info.assigned_to_user.last_name)}`
         return name
@@ -493,11 +511,11 @@ export default function AuditLogsPage() {
       // Devices can be unassigned
       return "-"
     }
-    
+
     // Handle asset-related logs - show WHO it's assigned to (the target person)
-    if ((entityType === 'asset' || entityType === 'asset_assignment')) {
+    if (entityType === "asset" || entityType === "asset_assignment") {
       // For assignment actions, show the assigned person
-      if (action === 'assign' || action === 'reassign') {
+      if (action === "assign" || action === "reassign") {
         // Check new_values for assigned user
         if (log.new_values?.assigned_to && log.target_user) {
           return `${formatName(log.target_user.first_name)} ${formatName(log.target_user.last_name)}`
@@ -520,46 +538,52 @@ export default function AuditLogsPage() {
 
       return "Asset"
     }
-    
+
     // Handle user-related logs
-    if (entityType === 'profile' || entityType === 'user' || entityType === 'pending_user') {
+    if (entityType === "profile" || entityType === "user" || entityType === "pending_user") {
       // Check new_values for user creation
       if (log.new_values?.first_name && log.new_values?.last_name) {
         return `${formatName(log.new_values.first_name)} ${formatName(log.new_values.last_name)}`
       }
       return "User"
     }
-    
+
     // Handle documentation - target is the person who created it (the user performing the action)
-    if (entityType === 'user_documentation' || entityType === 'documentation') {
+    if (entityType === "user_documentation" || entityType === "documentation") {
       if (log.user) {
         const name = `${formatName(log.user.first_name)} ${formatName(log.user.last_name)}`
         return name
       }
       return "Documentation"
     }
-    
+
     // Handle feedback - target is the person who submitted it
-    if (entityType === 'feedback') {
+    if (entityType === "feedback") {
       if (log.user) {
         const name = `${formatName(log.user.first_name)} ${formatName(log.user.last_name)}`
         return name
       }
       return "Feedback"
     }
-    
-            // Fallback for devices/assets without assignment
-        if (entityType === 'device' || entityType === 'device_assignment' || entityType === 'asset' || entityType === 'asset_assignment') {
-          return "-"
-        }
-    
+
+    // Fallback for devices/assets without assignment
+    if (
+      entityType === "device" ||
+      entityType === "device_assignment" ||
+      entityType === "asset" ||
+      entityType === "asset_assignment"
+    ) {
+      return "-"
+    }
+
     // For any other entity types, capitalize and show nicely
     if (log.entity_id) {
-      return entityType.split('_').map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1)
-      ).join(' ')
+      return entityType
+        .split("_")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ")
     }
-    
+
     return "N/A"
   }
 
@@ -573,10 +597,8 @@ export default function AuditLogsPage() {
 
     try {
       return (
-        <div className="mt-2 p-3 bg-muted/50 rounded-lg">
-          <pre className="text-xs text-muted-foreground overflow-x-auto">
-            {JSON.stringify(values, null, 2)}
-          </pre>
+        <div className="bg-muted/50 mt-2 rounded-lg p-3">
+          <pre className="text-muted-foreground overflow-x-auto text-xs">{JSON.stringify(values, null, 2)}</pre>
         </div>
       )
     } catch {
@@ -597,12 +619,12 @@ export default function AuditLogsPage() {
 
       const dataToExport = filteredLogs.map((log, index) => ({
         "#": index + 1,
-        "Action": log.action,
+        Action: log.action,
         "Entity Type": log.entity_type,
         "Target/Affected": getTargetDescription(log),
         "Performed By": log.user ? `${formatName(log.user.first_name)} ${formatName(log.user.last_name)}` : "N/A",
-        "Date": formatDate(log.created_at),
-        "Email": log.user?.company_email || "N/A",
+        Date: formatDate(log.created_at),
+        Email: log.user?.company_email || "N/A",
       }))
 
       const ws = XLSX.utils.json_to_sheet(dataToExport)
@@ -612,17 +634,16 @@ export default function AuditLogsPage() {
       const maxWidth = 50
       const cols = Object.keys(dataToExport[0] || {}).map((key) => ({
         wch: Math.min(
-          Math.max(
-            key.length,
-            ...dataToExport.map((row) => String(row[key as keyof typeof row]).length)
-          ),
+          Math.max(key.length, ...dataToExport.map((row) => String(row[key as keyof typeof row]).length)),
           maxWidth
         ),
       }))
       ws["!cols"] = cols
 
       const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" })
-      const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
+      const data = new Blob([excelBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      })
       saveAs(data, `audit-logs-export-${new Date().toISOString().split("T")[0]}.xlsx`)
       toast.success("Audit logs exported to Excel successfully")
     } catch (error: any) {
@@ -681,7 +702,18 @@ export default function AuditLogsPage() {
         return
       }
 
-      const { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, WidthType, AlignmentType, HeadingLevel } = await import("docx")
+      const {
+        Document,
+        Packer,
+        Paragraph,
+        TextRun,
+        Table,
+        TableCell,
+        TableRow,
+        WidthType,
+        AlignmentType,
+        HeadingLevel,
+      } = await import("docx")
       const { default: saveAs } = await import("file-saver")
 
       const tableRows = [
@@ -689,23 +721,36 @@ export default function AuditLogsPage() {
           children: [
             new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "#", bold: true })] })] }),
             new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Action", bold: true })] })] }),
-            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Entity Type", bold: true })] })] }),
-            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Target/Affected", bold: true })] })] }),
-            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Performed By", bold: true })] })] }),
+            new TableCell({
+              children: [new Paragraph({ children: [new TextRun({ text: "Entity Type", bold: true })] })],
+            }),
+            new TableCell({
+              children: [new Paragraph({ children: [new TextRun({ text: "Target/Affected", bold: true })] })],
+            }),
+            new TableCell({
+              children: [new Paragraph({ children: [new TextRun({ text: "Performed By", bold: true })] })],
+            }),
             new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Date", bold: true })] })] }),
           ],
         }),
-        ...filteredLogs.map((log, index) =>
-          new TableRow({
-            children: [
-              new TableCell({ children: [new Paragraph((index + 1).toString())] }),
-              new TableCell({ children: [new Paragraph(log.action)] }),
-              new TableCell({ children: [new Paragraph(log.entity_type)] }),
-              new TableCell({ children: [new Paragraph(getTargetDescription(log))] }),
-              new TableCell({ children: [new Paragraph(log.user ? `${formatName(log.user.first_name)} ${formatName(log.user.last_name)}` : "N/A")] }),
-              new TableCell({ children: [new Paragraph(formatDate(log.created_at))] }),
-            ],
-          })
+        ...filteredLogs.map(
+          (log, index) =>
+            new TableRow({
+              children: [
+                new TableCell({ children: [new Paragraph((index + 1).toString())] }),
+                new TableCell({ children: [new Paragraph(log.action)] }),
+                new TableCell({ children: [new Paragraph(log.entity_type)] }),
+                new TableCell({ children: [new Paragraph(getTargetDescription(log))] }),
+                new TableCell({
+                  children: [
+                    new Paragraph(
+                      log.user ? `${formatName(log.user.first_name)} ${formatName(log.user.last_name)}` : "N/A"
+                    ),
+                  ],
+                }),
+                new TableCell({ children: [new Paragraph(formatDate(log.created_at))] }),
+              ],
+            })
         ),
       ]
 
@@ -753,20 +798,20 @@ export default function AuditLogsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 w-full overflow-x-hidden">
+    <div className="from-background via-background to-muted/20 min-h-screen w-full overflow-x-hidden bg-gradient-to-br">
       <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2 sm:gap-3">
-              <ScrollText className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            <h1 className="text-foreground flex items-center gap-2 text-2xl font-bold sm:gap-3 sm:text-3xl">
+              <ScrollText className="text-primary h-6 w-6 sm:h-8 sm:w-8" />
               Audit Logs
             </h1>
             <p className="text-muted-foreground mt-2 text-sm sm:text-base">
               Complete audit trail of all system activities
             </p>
           </div>
-          <div className="flex items-center border rounded-lg p-1">
+          <div className="flex items-center rounded-lg border p-1">
             <Button
               variant={viewMode === "list" ? "default" : "ghost"}
               size="sm"
@@ -794,10 +839,10 @@ export default function AuditLogsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Total Actions</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.total}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Total Actions</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{stats.total}</p>
                 </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <div className="rounded-lg bg-blue-100 p-3 dark:bg-blue-900/30">
                   <ScrollText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
@@ -808,10 +853,10 @@ export default function AuditLogsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Creates</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.creates}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Creates</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{stats.creates}</p>
                 </div>
-                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <div className="rounded-lg bg-green-100 p-3 dark:bg-green-900/30">
                   <FileText className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
               </div>
@@ -822,10 +867,10 @@ export default function AuditLogsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Updates</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.updates}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Updates</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{stats.updates}</p>
                 </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <div className="rounded-lg bg-blue-100 p-3 dark:bg-blue-900/30">
                   <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
@@ -836,10 +881,10 @@ export default function AuditLogsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Deletes</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.deletes}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Deletes</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{stats.deletes}</p>
                 </div>
-                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                <div className="rounded-lg bg-red-100 p-3 dark:bg-red-900/30">
                   <FileText className="h-6 w-6 text-red-600 dark:text-red-400" />
                 </div>
               </div>
@@ -852,7 +897,7 @@ export default function AuditLogsPage() {
           <CardContent className="p-6">
             <div className="grid gap-4 md:grid-cols-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
                 <Input
                   placeholder="Search logs..."
                   value={searchQuery}
@@ -888,13 +933,16 @@ export default function AuditLogsPage() {
                 </SelectContent>
               </Select>
 
-              <Select value={dateFilter} onValueChange={(value) => {
-                setDateFilter(value)
-                if (value !== "custom") {
-                  setCustomStartDate("")
-                  setCustomEndDate("")
-                }
-              }}>
+              <Select
+                value={dateFilter}
+                onValueChange={(value) => {
+                  setDateFilter(value)
+                  if (value !== "custom") {
+                    setCustomStartDate("")
+                    setCustomEndDate("")
+                  }
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Time Period" />
                 </SelectTrigger>
@@ -907,8 +955,8 @@ export default function AuditLogsPage() {
                 </SelectContent>
               </Select>
             </div>
-            
-            <div className="grid gap-4 md:grid-cols-2 mt-4">
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
               {/* Department filter - hidden for leads */}
               {userProfile?.role !== "lead" && (
                 <SearchableSelect
@@ -931,18 +979,23 @@ export default function AuditLogsPage() {
                 value={staffFilter}
                 onValueChange={setStaffFilter}
                 placeholder={
-                  userProfile?.role === "lead" && userProfile.lead_departments && userProfile.lead_departments.length > 0
+                  userProfile?.role === "lead" &&
+                  userProfile.lead_departments &&
+                  userProfile.lead_departments.length > 0
                     ? `All ${userProfile.lead_departments.length === 1 ? userProfile.lead_departments[0] : "Department"} Staff`
                     : "All Staff"
                 }
                 searchPlaceholder="Search staff..."
                 icon={<User className="h-4 w-4" />}
                 options={[
-                  { 
-                    value: "all", 
-                    label: userProfile?.role === "lead" && userProfile.lead_departments && userProfile.lead_departments.length > 0
-                      ? `All ${userProfile.lead_departments.length === 1 ? userProfile.lead_departments[0] : "Department"} Staff`
-                      : "All Staff"
+                  {
+                    value: "all",
+                    label:
+                      userProfile?.role === "lead" &&
+                      userProfile.lead_departments &&
+                      userProfile.lead_departments.length > 0
+                        ? `All ${userProfile.lead_departments.length === 1 ? userProfile.lead_departments[0] : "Department"} Staff`
+                        : "All Staff",
                   },
                   ...staff.map((member) => ({
                     value: member.id,
@@ -954,11 +1007,11 @@ export default function AuditLogsPage() {
             </div>
 
             {dateFilter === "custom" && (
-              <div className="grid gap-4 md:grid-cols-2 mt-4">
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Start Date</label>
+                  <label className="text-foreground text-sm font-medium">Start Date</label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Calendar className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
                     <Input
                       type="date"
                       value={customStartDate}
@@ -969,9 +1022,9 @@ export default function AuditLogsPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">End Date</label>
+                  <label className="text-foreground text-sm font-medium">End Date</label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Calendar className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
                     <Input
                       type="date"
                       value={customEndDate}
@@ -990,10 +1043,10 @@ export default function AuditLogsPage() {
         {/* Export Filtered Data */}
         <Card className="border-2">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Download className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">Export Filtered Data:</span>
+                <Download className="text-muted-foreground h-4 w-4" />
+                <span className="text-foreground text-sm font-medium">Export Filtered Data:</span>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -1049,50 +1102,41 @@ export default function AuditLogsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                  {filteredLogs.map((log, index) => (
-                    <TableRow key={log.id}>
-                      <TableCell className="text-muted-foreground font-medium">{index + 1}</TableCell>
-                      <TableCell>
-                        <Badge className={getActionColor(log.action)}>
-                          {log.action.toUpperCase()}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm font-medium text-foreground">
-                          {log.entity_type.replace("_", " ").toUpperCase()}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm text-foreground">
-                          {getTargetDescription(log)}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2 text-sm">
-                          <User className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-foreground">
-                            {formatName((log.user as any)?.first_name)} {formatName((log.user as any)?.last_name)}
+                    {filteredLogs.map((log, index) => (
+                      <TableRow key={log.id}>
+                        <TableCell className="text-muted-foreground font-medium">{index + 1}</TableCell>
+                        <TableCell>
+                          <Badge className={getActionColor(log.action)}>{log.action.toUpperCase()}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-foreground text-sm font-medium">
+                            {log.entity_type.replace("_", " ").toUpperCase()}
                           </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2 text-sm">
-                          <Calendar className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-muted-foreground">{formatDate(log.created_at)}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleViewDetails(log)}
-                          className="gap-2"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-foreground text-sm">{getTargetDescription(log)}</span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2 text-sm">
+                            <User className="text-muted-foreground h-3 w-3" />
+                            <span className="text-foreground">
+                              {formatName((log.user as any)?.first_name)} {formatName((log.user as any)?.last_name)}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Calendar className="text-muted-foreground h-3 w-3" />
+                            <span className="text-muted-foreground">{formatDate(log.created_at)}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="sm" onClick={() => handleViewDetails(log)} className="gap-2">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </div>
@@ -1100,39 +1144,35 @@ export default function AuditLogsPage() {
           ) : (
             <div className="space-y-3">
               {filteredLogs.map((log) => (
-                <Card key={log.id} className="border-2 hover:shadow-md transition-shadow">
+                <Card key={log.id} className="border-2 transition-shadow hover:shadow-md">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-3 flex-wrap">
-                          <Badge className={getActionColor(log.action)}>
-                            {log.action.toUpperCase()}
-                          </Badge>
-                          <span className="text-sm font-medium text-foreground">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <Badge className={getActionColor(log.action)}>{log.action.toUpperCase()}</Badge>
+                          <span className="text-foreground text-sm font-medium">
                             {log.entity_type.replace("_", " ").toUpperCase()}
                           </span>
-                          <span className="text-sm text-muted-foreground">
-                            {getTargetDescription(log)}
-                          </span>
+                          <span className="text-muted-foreground text-sm">{getTargetDescription(log)}</span>
                         </div>
 
                         <div className="flex items-center gap-4 text-sm">
                           <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-muted-foreground" />
+                            <User className="text-muted-foreground h-4 w-4" />
                             <span className="text-muted-foreground">By:</span>
                             <span className="text-foreground">
                               {formatName((log.user as any)?.first_name)} {formatName((log.user as any)?.last_name)}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <Calendar className="text-muted-foreground h-4 w-4" />
                             <span className="text-muted-foreground">{formatDate(log.created_at)}</span>
                           </div>
                         </div>
 
                         {log.old_values && (
                           <details className="mt-2">
-                            <summary className="text-sm font-medium text-foreground cursor-pointer hover:text-primary">
+                            <summary className="text-foreground hover:text-primary cursor-pointer text-sm font-medium">
                               Old Values
                             </summary>
                             {formatValues(log.old_values)}
@@ -1141,19 +1181,14 @@ export default function AuditLogsPage() {
 
                         {log.new_values && (
                           <details className="mt-2">
-                            <summary className="text-sm font-medium text-foreground cursor-pointer hover:text-primary">
+                            <summary className="text-foreground hover:text-primary cursor-pointer text-sm font-medium">
                               New Values
                             </summary>
                             {formatValues(log.new_values)}
                           </details>
                         )}
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewDetails(log)}
-                        className="gap-2"
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => handleViewDetails(log)} className="gap-2">
                         <Eye className="h-4 w-4" />
                       </Button>
                     </div>
@@ -1165,10 +1200,15 @@ export default function AuditLogsPage() {
         ) : (
           <Card className="border-2">
             <CardContent className="p-12 text-center">
-              <ScrollText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">No Audit Logs Found</h3>
+              <ScrollText className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
+              <h3 className="text-foreground mb-2 text-xl font-semibold">No Audit Logs Found</h3>
               <p className="text-muted-foreground">
-                {searchQuery || actionFilter !== "all" || entityFilter !== "all" || dateFilter !== "all" || departmentFilter !== "all" || staffFilter !== "all"
+                {searchQuery ||
+                actionFilter !== "all" ||
+                entityFilter !== "all" ||
+                dateFilter !== "all" ||
+                departmentFilter !== "all" ||
+                staffFilter !== "all"
                   ? "No logs match your filters"
                   : "No audit logs available yet"}
               </p>
@@ -1178,7 +1218,7 @@ export default function AuditLogsPage() {
 
         {/* Pagination info */}
         {filteredLogs.length > 0 && (
-          <div className="text-center text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-center text-sm">
             Showing {filteredLogs.length} of {logs.length} total logs
             {logs.length >= 500 && " (limited to last 500 entries)"}
           </div>
@@ -1187,7 +1227,7 @@ export default function AuditLogsPage() {
 
       {/* Details Dialog */}
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-h-[80vh] max-w-3xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl">Audit Log Details</DialogTitle>
             <DialogDescription>Complete information about this audit event</DialogDescription>
@@ -1200,45 +1240,41 @@ export default function AuditLogsPage() {
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold">Action</Label>
                   <div>
-                    <Badge className={getActionColor(selectedLog.action)}>
-                      {selectedLog.action.toUpperCase()}
-                    </Badge>
+                    <Badge className={getActionColor(selectedLog.action)}>{selectedLog.action.toUpperCase()}</Badge>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold">Entity Type</Label>
-                  <div className="text-sm font-medium">
-                    {selectedLog.entity_type.replace("_", " ").toUpperCase()}
-                  </div>
+                  <div className="text-sm font-medium">{selectedLog.entity_type.replace("_", " ").toUpperCase()}</div>
                 </div>
               </div>
 
               {/* Target/Affected */}
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">Target/Affected</Label>
-                <div className="p-3 bg-muted/50 rounded-lg border">
+                <div className="bg-muted/50 rounded-lg border p-3">
                   <p className="text-sm font-medium">{getTargetDescription(selectedLog)}</p>
                   {selectedLog.target_user && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {selectedLog.target_user.company_email}
-                    </p>
+                    <p className="text-muted-foreground mt-1 text-xs">{selectedLog.target_user.company_email}</p>
                   )}
                   {selectedLog.task_info && (
-                    <div className="mt-2 pt-2 border-t">
-                      <p className="text-xs text-muted-foreground">Task: {selectedLog.task_info.title}</p>
+                    <div className="mt-2 border-t pt-2">
+                      <p className="text-muted-foreground text-xs">Task: {selectedLog.task_info.title}</p>
                       {selectedLog.task_info.assigned_to_user && (
-                        <p className="text-xs text-muted-foreground">
-                          Assigned to: {formatName(selectedLog.task_info.assigned_to_user.first_name)} {formatName(selectedLog.task_info.assigned_to_user.last_name)}
+                        <p className="text-muted-foreground text-xs">
+                          Assigned to: {formatName(selectedLog.task_info.assigned_to_user.first_name)}{" "}
+                          {formatName(selectedLog.task_info.assigned_to_user.last_name)}
                         </p>
                       )}
                     </div>
                   )}
                   {selectedLog.device_info && (
-                    <div className="mt-2 pt-2 border-t">
-                      <p className="text-xs text-muted-foreground">Device: {selectedLog.device_info.device_name}</p>
+                    <div className="mt-2 border-t pt-2">
+                      <p className="text-muted-foreground text-xs">Device: {selectedLog.device_info.device_name}</p>
                       {selectedLog.device_info.assigned_to_user && (
-                        <p className="text-xs text-muted-foreground">
-                          Assigned to: {formatName(selectedLog.device_info.assigned_to_user.first_name)} {formatName(selectedLog.device_info.assigned_to_user.last_name)}
+                        <p className="text-muted-foreground text-xs">
+                          Assigned to: {formatName(selectedLog.device_info.assigned_to_user.first_name)}{" "}
+                          {formatName(selectedLog.device_info.assigned_to_user.last_name)}
                         </p>
                       )}
                     </div>
@@ -1249,25 +1285,24 @@ export default function AuditLogsPage() {
               {/* Performed By */}
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">Performed By</Label>
-                <div className="p-3 bg-muted/50 rounded-lg border">
+                <div className="bg-muted/50 rounded-lg border p-3">
                   <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
+                    <User className="text-muted-foreground h-4 w-4" />
                     <span className="text-sm font-medium">
-                      {formatName((selectedLog.user as any)?.first_name)} {formatName((selectedLog.user as any)?.last_name)}
+                      {formatName((selectedLog.user as any)?.first_name)}{" "}
+                      {formatName((selectedLog.user as any)?.last_name)}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {(selectedLog.user as any)?.company_email}
-                  </p>
+                  <p className="text-muted-foreground mt-1 text-xs">{(selectedLog.user as any)?.company_email}</p>
                 </div>
               </div>
 
               {/* Date and Time */}
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">Date & Time</Label>
-                <div className="p-3 bg-muted/50 rounded-lg border">
+                <div className="bg-muted/50 rounded-lg border p-3">
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Calendar className="text-muted-foreground h-4 w-4" />
                     <span className="text-sm">{formatDate(selectedLog.created_at)}</span>
                   </div>
                 </div>
@@ -1277,8 +1312,8 @@ export default function AuditLogsPage() {
               {selectedLog.old_values && Object.keys(selectedLog.old_values).length > 0 && (
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold">Old Values</Label>
-                  <div className="p-4 bg-muted/50 rounded-lg border max-h-60 overflow-auto">
-                    <pre className="text-xs whitespace-pre-wrap font-mono">
+                  <div className="bg-muted/50 max-h-60 overflow-auto rounded-lg border p-4">
+                    <pre className="font-mono text-xs whitespace-pre-wrap">
                       {JSON.stringify(selectedLog.old_values, null, 2)}
                     </pre>
                   </div>
@@ -1289,8 +1324,8 @@ export default function AuditLogsPage() {
               {selectedLog.new_values && Object.keys(selectedLog.new_values).length > 0 && (
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold">New Values</Label>
-                  <div className="p-4 bg-muted/50 rounded-lg border max-h-60 overflow-auto">
-                    <pre className="text-xs whitespace-pre-wrap font-mono">
+                  <div className="bg-muted/50 max-h-60 overflow-auto rounded-lg border p-4">
+                    <pre className="font-mono text-xs whitespace-pre-wrap">
                       {JSON.stringify(selectedLog.new_values, null, 2)}
                     </pre>
                   </div>
@@ -1301,14 +1336,14 @@ export default function AuditLogsPage() {
               {selectedLog.entity_id && (
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold">Entity ID</Label>
-                  <div className="p-3 bg-muted/50 rounded-lg border">
-                    <code className="text-xs font-mono break-all">{selectedLog.entity_id}</code>
+                  <div className="bg-muted/50 rounded-lg border p-3">
+                    <code className="font-mono text-xs break-all">{selectedLog.entity_id}</code>
                   </div>
                 </div>
               )}
 
               {/* Close Button */}
-              <div className="flex gap-2 pt-4 border-t">
+              <div className="flex gap-2 border-t pt-4">
                 <Button onClick={() => setIsDetailsOpen(false)} variant="outline" className="flex-1">
                   Close
                 </Button>

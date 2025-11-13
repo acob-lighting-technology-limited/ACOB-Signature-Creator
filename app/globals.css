@@ -168,17 +168,21 @@
 }
 
 #nprogress .bar {
-  @apply bg-primary fixed top-0 left-0 w-full h-[3px] z-[9999];
+  @apply bg-primary fixed top-0 left-0 z-[9999] h-[3px] w-full;
 }
 
 #nprogress .peg {
-  @apply block absolute right-0 w-[100px] h-full opacity-100;
-  box-shadow: 0 0 10px oklch(0.45 0.2 142), 0 0 5px oklch(0.45 0.2 142);
+  @apply absolute right-0 block h-full w-[100px] opacity-100;
+  box-shadow:
+    0 0 10px oklch(0.45 0.2 142),
+    0 0 5px oklch(0.45 0.2 142);
   transform: rotate(3deg) translate(0px, -4px);
 }
 
 .dark #nprogress .peg {
-  box-shadow: 0 0 10px oklch(0.65 0.15 142), 0 0 5px oklch(0.65 0.15 142);
+  box-shadow:
+    0 0 10px oklch(0.65 0.15 142),
+    0 0 5px oklch(0.65 0.15 142);
 }
 
 /* Table responsive scrolling */

@@ -9,11 +9,7 @@ export const metadata: Metadata = {
   description: "View your personal dashboard, stats, and activities at ACOB Lighting Technology Limited",
 }
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data, error } = await supabase.auth.getUser()
 
@@ -22,11 +18,7 @@ export default async function DashboardLayout({
   }
 
   // Fetch user profile
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", data.user.id)
-    .single()
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", data.user.id).single()
 
   const userData = {
     email: data.user.email,

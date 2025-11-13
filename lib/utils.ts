@@ -20,7 +20,11 @@ export function formatName(name?: string | null): string {
 /**
  * Formats a full name (first, middle/other, last) consistently
  */
-export function formatFullName(firstName?: string | null, lastName?: string | null, otherNames?: string | null): string {
+export function formatFullName(
+  firstName?: string | null,
+  lastName?: string | null,
+  otherNames?: string | null
+): string {
   const parts = [formatName(firstName), formatName(otherNames), formatName(lastName)].filter(Boolean)
   return parts.join(" ")
 }

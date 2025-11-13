@@ -63,7 +63,7 @@ export function MediaUpload({ onUpload }: MediaUploadProps) {
         description: "Please upload images or a single MP4/MOV/WEBM video.",
       })
     },
-    [onUpload],
+    [onUpload]
   )
 
   const handleDrop = useCallback(
@@ -72,7 +72,7 @@ export function MediaUpload({ onUpload }: MediaUploadProps) {
       const { files } = e.dataTransfer
       if (files && files.length) handleFiles(files)
     },
-    [handleFiles],
+    [handleFiles]
   )
 
   const handleChange = useCallback(
@@ -80,7 +80,7 @@ export function MediaUpload({ onUpload }: MediaUploadProps) {
       const files = e.target.files
       if (files && files.length) handleFiles(files)
     },
-    [handleFiles],
+    [handleFiles]
   )
 
   return (
@@ -89,13 +89,20 @@ export function MediaUpload({ onUpload }: MediaUploadProps) {
       whileTap={{ scale: 0.99 }}
       onDrop={handleDrop}
       onDragOver={(e) => e.preventDefault()}
-      className="relative border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-muted-foreground transition-colors cursor-pointer glass-effect"
+      className="border-border hover:border-muted-foreground glass-effect relative cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors"
       onClick={() => document.getElementById("media-upload")?.click()}
     >
-      <input id="media-upload" type="file" multiple accept="image/*,video/*" className="hidden" onChange={handleChange} />
-      <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
-      <p className="text-sm text-foreground font-medium mb-1">Drag & drop or click to upload</p>
-      <p className="text-xs text-muted-foreground">Supports JPG, PNG, MP4, MOV</p>
+      <input
+        id="media-upload"
+        type="file"
+        multiple
+        accept="image/*,video/*"
+        className="hidden"
+        onChange={handleChange}
+      />
+      <Upload className="text-muted-foreground mx-auto mb-3 h-10 w-10" />
+      <p className="text-foreground mb-1 text-sm font-medium">Drag & drop or click to upload</p>
+      <p className="text-muted-foreground text-xs">Supports JPG, PNG, MP4, MOV</p>
     </motion.div>
   )
 }

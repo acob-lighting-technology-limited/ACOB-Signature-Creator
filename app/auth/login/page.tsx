@@ -96,15 +96,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-4 md:p-6 bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="from-background via-background to-muted/20 flex min-h-screen w-full items-center justify-center bg-gradient-to-br p-4 md:p-6">
       <div className="w-full max-w-lg">
         <div className="flex flex-col gap-8">
           {/* Header Section */}
-          <div className="text-center space-y-2">
+          <div className="space-y-2 text-center">
             <h1 className="text-4xl font-bold tracking-tight">Welcome Back</h1>
-            <p className="text-muted-foreground text-lg">
-              Login to access your ACOB staff portal
-            </p>
+            <p className="text-muted-foreground text-lg">Login to access your ACOB staff portal</p>
           </div>
 
           <Card className="border-2 shadow-xl">
@@ -113,22 +111,20 @@ export default function LoginPage() {
                 {step === "credentials" ? "Sign In" : "Verify OTP"}
               </CardTitle>
               <CardDescription className="text-base">
-                {step === "credentials"
-                  ? "Choose your preferred login method"
-                  : "Enter the OTP sent to your email"}
+                {step === "credentials" ? "Choose your preferred login method" : "Enter the OTP sent to your email"}
               </CardDescription>
             </CardHeader>
             <CardContent className="pb-8">
               {step === "credentials" ? (
                 <div className="space-y-4">
                   {/* Login Method Tabs */}
-                  <div className="flex gap-2 p-1.5 bg-muted rounded-lg">
+                  <div className="bg-muted flex gap-2 rounded-lg p-1.5">
                     <button
                       type="button"
                       onClick={() => setLoginMethod("password")}
-                      className={`flex-1 py-3 px-6 rounded-md text-sm font-semibold transition-all ${
+                      className={`flex-1 rounded-md px-6 py-3 text-sm font-semibold transition-all ${
                         loginMethod === "password"
-                          ? "bg-background shadow-md ring-2 ring-primary/20"
+                          ? "bg-background ring-primary/20 shadow-md ring-2"
                           : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                       }`}
                     >
@@ -137,9 +133,9 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setLoginMethod("otp")}
-                      className={`flex-1 py-3 px-6 rounded-md text-sm font-semibold transition-all ${
+                      className={`flex-1 rounded-md px-6 py-3 text-sm font-semibold transition-all ${
                         loginMethod === "otp"
-                          ? "bg-background shadow-md ring-2 ring-primary/20"
+                          ? "bg-background ring-primary/20 shadow-md ring-2"
                           : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                       }`}
                     >
@@ -152,7 +148,9 @@ export default function LoginPage() {
                     <form onSubmit={handlePasswordLogin}>
                       <div className="flex flex-col gap-5">
                         <div className="grid gap-3">
-                          <Label htmlFor="email" className="text-sm font-medium">Company Email</Label>
+                          <Label htmlFor="email" className="text-sm font-medium">
+                            Company Email
+                          </Label>
                           <Input
                             id="email"
                             type="email"
@@ -165,10 +163,12 @@ export default function LoginPage() {
                         </div>
                         <div className="grid gap-3">
                           <div className="flex items-center justify-between">
-                            <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-                            <Link 
-                              href="/auth/forgot-password" 
-                              className="text-xs text-primary hover:underline underline-offset-4"
+                            <Label htmlFor="password" className="text-sm font-medium">
+                              Password
+                            </Label>
+                            <Link
+                              href="/auth/forgot-password"
+                              className="text-primary text-xs underline-offset-4 hover:underline"
                             >
                               Forgot password?
                             </Link>
@@ -183,8 +183,10 @@ export default function LoginPage() {
                             className="h-11 text-base"
                           />
                         </div>
-                        {error && <p className="text-sm text-red-500 bg-red-50 dark:bg-red-950/30 p-3 rounded-md">{error}</p>}
-                        <Button type="submit" className="w-full h-11 text-base font-semibold" disabled={isLoading}>
+                        {error && (
+                          <p className="rounded-md bg-red-50 p-3 text-sm text-red-500 dark:bg-red-950/30">{error}</p>
+                        )}
+                        <Button type="submit" className="h-11 w-full text-base font-semibold" disabled={isLoading}>
                           {isLoading ? "Logging in..." : "Login with Password"}
                         </Button>
                       </div>
@@ -194,7 +196,9 @@ export default function LoginPage() {
                     <form onSubmit={handleRequestOTP}>
                       <div className="flex flex-col gap-5">
                         <div className="grid gap-3">
-                          <Label htmlFor="email-otp" className="text-sm font-medium">Company Email</Label>
+                          <Label htmlFor="email-otp" className="text-sm font-medium">
+                            Company Email
+                          </Label>
                           <Input
                             id="email-otp"
                             type="email"
@@ -205,8 +209,10 @@ export default function LoginPage() {
                             className="h-11 text-base"
                           />
                         </div>
-                        {error && <p className="text-sm text-red-500 bg-red-50 dark:bg-red-950/30 p-3 rounded-md">{error}</p>}
-                        <Button type="submit" className="w-full h-11 text-base font-semibold" disabled={isLoading}>
+                        {error && (
+                          <p className="rounded-md bg-red-50 p-3 text-sm text-red-500 dark:bg-red-950/30">{error}</p>
+                        )}
+                        <Button type="submit" className="h-11 w-full text-base font-semibold" disabled={isLoading}>
                           {isLoading ? "Sending OTP..." : "Request OTP"}
                         </Button>
                       </div>
@@ -214,9 +220,12 @@ export default function LoginPage() {
                   )}
 
                   <div className="mt-6 text-center">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Don&apos;t have an account?{" "}
-                      <Link href="/auth/sign-up" className="font-semibold text-primary hover:underline underline-offset-4">
+                      <Link
+                        href="/auth/sign-up"
+                        className="text-primary font-semibold underline-offset-4 hover:underline"
+                      >
                         Sign up
                       </Link>
                     </p>
@@ -227,7 +236,9 @@ export default function LoginPage() {
                 <form onSubmit={handleVerifyOTP}>
                   <div className="flex flex-col gap-6">
                     <div className="grid gap-3">
-                      <Label htmlFor="otp" className="text-sm font-medium">One-Time Password</Label>
+                      <Label htmlFor="otp" className="text-sm font-medium">
+                        One-Time Password
+                      </Label>
                       <Input
                         id="otp"
                         type="text"
@@ -236,11 +247,13 @@ export default function LoginPage() {
                         value={otp}
                         onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
                         maxLength={6}
-                        className="h-11 text-base text-center text-2xl tracking-widest font-mono"
+                        className="h-11 text-center font-mono text-2xl text-base tracking-widest"
                       />
                     </div>
-                    {error && <p className="text-sm text-red-500 bg-red-50 dark:bg-red-950/30 p-3 rounded-md">{error}</p>}
-                    <Button type="submit" className="w-full h-11 text-base font-semibold" disabled={isLoading}>
+                    {error && (
+                      <p className="rounded-md bg-red-50 p-3 text-sm text-red-500 dark:bg-red-950/30">{error}</p>
+                    )}
+                    <Button type="submit" className="h-11 w-full text-base font-semibold" disabled={isLoading}>
                       {isLoading ? "Verifying..." : "Verify OTP"}
                     </Button>
                     <Button
@@ -251,7 +264,7 @@ export default function LoginPage() {
                         setOtp("")
                         setError(null)
                       }}
-                      className="w-full h-11 text-base"
+                      className="h-11 w-full text-base"
                     >
                       Back to Login
                     </Button>

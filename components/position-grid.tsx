@@ -31,16 +31,14 @@ export function PositionGrid({ selected, onSelect }: PositionGridProps) {
           whileTap={{ scale: 0.98 }}
           onClick={() => onSelect(value)}
           className={cn(
-            "h-16 rounded-lg border-[0.5px] transition-all duration-200 text-xs font-medium relative overflow-hidden",
+            "relative h-16 overflow-hidden rounded-lg border-[0.5px] text-xs font-medium transition-all duration-200",
             selected === value
-              ? "border-primary bg-primary/15 text-primary shadow-[0_0_0_2px_rgba(0,0,0,0.02)] ring-2 ring-primary/40"
-              : "border-border bg-secondary/50 text-muted-foreground hover:border-primary/50 hover:bg-secondary",
+              ? "border-primary bg-primary/15 text-primary ring-primary/40 shadow-[0_0_0_2px_rgba(0,0,0,0.02)] ring-2"
+              : "border-border bg-secondary/50 text-muted-foreground hover:border-primary/50 hover:bg-secondary"
           )}
         >
           {label}
-          {selected === value ? (
-            <span className="absolute inset-0 pointer-events-none bg-primary/5" />
-          ) : null}
+          {selected === value ? <span className="bg-primary/5 pointer-events-none absolute inset-0" /> : null}
         </motion.button>
       ))}
     </div>

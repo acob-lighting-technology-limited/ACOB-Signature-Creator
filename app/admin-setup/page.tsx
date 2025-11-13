@@ -38,11 +38,11 @@ export default async function AdminSetupPage() {
           <CardDescription>Make yourself an admin to access the admin dashboard</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             You are currently logged in as <strong>{data.user.email}</strong>
           </p>
 
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Click the button below to grant yourself admin privileges and access the admin dashboard.
           </p>
 

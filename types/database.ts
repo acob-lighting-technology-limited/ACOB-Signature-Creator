@@ -1,18 +1,18 @@
-export type UserRole = 'visitor' | 'staff' | 'lead' | 'admin' | 'super_admin'
+export type UserRole = "visitor" | "staff" | "lead" | "admin" | "super_admin"
 
-export type DeviceStatus = 'available' | 'assigned' | 'maintenance' | 'retired'
+export type DeviceStatus = "available" | "assigned" | "maintenance" | "retired"
 
-export type AssetStatus = 'available' | 'assigned' | 'maintenance' | 'retired'
+export type AssetStatus = "available" | "assigned" | "maintenance" | "retired"
 
-export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled'
+export type TaskStatus = "pending" | "in_progress" | "completed" | "cancelled"
 
-export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent'
+export type TaskPriority = "low" | "medium" | "high" | "urgent"
 
-export type ProjectStatus = 'planning' | 'active' | 'on_hold' | 'completed' | 'cancelled'
+export type ProjectStatus = "planning" | "active" | "on_hold" | "completed" | "cancelled"
 
-export type ProjectMemberRole = 'member' | 'lead' | 'manager'
+export type ProjectMemberRole = "member" | "lead" | "manager"
 
-export type ProjectItemStatus = 'pending' | 'ordered' | 'received' | 'installed'
+export type ProjectItemStatus = "pending" | "ordered" | "received" | "installed"
 
 export interface Profile {
   id: string
@@ -119,7 +119,7 @@ export interface TaskUpdate {
   id: string
   task_id: string
   user_id: string
-  update_type: 'comment' | 'status_change' | 'progress_update'
+  update_type: "comment" | "status_change" | "progress_update"
   content?: string
   old_value?: string
   new_value?: string
@@ -198,7 +198,7 @@ export interface ProjectUpdate {
   id: string
   project_id: string
   user_id: string
-  update_type: 'comment' | 'status_change' | 'milestone' | 'member_added' | 'member_removed'
+  update_type: "comment" | "status_change" | "milestone" | "member_added" | "member_removed"
   content?: string
   old_value?: string
   new_value?: string

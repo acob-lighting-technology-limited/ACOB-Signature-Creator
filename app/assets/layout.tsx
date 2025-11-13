@@ -6,11 +6,6 @@ export const metadata: Metadata = {
   description: "View your assigned assets and equipment",
 }
 
-export default function AssetsLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function AssetsLayout({ children }: { children: React.ReactNode }) {
   return <AppLayout>{children}</AppLayout>
 }
-

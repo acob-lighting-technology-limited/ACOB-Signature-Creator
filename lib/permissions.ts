@@ -11,27 +11,27 @@ import type { UserRole, Profile } from "@/types/database"
 
 // Helper to check role hierarchy
 export function hasRoleOrHigher(userRole: UserRole, requiredRole: UserRole): boolean {
-  const hierarchy: UserRole[] = ['visitor', 'staff', 'lead', 'admin', 'super_admin']
+  const hierarchy: UserRole[] = ["visitor", "staff", "lead", "admin", "super_admin"]
   const userLevel = hierarchy.indexOf(userRole)
   const requiredLevel = hierarchy.indexOf(requiredRole)
   return userLevel >= requiredLevel
 }
 
 export function canViewAllStaff(role: UserRole): boolean {
-  return hasRoleOrHigher(role, 'admin') // admin and super_admin
+  return hasRoleOrHigher(role, "admin") // admin and super_admin
 }
 
 export function canViewDepartmentStaff(role: UserRole, leadDepartments: string[], staffDepartment: string): boolean {
   if (canViewAllStaff(role)) return true
-  return role === 'lead' && leadDepartments.includes(staffDepartment)
+  return role === "lead" && leadDepartments.includes(staffDepartment)
 }
 
 export function canManageDevices(role: UserRole): boolean {
-  return hasRoleOrHigher(role, 'admin') // admin and super_admin
+  return hasRoleOrHigher(role, "admin") // admin and super_admin
 }
 
 export function canCreateTasks(role: UserRole): boolean {
-  return hasRoleOrHigher(role, 'lead') // lead, admin, and super_admin
+  return hasRoleOrHigher(role, "lead") // lead, admin, and super_admin
 }
 
 export function canViewTask(
@@ -40,9 +40,9 @@ export function canViewTask(
   task: { assigned_to: string; assigned_by: string; department?: string },
   userId: string
 ): boolean {
-  if (hasRoleOrHigher(role, 'admin')) return true // admin and super_admin see all
+  if (hasRoleOrHigher(role, "admin")) return true // admin and super_admin see all
   if (task.assigned_to === userId || task.assigned_by === userId) return true
-  if (role === 'lead' && task.department && leadDepartments.includes(task.department)) return true
+  if (role === "lead" && task.department && leadDepartments.includes(task.department)) return true
   return false
 }
 
@@ -54,17 +54,17 @@ export function canViewUserDocumentation(
   viewerId: string
 ): boolean {
   if (documentOwnerId === viewerId) return true
-  if (hasRoleOrHigher(viewerRole, 'admin')) return true // admin and super_admin see all
-  if (viewerRole === 'lead' && viewerLeadDepartments.includes(documentOwnerDepartment)) return true
+  if (hasRoleOrHigher(viewerRole, "admin")) return true // admin and super_admin see all
+  if (viewerRole === "lead" && viewerLeadDepartments.includes(documentOwnerDepartment)) return true
   return false
 }
 
 export function canViewAuditLogs(role: UserRole): boolean {
-  return hasRoleOrHigher(role, 'lead') // lead, admin, and super_admin
+  return hasRoleOrHigher(role, "lead") // lead, admin, and super_admin
 }
 
 export function canCreateProjects(role: UserRole): boolean {
-  return hasRoleOrHigher(role, 'lead') // lead, admin, and super_admin
+  return hasRoleOrHigher(role, "lead") // lead, admin, and super_admin
 }
 
 export function canViewProject(
@@ -74,10 +74,10 @@ export function canViewProject(
   userId: string,
   isProjectMember: boolean
 ): boolean {
-  if (hasRoleOrHigher(role, 'admin')) return true // admin and super_admin see all
+  if (hasRoleOrHigher(role, "admin")) return true // admin and super_admin see all
   if (project.created_by === userId || project.project_manager_id === userId) return true
   if (isProjectMember) return true
-  if (role === 'lead') return true // leads can see all projects
+  if (role === "lead") return true // leads can see all projects
   return false
 }
 
@@ -86,13 +86,13 @@ export function canEditProject(
   project: { created_by: string; project_manager_id?: string },
   userId: string
 ): boolean {
-  if (hasRoleOrHigher(role, 'admin')) return true // admin and super_admin can edit all
+  if (hasRoleOrHigher(role, "admin")) return true // admin and super_admin can edit all
   if (project.created_by === userId || project.project_manager_id === userId) return true
   return false
 }
 
 export function canDeleteProject(role: UserRole): boolean {
-  return hasRoleOrHigher(role, 'admin') // only admin and super_admin
+  return hasRoleOrHigher(role, "admin") // only admin and super_admin
 }
 
 export function canManageProjectMembers(
@@ -100,18 +100,18 @@ export function canManageProjectMembers(
   project: { created_by: string; project_manager_id?: string },
   userId: string
 ): boolean {
-  if (hasRoleOrHigher(role, 'admin')) return true // admin and super_admin can manage all
+  if (hasRoleOrHigher(role, "admin")) return true // admin and super_admin can manage all
   if (project.created_by === userId || project.project_manager_id === userId) return true
   return false
 }
 
 export function canAssignRoles(assignerRole: UserRole, targetRole: UserRole): boolean {
   // super_admin can assign any role
-  if (assignerRole === 'super_admin') return true
+  if (assignerRole === "super_admin") return true
 
   // admin can assign visitor, staff, and lead (but not admin or super_admin)
-  if (assignerRole === 'admin') {
-    return ['visitor', 'staff', 'lead'].includes(targetRole)
+  if (assignerRole === "admin") {
+    return ["visitor", "staff", "lead"].includes(targetRole)
   }
 
   // Others cannot assign roles
@@ -120,35 +120,35 @@ export function canAssignRoles(assignerRole: UserRole, targetRole: UserRole): bo
 
 export function getRoleDisplayName(role: UserRole): string {
   const roleNames: Record<UserRole, string> = {
-    visitor: 'Visitor',
-    staff: 'Staff',
-    lead: 'Lead',
-    admin: 'Admin',
-    super_admin: 'Super Admin',
+    visitor: "Visitor",
+    staff: "Staff",
+    lead: "Lead",
+    admin: "Admin",
+    super_admin: "Super Admin",
   }
   return roleNames[role]
 }
 
 export function getRoleBadgeColor(role: UserRole): string {
   const colors: Record<UserRole, string> = {
-    visitor: 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-400',
-    staff: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
-    lead: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-    admin: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
-    super_admin: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+    visitor: "bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-400",
+    staff: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
+    lead: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+    admin: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+    super_admin: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
   }
   return colors[role]
 }
 
 export const DEPARTMENTS = [
-  'Accounts',
-  'Admin & HR',
-  'Business Growth and Innovation',
-  'IT and Communications',
-  'Legal, Regulatory and Compliance',
-  'Logistics',
-  'Operations',
-  'Technical',
+  "Accounts",
+  "Admin & HR",
+  "Business Growth and Innovation",
+  "IT and Communications",
+  "Legal, Regulatory and Compliance",
+  "Logistics",
+  "Operations",
+  "Technical",
 ] as const
 
 export const OFFICE_LOCATIONS = [
@@ -165,8 +165,8 @@ export const OFFICE_LOCATIONS = [
   "Operations",
   "Reception",
   "Technical",
-  "Technical Extension"
+  "Technical Extension",
 ] as const
 
-export type Department = typeof DEPARTMENTS[number]
-export type OfficeLocation = typeof OFFICE_LOCATIONS[number]
+export type Department = (typeof DEPARTMENTS)[number]
+export type OfficeLocation = (typeof OFFICE_LOCATIONS)[number]

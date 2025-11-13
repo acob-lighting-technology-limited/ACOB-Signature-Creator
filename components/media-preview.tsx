@@ -29,7 +29,14 @@ function isVideoFile(file: File): boolean {
   return /(\.(mp4|mov|webm))$/i.test(name)
 }
 
-export function MediaPreview({ mediaFile, mediaType, watermarkPath, config, processedUrl, onUpload }: MediaPreviewProps) {
+export function MediaPreview({
+  mediaFile,
+  mediaType,
+  watermarkPath,
+  config,
+  processedUrl,
+  onUpload,
+}: MediaPreviewProps) {
   const [mediaUrl, setMediaUrl] = useState<string | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -135,7 +142,7 @@ export function MediaPreview({ mediaFile, mediaType, watermarkPath, config, proc
         description: "Please upload images or a single MP4/MOV/WEBM video.",
       })
     },
-    [onUpload],
+    [onUpload]
   )
 
   const handleDrop = useCallback(
@@ -144,7 +151,7 @@ export function MediaPreview({ mediaFile, mediaType, watermarkPath, config, proc
       const { files } = e.dataTransfer
       if (files && files.length) handleFiles(files)
     },
-    [handleFiles],
+    [handleFiles]
   )
 
   const handleChange = useCallback(
@@ -152,18 +159,18 @@ export function MediaPreview({ mediaFile, mediaType, watermarkPath, config, proc
       const files = e.target.files
       if (files && files.length) handleFiles(files)
     },
-    [handleFiles],
+    [handleFiles]
   )
 
   if (!mediaFile) {
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="flex h-full items-center justify-center">
         <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
-          className="relative border-2 border-dashed border-border rounded-lg p-12 text-center hover:border-muted-foreground transition-colors cursor-pointer max-w-2xl w-full"
+          className="border-border hover:border-muted-foreground relative w-full max-w-2xl cursor-pointer rounded-lg border-2 border-dashed p-12 text-center transition-colors"
           onClick={() => document.getElementById("preview-media-upload")?.click()}
         >
           <input
@@ -174,19 +181,19 @@ export function MediaPreview({ mediaFile, mediaType, watermarkPath, config, proc
             className="hidden"
             onChange={handleChange}
           />
-          <Upload className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-xl font-semibold text-foreground mb-2">No media uploaded</h2>
-          <p className="text-sm text-muted-foreground">
+          <Upload className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
+          <h2 className="text-foreground mb-2 text-xl font-semibold">No media uploaded</h2>
+          <p className="text-muted-foreground text-sm">
             Drag & drop or click to upload an image or video to get started
           </p>
-          <p className="text-xs text-muted-foreground mt-2">Supports JPG, PNG, MP4, MOV</p>
+          <p className="text-muted-foreground mt-2 text-xs">Supports JPG, PNG, MP4, MOV</p>
         </motion.div>
       </div>
     )
   }
 
   return (
-    <div className="h-full flex flex-col items-center justify-center gap-6">
+    <div className="flex h-full flex-col items-center justify-center gap-6">
       <AnimatePresence mode="wait">
         {processedUrl ? (
           <motion.div
@@ -194,17 +201,17 @@ export function MediaPreview({ mediaFile, mediaType, watermarkPath, config, proc
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="max-w-4xl w-full"
+            className="w-full max-w-4xl"
           >
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-foreground">Processed Result</h3>
-              <p className="text-sm text-muted-foreground">Your watermarked media is ready</p>
+              <h3 className="text-foreground text-lg font-semibold">Processed Result</h3>
+              <p className="text-muted-foreground text-sm">Your watermarked media is ready</p>
             </div>
-            <div className="rounded-lg overflow-hidden border border-border glass-effect">
+            <div className="border-border glass-effect overflow-hidden rounded-lg border">
               {mediaType === "image" ? (
-                <img src={processedUrl || "/placeholder.svg"} alt="Processed" className="w-full h-auto" />
+                <img src={processedUrl || "/placeholder.svg"} alt="Processed" className="h-auto w-full" />
               ) : (
-                <video src={processedUrl} controls className="w-full h-auto" />
+                <video src={processedUrl} controls className="h-auto w-full" />
               )}
             </div>
           </motion.div>
@@ -214,17 +221,17 @@ export function MediaPreview({ mediaFile, mediaType, watermarkPath, config, proc
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="max-w-4xl w-full"
+            className="w-full max-w-4xl"
           >
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-foreground">Live Preview</h3>
-              <p className="text-sm text-muted-foreground">Adjust settings to see changes in real-time</p>
+              <h3 className="text-foreground text-lg font-semibold">Live Preview</h3>
+              <p className="text-muted-foreground text-sm">Adjust settings to see changes in real-time</p>
             </div>
-            <div className="rounded-lg overflow-hidden border border-border glass-effect">
+            <div className="border-border glass-effect overflow-hidden rounded-lg border">
               {mediaType === "image" ? (
-                <canvas ref={canvasRef} className="w-full h-auto" />
+                <canvas ref={canvasRef} className="h-auto w-full" />
               ) : (
-                <video ref={videoRef} src={mediaUrl || ""} controls className="w-full h-auto" />
+                <video ref={videoRef} src={mediaUrl || ""} controls className="h-auto w-full" />
               )}
             </div>
           </motion.div>

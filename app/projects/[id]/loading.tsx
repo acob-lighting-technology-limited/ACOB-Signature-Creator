@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs"
 
 export default function ProjectDetailLoading() {
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Back button */}
       <Skeleton className="h-10 w-32" />
 
@@ -20,7 +20,7 @@ export default function ProjectDetailLoading() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="space-y-1">
                 <Skeleton className="h-4 w-24" />

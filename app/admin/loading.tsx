@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export default function AdminLoading() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div className="bg-background min-h-screen">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="space-y-6">
           {/* Header skeleton */}
           <div className="space-y-2">
@@ -35,16 +35,16 @@ export default function AdminLoading() {
           <Card>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
-                <div className="min-w-full divide-y divide-border">
+                <div className="divide-border min-w-full divide-y">
                   {/* Table header */}
-                  <div className="flex gap-4 p-4 bg-muted/50">
+                  <div className="bg-muted/50 flex gap-4 p-4">
                     {[...Array(9)].map((_, i) => (
                       <Skeleton key={i} className="h-4 w-24" />
                     ))}
                   </div>
                   {/* Table rows */}
                   {[...Array(10)].map((_, i) => (
-                    <div key={i} className="flex gap-4 p-4 border-t">
+                    <div key={i} className="flex gap-4 border-t p-4">
                       {[...Array(9)].map((_, j) => (
                         <Skeleton key={j} className="h-4 w-24" />
                       ))}

@@ -6,10 +6,6 @@ export const metadata: Metadata = {
   description: "Manage your assigned tasks and track progress",
 }
 
-export default function TasksLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function TasksLayout({ children }: { children: React.ReactNode }) {
   return <AppLayout>{children}</AppLayout>
 }

@@ -14,10 +14,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { 
-  Bell, 
-  CheckCheck, 
-  X, 
+import {
+  Bell,
+  CheckCheck,
+  X,
   Search,
   Settings,
   AlertCircle,
@@ -31,7 +31,7 @@ import {
   Clock,
   ChevronRight,
   Trash2,
-  Archive
+  Archive,
 } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -105,7 +105,7 @@ function formatRelativeTime(dateString: string): string {
   const date = new Date(dateString)
   const now = new Date()
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-  
+
   if (diffInSeconds < 60) return "Just now"
   if (diffInSeconds < 3600) {
     const minutes = Math.floor(diffInSeconds / 60)
@@ -123,7 +123,7 @@ function formatRelativeTime(dateString: string): string {
     const weeks = Math.floor(diffInSeconds / 604800)
     return `${weeks}w ago`
   }
-  
+
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
 
@@ -140,21 +140,23 @@ function getInitials(name?: string): string {
 export function ProfessionalNotificationBell({ isAdmin = false }: ProfessionalNotificationBellProps) {
   const router = useRouter()
   const supabase = createClient()
-  
+
   // State
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
-  
+
   // Real-time subscription ref
   const subscriptionRef = useRef<any>(null)
 
   // Load notifications
   const loadNotifications = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
       const { data, error } = await supabase
@@ -180,39 +182,41 @@ export function ProfessionalNotificationBell({ isAdmin = false }: ProfessionalNo
 
     // Subscribe to real-time updates
     const setupSubscription = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
       subscriptionRef.current = supabase
-        .channel('notifications')
+        .channel("notifications")
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: '*',
-            schema: 'public',
-            table: 'notifications',
-            filter: `user_id=eq.${user.id}`
+            event: "*",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
-            console.log('Notification change:', payload)
-            
-            if (payload.eventType === 'INSERT') {
-              setNotifications(prev => [payload.new as Notification, ...prev])
-              
+            console.log("Notification change:", payload)
+
+            if (payload.eventType === "INSERT") {
+              setNotifications((prev) => [payload.new as Notification, ...prev])
+
               // Show toast for new notification
               toast.info(payload.new.title, {
                 description: payload.new.message,
-                action: payload.new.link_url ? {
-                  label: "View",
-                  onClick: () => router.push(payload.new.link_url)
-                } : undefined
+                action: payload.new.link_url
+                  ? {
+                      label: "View",
+                      onClick: () => router.push(payload.new.link_url),
+                    }
+                  : undefined,
               })
-            } else if (payload.eventType === 'UPDATE') {
-              setNotifications(prev =>
-                prev.map(n => n.id === payload.new.id ? payload.new as Notification : n)
-              )
-            } else if (payload.eventType === 'DELETE') {
-              setNotifications(prev => prev.filter(n => n.id !== payload.old.id))
+            } else if (payload.eventType === "UPDATE") {
+              setNotifications((prev) => prev.map((n) => (n.id === payload.new.id ? (payload.new as Notification) : n)))
+            } else if (payload.eventType === "DELETE") {
+              setNotifications((prev) => prev.filter((n) => n.id !== payload.old.id))
             }
           }
         )
@@ -245,9 +249,7 @@ export function ProfessionalNotificationBell({ isAdmin = false }: ProfessionalNo
 
       if (error) throw error
 
-      setNotifications(prev =>
-        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-      )
+      setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n)))
     } catch (error: any) {
       console.error("Error marking as read:", error)
     }
@@ -256,17 +258,19 @@ export function ProfessionalNotificationBell({ isAdmin = false }: ProfessionalNo
   // Mark all as read
   const markAllAsRead = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
-      const { error } = await supabase.rpc('mark_notifications_read', {
+      const { error } = await supabase.rpc("mark_notifications_read", {
         p_user_id: user.id,
-        p_notification_ids: null
+        p_notification_ids: null,
       })
 
       if (error) throw error
 
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
       toast.success("All notifications marked as read")
     } catch (error: any) {
       console.error("Error marking all as read:", error)
@@ -277,14 +281,11 @@ export function ProfessionalNotificationBell({ isAdmin = false }: ProfessionalNo
   // Delete notification
   const deleteNotification = async (notificationId: string) => {
     try {
-      const { error } = await supabase
-        .from("notifications")
-        .delete()
-        .eq("id", notificationId)
+      const { error } = await supabase.from("notifications").delete().eq("id", notificationId)
 
       if (error) throw error
 
-      setNotifications(prev => prev.filter(n => n.id !== notificationId))
+      setNotifications((prev) => prev.filter((n) => n.id !== notificationId))
     } catch (error: any) {
       console.error("Error deleting notification:", error)
       toast.error("Failed to delete notification")
@@ -301,7 +302,7 @@ export function ProfessionalNotificationBell({ isAdmin = false }: ProfessionalNo
 
       if (error) throw error
 
-      setNotifications(prev => prev.filter(n => n.id !== notificationId))
+      setNotifications((prev) => prev.filter((n) => n.id !== notificationId))
       toast.success("Notification archived")
     } catch (error: any) {
       console.error("Error archiving notification:", error)
@@ -330,7 +331,7 @@ export function ProfessionalNotificationBell({ isAdmin = false }: ProfessionalNo
   }
 
   // Filter notifications
-  const filteredNotifications = notifications.filter(n => {
+  const filteredNotifications = notifications.filter((n) => {
     // Tab filter
     if (activeTab === "unread" && n.read) return false
     if (activeTab !== "all" && activeTab !== "unread" && n.category !== activeTab) return false
@@ -349,16 +350,16 @@ export function ProfessionalNotificationBell({ isAdmin = false }: ProfessionalNo
   })
 
   // Calculate counts
-  const unreadCount = notifications.filter(n => !n.read).length
+  const unreadCount = notifications.filter((n) => !n.read).length
   const categoryCounts = {
     all: notifications.length,
     unread: unreadCount,
-    tasks: notifications.filter(n => n.category === 'tasks').length,
-    assets: notifications.filter(n => n.category === 'assets').length,
-    feedback: notifications.filter(n => n.category === 'feedback').length,
-    approvals: notifications.filter(n => n.category === 'approvals').length,
-    mentions: notifications.filter(n => n.category === 'mentions').length,
-    system: notifications.filter(n => n.category === 'system').length,
+    tasks: notifications.filter((n) => n.category === "tasks").length,
+    assets: notifications.filter((n) => n.category === "assets").length,
+    feedback: notifications.filter((n) => n.category === "feedback").length,
+    approvals: notifications.filter((n) => n.category === "approvals").length,
+    mentions: notifications.filter((n) => n.category === "mentions").length,
+    system: notifications.filter((n) => n.category === "system").length,
   }
 
   if (isLoading) {
@@ -371,57 +372,47 @@ export function ProfessionalNotificationBell({ isAdmin = false }: ProfessionalNo
         <Button
           variant="ghost"
           size="icon"
-          className="relative h-10 w-10 rounded-full hover:bg-muted transition-colors"
+          className="hover:bg-muted relative h-10 w-10 rounded-full transition-colors"
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] font-bold"
+              className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center p-0 text-[10px] font-bold"
             >
               {unreadCount > 99 ? "99+" : unreadCount}
             </Badge>
           )}
         </Button>
       </DropdownMenuTrigger>
-      
+
       <DropdownMenuContent
         align="end"
-        className="w-[480px] p-0 shadow-xl border-2"
+        className="w-[480px] border-2 p-0 shadow-xl"
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-muted/30">
+        <div className="bg-muted/30 flex items-center justify-between border-b p-4">
           <div className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-foreground" />
-            <h3 className="font-semibold text-base">Notifications</h3>
+            <Bell className="text-foreground h-5 w-5" />
+            <h3 className="text-base font-semibold">Notifications</h3>
             {unreadCount > 0 && (
-              <Badge variant="secondary" className="text-xs font-semibold px-2">
+              <Badge variant="secondary" className="px-2 text-xs font-semibold">
                 {unreadCount} new
               </Badge>
             )}
           </div>
-          
+
           <div className="flex items-center gap-2">
             {unreadCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 text-xs"
-                onClick={markAllAsRead}
-              >
-                <CheckCheck className="h-4 w-4 mr-1" />
+              <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={markAllAsRead}>
+                <CheckCheck className="mr-1 h-4 w-4" />
                 Mark all read
               </Button>
             )}
-            
+
             <Link href={isAdmin ? "/admin/notification" : "/notification"}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setIsOpen(false)}
-              >
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsOpen(false)}>
                 <Settings className="h-4 w-4" />
               </Button>
             </Link>
@@ -429,51 +420,54 @@ export function ProfessionalNotificationBell({ isAdmin = false }: ProfessionalNo
         </div>
 
         {/* Search */}
-        <div className="p-3 border-b">
+        <div className="border-b p-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
               placeholder="Search notifications..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9"
+              className="h-9 pl-9"
             />
           </div>
         </div>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto">
-            <TabsTrigger 
-              value="all" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3"
+          <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
+            <TabsTrigger
+              value="all"
+              className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
             >
-              All {categoryCounts.all > 0 && (
-                <Badge variant="secondary" className="ml-2 text-xs px-1.5">
+              All{" "}
+              {categoryCounts.all > 0 && (
+                <Badge variant="secondary" className="ml-2 px-1.5 text-xs">
                   {categoryCounts.all}
                 </Badge>
               )}
             </TabsTrigger>
-            
-            <TabsTrigger 
+
+            <TabsTrigger
               value="unread"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3"
+              className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
             >
-              Unread {categoryCounts.unread > 0 && (
-                <Badge variant="destructive" className="ml-2 text-xs px-1.5">
+              Unread{" "}
+              {categoryCounts.unread > 0 && (
+                <Badge variant="destructive" className="ml-2 px-1.5 text-xs">
                   {categoryCounts.unread}
                 </Badge>
               )}
             </TabsTrigger>
-            
+
             {categoryCounts.mentions > 0 && (
-              <TabsTrigger 
+              <TabsTrigger
                 value="mentions"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3"
+                className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
               >
-                <MessageSquare className="h-4 w-4 mr-1" />
-                Mentions {categoryCounts.mentions > 0 && (
-                  <Badge variant="secondary" className="ml-2 text-xs px-1.5">
+                <MessageSquare className="mr-1 h-4 w-4" />
+                Mentions{" "}
+                {categoryCounts.mentions > 0 && (
+                  <Badge variant="secondary" className="ml-2 px-1.5 text-xs">
                     {categoryCounts.mentions}
                   </Badge>
                 )}
@@ -487,20 +481,18 @@ export function ProfessionalNotificationBell({ isAdmin = false }: ProfessionalNo
                 <div className="divide-y">
                   {filteredNotifications.map((notification) => {
                     const Icon = typeIcons[notification.type as keyof typeof typeIcons] || Info
-                    
+
                     return (
                       <div
                         key={notification.id}
                         className={cn(
-                          "group relative p-4 hover:bg-muted/30 transition-all cursor-pointer",
+                          "group hover:bg-muted/30 relative cursor-pointer p-4 transition-all",
                           !notification.read && "bg-blue-50/30 dark:bg-blue-950/10"
                         )}
                         onClick={() => handleNotificationClick(notification)}
                       >
                         {/* Unread indicator */}
-                        {!notification.read && (
-                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
-                        )}
+                        {!notification.read && <div className="bg-primary absolute top-0 bottom-0 left-0 w-1" />}
 
                         <div className="flex gap-3 pl-2">
                           {/* Actor Avatar or Icon */}
@@ -514,32 +506,31 @@ export function ProfessionalNotificationBell({ isAdmin = false }: ProfessionalNo
                               </AvatarFallback>
                             </Avatar>
                           ) : (
-                            <div className={cn(
-                              "h-10 w-10 rounded-full flex items-center justify-center shrink-0",
-                              "bg-muted",
-                              priorityColors[notification.priority as keyof typeof priorityColors]
-                            )}>
+                            <div
+                              className={cn(
+                                "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+                                "bg-muted",
+                                priorityColors[notification.priority as keyof typeof priorityColors]
+                              )}
+                            >
                               <Icon className="h-5 w-5" />
                             </div>
                           )}
 
                           {/* Content */}
-                          <div className="flex-1 min-w-0">
+                          <div className="min-w-0 flex-1">
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1">
-                                <p className={cn(
-                                  "text-sm leading-snug",
-                                  !notification.read && "font-semibold"
-                                )}>
+                                <p className={cn("text-sm leading-snug", !notification.read && "font-semibold")}>
                                   {notification.title}
                                 </p>
-                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                                <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs">
                                   {notification.message}
                                 </p>
-                                
+
                                 {/* Link indicator */}
                                 {notification.link_url && (
-                                  <div className="flex items-center gap-1 mt-1 text-xs text-primary font-medium">
+                                  <div className="text-primary mt-1 flex items-center gap-1 text-xs font-medium">
                                     View details
                                     <ChevronRight className="h-3 w-3" />
                                   </div>
@@ -547,46 +538,46 @@ export function ProfessionalNotificationBell({ isAdmin = false }: ProfessionalNo
                               </div>
 
                               <div className="flex items-center gap-2">
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                <span className="text-muted-foreground text-xs whitespace-nowrap">
                                   {formatRelativeTime(notification.created_at)}
                                 </span>
                               </div>
                             </div>
 
                             {/* Action buttons (hidden, show on hover) */}
-                            <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="mt-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                               {!notification.read && (
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 text-xs px-2"
+                                  className="h-7 px-2 text-xs"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     markAsRead(notification.id)
                                   }}
                                 >
-                                  <CheckCheck className="h-3 w-3 mr-1" />
+                                  <CheckCheck className="mr-1 h-3 w-3" />
                                   Mark read
                                 </Button>
                               )}
-                              
+
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-7 text-xs px-2"
+                                className="h-7 px-2 text-xs"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   archiveNotification(notification.id)
                                 }}
                               >
-                                <Archive className="h-3 w-3 mr-1" />
+                                <Archive className="mr-1 h-3 w-3" />
                                 Archive
                               </Button>
-                              
+
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-7 text-xs px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10 h-7 px-2 text-xs"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   deleteNotification(notification.id)
@@ -602,18 +593,17 @@ export function ProfessionalNotificationBell({ isAdmin = false }: ProfessionalNo
                   })}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-16 px-4">
-                  <div className="p-4 rounded-full bg-muted mb-4">
-                    <Bell className="h-12 w-12 text-muted-foreground opacity-50" />
+                <div className="flex flex-col items-center justify-center px-4 py-16">
+                  <div className="bg-muted mb-4 rounded-full p-4">
+                    <Bell className="text-muted-foreground h-12 w-12 opacity-50" />
                   </div>
-                  <p className="text-sm font-semibold text-foreground mb-1">
+                  <p className="text-foreground mb-1 text-sm font-semibold">
                     {searchQuery ? "No matching notifications" : "No notifications"}
                   </p>
-                  <p className="text-xs text-muted-foreground text-center max-w-sm">
-                    {searchQuery 
+                  <p className="text-muted-foreground max-w-sm text-center text-xs">
+                    {searchQuery
                       ? "Try adjusting your search terms"
-                      : "You're all caught up! We'll notify you when something important happens."
-                    }
+                      : "You're all caught up! We'll notify you when something important happens."}
                   </p>
                 </div>
               )}
@@ -623,11 +613,11 @@ export function ProfessionalNotificationBell({ isAdmin = false }: ProfessionalNo
 
         {/* Footer */}
         <DropdownMenuSeparator className="my-0" />
-        <div className="p-3 bg-muted/20">
+        <div className="bg-muted/20 p-3">
           <Link
             href={isAdmin ? "/admin/notification" : "/notification"}
             onClick={() => setIsOpen(false)}
-            className="text-xs text-center text-primary hover:underline font-medium block w-full py-1"
+            className="text-primary block w-full py-1 text-center text-xs font-medium hover:underline"
           >
             View all notifications →
           </Link>
@@ -636,4 +626,3 @@ export function ProfessionalNotificationBell({ isAdmin = false }: ProfessionalNo
     </DropdownMenu>
   )
 }
-

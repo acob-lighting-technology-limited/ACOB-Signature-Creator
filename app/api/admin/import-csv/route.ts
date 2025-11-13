@@ -53,10 +53,10 @@ export async function POST(request: Request) {
           } else {
             inQuotes = !inQuotes
           }
-        } else if ((c === '\n' || c === '\r') && !inQuotes) {
+        } else if ((c === "\n" || c === "\r") && !inQuotes) {
           if (cur.length) rows.push(cur)
           cur = ""
-          if (c === '\r' && n === '\n') i++
+          if (c === "\r" && n === "\n") i++
         } else {
           cur += c
         }
@@ -77,7 +77,7 @@ export async function POST(request: Request) {
             } else {
               q = !q
             }
-          } else if (c === ',' && !q) {
+          } else if (c === "," && !q) {
             out.push(buf)
             buf = ""
           } else {
@@ -131,7 +131,9 @@ export async function POST(request: Request) {
         "Company Email (or personal email if not available)",
         "Company Email",
         "Email",
-      ]).toLowerCase().trim()
+      ])
+        .toLowerCase()
+        .trim()
       let email = originalEmailFromCsv
 
       // If personal or missing email, generate a company email using surname initial + '.' + first name
@@ -304,4 +306,3 @@ export async function POST(request: Request) {
     )
   }
 }
-

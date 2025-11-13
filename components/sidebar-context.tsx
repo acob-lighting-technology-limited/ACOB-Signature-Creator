@@ -12,11 +12,7 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined)
 export function SidebarProvider({ children }: { children: ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
 
-  return (
-    <SidebarContext.Provider value={{ isCollapsed, setIsCollapsed }}>
-      {children}
-    </SidebarContext.Provider>
-  )
+  return <SidebarContext.Provider value={{ isCollapsed, setIsCollapsed }}>{children}</SidebarContext.Provider>
 }
 
 export function useSidebar() {
@@ -32,4 +28,3 @@ export function useSidebarSafe() {
   const context = useContext(SidebarContext)
   return context || null
 }
-

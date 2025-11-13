@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export default function ProfileLoading() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8">
+    <div className="bg-background min-h-screen">
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="space-y-6">
           {/* Header skeleton */}
           <div className="space-y-2">

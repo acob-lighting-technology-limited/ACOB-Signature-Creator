@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export default function ProjectsLoading() {
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Header */}
       <div className="space-y-2">
         <Skeleton className="h-9 w-64" />
@@ -26,7 +26,7 @@ export default function ProjectsLoading() {
           <Card key={i}>
             <CardHeader>
               <div className="flex items-start justify-between">
-                <div className="space-y-2 flex-1">
+                <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-2">
                     <Skeleton className="h-7 w-48" />
                     <Skeleton className="h-6 w-20" />
@@ -37,7 +37,7 @@ export default function ProjectsLoading() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 {[...Array(4)].map((_, j) => (
                   <div key={j} className="space-y-1">
                     <Skeleton className="h-4 w-20" />

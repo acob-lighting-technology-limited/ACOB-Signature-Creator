@@ -1,15 +1,21 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Search, Loader2, User, Laptop, Package, ClipboardList, FileText, MessageSquare, Building2, X } from "lucide-react"
+import {
+  Search,
+  Loader2,
+  User,
+  Laptop,
+  Package,
+  ClipboardList,
+  FileText,
+  MessageSquare,
+  Building2,
+  X,
+} from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -111,12 +117,12 @@ export function UniversalSearch() {
     <>
       <Button
         variant="outline"
-        className="relative h-10 w-full justify-start text-sm text-muted-foreground sm:pr-12 md:w-64 lg:w-80"
+        className="text-muted-foreground relative h-10 w-full justify-start text-sm sm:pr-12 md:w-64 lg:w-80"
         onClick={() => setOpen(true)}
       >
         <Search className="mr-2 h-4 w-4" />
         <span>Search anything...</span>
-        <kbd className="pointer-events-none absolute right-1.5 top-1.5 hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+        <kbd className="bg-muted pointer-events-none absolute top-1.5 right-1.5 hidden h-6 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none sm:flex">
           <span className="text-xs">⌘</span>K
         </kbd>
       </Button>
@@ -128,7 +134,7 @@ export function UniversalSearch() {
           </DialogHeader>
           <div className="px-6 pb-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
               <Input
                 placeholder="Search staff, devices, assets, tasks, documentation, feedback..."
                 value={query}
@@ -140,7 +146,7 @@ export function UniversalSearch() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
+                  className="absolute top-1/2 right-1 h-7 w-7 -translate-y-1/2"
                   onClick={() => {
                     setQuery("")
                     setResults([])
@@ -155,20 +161,18 @@ export function UniversalSearch() {
           <div className="max-h-[400px] overflow-y-auto px-6 pb-6">
             {loading && (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
               </div>
             )}
 
             {!loading && query && results.length === 0 && (
-              <div className="py-8 text-center text-sm text-muted-foreground">
+              <div className="text-muted-foreground py-8 text-center text-sm">
                 No results found for &quot;{query}&quot;
               </div>
             )}
 
             {!loading && !query && (
-              <div className="py-8 text-center text-sm text-muted-foreground">
-                Start typing to search...
-              </div>
+              <div className="text-muted-foreground py-8 text-center text-sm">Start typing to search...</div>
             )}
 
             {!loading && results.length > 0 && (
@@ -184,25 +188,19 @@ export function UniversalSearch() {
                         "hover:bg-accent hover:text-accent-foreground"
                       )}
                     >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
+                      <div className="bg-muted flex h-10 w-10 items-center justify-center rounded-md">
                         <Icon className="h-5 w-5" />
                       </div>
-                      <div className="flex-1 min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium truncate">{result.title}</p>
+                          <p className="truncate font-medium">{result.title}</p>
                           <Badge variant="outline" className="text-xs">
                             {typeLabels[result.type]}
                           </Badge>
                         </div>
-                        {result.subtitle && (
-                          <p className="text-sm text-muted-foreground truncate">
-                            {result.subtitle}
-                          </p>
-                        )}
+                        {result.subtitle && <p className="text-muted-foreground truncate text-sm">{result.subtitle}</p>}
                         {result.description && (
-                          <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
-                            {result.description}
-                          </p>
+                          <p className="text-muted-foreground mt-1 line-clamp-1 text-xs">{result.description}</p>
                         )}
                       </div>
                     </button>
@@ -216,4 +214,3 @@ export function UniversalSearch() {
     </>
   )
 }
-

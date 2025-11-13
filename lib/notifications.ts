@@ -7,11 +7,21 @@ import { createClient } from "@/lib/supabase/client"
 
 interface CreateNotificationParams {
   userId: string
-  type: 'task_assigned' | 'task_updated' | 'task_completed' | 'mention' | 'feedback' | 'asset_assigned' | 'approval_request' | 'approval_granted' | 'system' | 'announcement'
-  category: 'tasks' | 'assets' | 'feedback' | 'approvals' | 'system' | 'mentions'
+  type:
+    | "task_assigned"
+    | "task_updated"
+    | "task_completed"
+    | "mention"
+    | "feedback"
+    | "asset_assigned"
+    | "approval_request"
+    | "approval_granted"
+    | "system"
+    | "announcement"
+  category: "tasks" | "assets" | "feedback" | "approvals" | "system" | "mentions"
   title: string
   message: string
-  priority?: 'low' | 'normal' | 'high' | 'urgent'
+  priority?: "low" | "normal" | "high" | "urgent"
   linkUrl?: string
   actorId?: string
   entityType?: string
@@ -24,27 +34,27 @@ interface CreateNotificationParams {
  */
 export async function createNotification(params: CreateNotificationParams) {
   const supabase = createClient()
-  
+
   try {
-    const { data, error } = await supabase.rpc('create_notification', {
+    const { data, error } = await supabase.rpc("create_notification", {
       p_user_id: params.userId,
       p_type: params.type,
       p_category: params.category,
       p_title: params.title,
       p_message: params.message,
-      p_priority: params.priority || 'normal',
+      p_priority: params.priority || "normal",
       p_link_url: params.linkUrl || null,
       p_actor_id: params.actorId || null,
       p_entity_type: params.entityType || null,
       p_entity_id: params.entityId || null,
-      p_rich_content: params.richContent || null
+      p_rich_content: params.richContent || null,
     })
-    
+
     if (error) throw error
-    
+
     return data
   } catch (error) {
-    console.error('Error creating notification:', error)
+    console.error("Error creating notification:", error)
     throw error
   }
 }
@@ -57,26 +67,26 @@ export async function notifyTaskAssigned(params: {
   taskId: string
   taskTitle: string
   assignedBy: string
-  priority?: 'low' | 'medium' | 'high' | 'urgent'
+  priority?: "low" | "medium" | "high" | "urgent"
 }) {
-  const priorityMap: Record<string, 'low' | 'normal' | 'high' | 'urgent'> = {
-    low: 'low',
-    medium: 'normal',
-    high: 'high',
-    urgent: 'urgent'
+  const priorityMap: Record<string, "low" | "normal" | "high" | "urgent"> = {
+    low: "low",
+    medium: "normal",
+    high: "high",
+    urgent: "urgent",
   }
-  
+
   return createNotification({
     userId: params.userId,
-    type: 'task_assigned',
-    category: 'tasks',
-    title: 'New task assigned to you',
+    type: "task_assigned",
+    category: "tasks",
+    title: "New task assigned to you",
     message: `You've been assigned "${params.taskTitle}"`,
-    priority: priorityMap[params.priority || 'medium'],
+    priority: priorityMap[params.priority || "medium"],
     linkUrl: `/tasks`,
     actorId: params.assignedBy,
-    entityType: 'task',
-    entityId: params.taskId
+    entityType: "task",
+    entityId: params.taskId,
   })
 }
 
@@ -92,15 +102,15 @@ export async function notifyTaskUpdated(params: {
 }) {
   return createNotification({
     userId: params.userId,
-    type: 'task_updated',
-    category: 'tasks',
-    title: 'Task updated',
+    type: "task_updated",
+    category: "tasks",
+    title: "Task updated",
     message: `"${params.taskTitle}" - ${params.changeDescription}`,
-    priority: 'normal',
+    priority: "normal",
     linkUrl: `/tasks`,
     actorId: params.updatedBy,
-    entityType: 'task',
-    entityId: params.taskId
+    entityType: "task",
+    entityId: params.taskId,
   })
 }
 
@@ -115,15 +125,15 @@ export async function notifyTaskCompleted(params: {
 }) {
   return createNotification({
     userId: params.userId,
-    type: 'task_completed',
-    category: 'tasks',
-    title: 'Task completed',
+    type: "task_completed",
+    category: "tasks",
+    title: "Task completed",
     message: `"${params.taskTitle}" has been marked as completed`,
-    priority: 'low',
+    priority: "low",
     linkUrl: `/tasks`,
     actorId: params.completedBy,
-    entityType: 'task',
-    entityId: params.taskId
+    entityType: "task",
+    entityId: params.taskId,
   })
 }
 
@@ -139,15 +149,15 @@ export async function notifyAssetAssigned(params: {
 }) {
   return createNotification({
     userId: params.userId,
-    type: 'asset_assigned',
-    category: 'assets',
-    title: 'New asset assigned to you',
+    type: "asset_assigned",
+    category: "assets",
+    title: "New asset assigned to you",
     message: `${params.assetName} (${params.assetCode}) has been assigned to you`,
-    priority: 'normal',
+    priority: "normal",
     linkUrl: `/assets`,
     actorId: params.assignedBy,
-    entityType: 'asset',
-    entityId: params.assetId
+    entityType: "asset",
+    entityId: params.assetId,
   })
 }
 
@@ -163,15 +173,15 @@ export async function notifyApprovalRequest(params: {
 }) {
   return createNotification({
     userId: params.adminId,
-    type: 'approval_request',
-    category: 'approvals',
-    title: 'Approval required',
+    type: "approval_request",
+    category: "approvals",
+    title: "Approval required",
     message: `${params.requestType}: ${params.requestDetails}`,
-    priority: 'high',
+    priority: "high",
     linkUrl: params.linkUrl,
     actorId: params.requestBy,
-    entityType: 'approval',
-    entityId: undefined
+    entityType: "approval",
+    entityId: undefined,
   })
 }
 
@@ -187,15 +197,15 @@ export async function notifyApprovalGranted(params: {
 }) {
   return createNotification({
     userId: params.userId,
-    type: 'approval_granted',
-    category: 'approvals',
-    title: 'Approval granted',
+    type: "approval_granted",
+    category: "approvals",
+    title: "Approval granted",
     message: `Your ${params.approvalType} has been approved. ${params.details}`,
-    priority: 'normal',
+    priority: "normal",
     linkUrl: params.linkUrl,
     actorId: params.approvedBy,
-    entityType: 'approval',
-    entityId: undefined
+    entityType: "approval",
+    entityId: undefined,
   })
 }
 
@@ -210,15 +220,15 @@ export async function notifyFeedbackResponse(params: {
 }) {
   return createNotification({
     userId: params.userId,
-    type: 'feedback',
-    category: 'feedback',
-    title: 'Response to your feedback',
+    type: "feedback",
+    category: "feedback",
+    title: "Response to your feedback",
     message: params.responsePreview,
-    priority: 'normal',
+    priority: "normal",
     linkUrl: `/feedback`,
     actorId: params.responseBy,
-    entityType: 'feedback',
-    entityId: params.feedbackId
+    entityType: "feedback",
+    entityId: params.feedbackId,
   })
 }
 
@@ -234,15 +244,15 @@ export async function notifyMention(params: {
 }) {
   return createNotification({
     userId: params.userId,
-    type: 'mention',
-    category: 'mentions',
-    title: 'Someone mentioned you',
+    type: "mention",
+    category: "mentions",
+    title: "Someone mentioned you",
     message: `You were mentioned in ${params.context}`,
-    priority: 'normal',
+    priority: "normal",
     linkUrl: params.linkUrl,
     actorId: params.mentionedBy,
     entityType: params.contextType,
-    entityId: undefined
+    entityId: undefined,
   })
 }
 
@@ -253,34 +263,31 @@ export async function createSystemAnnouncement(params: {
   userIds: string[] // Array of user IDs to notify
   title: string
   message: string
-  priority?: 'low' | 'normal' | 'high' | 'urgent'
+  priority?: "low" | "normal" | "high" | "urgent"
   linkUrl?: string
   expiresInDays?: number
 }) {
   const supabase = createClient()
-  
-  const expiresAt = params.expiresInDays 
+
+  const expiresAt = params.expiresInDays
     ? new Date(Date.now() + params.expiresInDays * 24 * 60 * 60 * 1000).toISOString()
     : null
-  
-  const notifications = params.userIds.map(userId => ({
+
+  const notifications = params.userIds.map((userId) => ({
     user_id: userId,
-    type: 'announcement',
-    category: 'system',
-    priority: params.priority || 'normal',
+    type: "announcement",
+    category: "system",
+    priority: params.priority || "normal",
     title: params.title,
     message: params.message,
     link_url: params.linkUrl || null,
-    expires_at: expiresAt
+    expires_at: expiresAt,
   }))
-  
-  const { data, error } = await supabase
-    .from('notifications')
-    .insert(notifications)
-    .select()
-  
+
+  const { data, error } = await supabase.from("notifications").insert(notifications).select()
+
   if (error) throw error
-  
+
   return data
 }
 
@@ -289,17 +296,19 @@ export async function createSystemAnnouncement(params: {
  */
 export async function markNotificationsAsRead(notificationIds: string[]) {
   const supabase = createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
-  
-  const { data, error } = await supabase.rpc('mark_notifications_read', {
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Not authenticated")
+
+  const { data, error } = await supabase.rpc("mark_notifications_read", {
     p_user_id: user.id,
-    p_notification_ids: notificationIds
+    p_notification_ids: notificationIds,
   })
-  
+
   if (error) throw error
-  
+
   return data
 }
 
@@ -308,19 +317,20 @@ export async function markNotificationsAsRead(notificationIds: string[]) {
  */
 export async function getUnreadCount() {
   const supabase = createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return 0
-  
+
   const { count, error } = await supabase
-    .from('notifications')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-    .eq('read', false)
-    .eq('archived', false)
-  
+    .from("notifications")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .eq("read", false)
+    .eq("archived", false)
+
   if (error) throw error
-  
+
   return count || 0
 }
-

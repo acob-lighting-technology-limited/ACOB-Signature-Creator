@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export default function FeedbackLoading() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div className="bg-background min-h-screen">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="space-y-6">
           {/* Header skeleton */}
           <div className="space-y-2">
@@ -37,7 +37,7 @@ export default function FeedbackLoading() {
             <CardContent>
               <div className="space-y-4">
                 {[...Array(5)].map((_, i) => (
-                  <div key={i} className="flex items-start gap-4 p-4 border rounded-lg">
+                  <div key={i} className="flex items-start gap-4 rounded-lg border p-4">
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-2">
                         <Skeleton className="h-5 w-24" />

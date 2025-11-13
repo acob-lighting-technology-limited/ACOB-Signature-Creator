@@ -4,21 +4,21 @@ import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs"
 
 export default function StaffDetailLoading() {
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Back button */}
       <Skeleton className="h-10 w-32" />
 
       {/* Profile Header */}
       <Card>
         <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row items-start gap-6">
-            <Skeleton className="h-24 w-24 rounded-full flex-shrink-0" />
-            <div className="space-y-4 flex-1">
+          <div className="flex flex-col items-start gap-6 md:flex-row">
+            <Skeleton className="h-24 w-24 flex-shrink-0 rounded-full" />
+            <div className="flex-1 space-y-4">
               <div className="space-y-2">
                 <Skeleton className="h-8 w-48" />
                 <Skeleton className="h-5 w-32" />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="space-y-1">
                     <Skeleton className="h-4 w-24" />

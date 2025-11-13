@@ -6,10 +6,6 @@ export const metadata: Metadata = {
   description: "Manage your profile information and settings at ACOB Lighting Technology Limited",
 }
 
-export default function ProfileLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function ProfileLayout({ children }: { children: React.ReactNode }) {
   return <AppLayout>{children}</AppLayout>
 }

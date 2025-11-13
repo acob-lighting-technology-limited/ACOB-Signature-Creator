@@ -6,10 +6,6 @@ export const metadata: Metadata = {
   description: "Create and manage your work documentation",
 }
 
-export default function DocumentationLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function DocumentationLayout({ children }: { children: React.ReactNode }) {
   return <AppLayout>{children}</AppLayout>
 }

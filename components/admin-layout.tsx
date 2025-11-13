@@ -16,11 +16,7 @@ export async function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   // Fetch user profile with role
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", data.user.id)
-    .single()
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", data.user.id).single()
 
   // Check if user has admin privileges
   // Role hierarchy: super_admin > admin > lead > staff > visitor

@@ -6,10 +6,6 @@ export const metadata: Metadata = {
   description: "Add watermarks to your images and documents",
 }
 
-export default function WatermarkLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function WatermarkLayout({ children }: { children: React.ReactNode }) {
   return <AppLayout>{children}</AppLayout>
 }

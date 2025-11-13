@@ -44,7 +44,7 @@ export function AdminUserModal({ user, onClose, onSave }: AdminUserModalProps) {
     setIsLoading(true)
 
     // Validate phone number - only digits and + allowed
-    const phoneNumber = formData.phoneNumber.replace(/[^0-9+]/g, '')
+    const phoneNumber = formData.phoneNumber.replace(/[^0-9+]/g, "")
 
     try {
       const { error } = await supabase
@@ -145,7 +145,7 @@ export function AdminUserModal({ user, onClose, onSave }: AdminUserModalProps) {
               value={formData.phoneNumber}
               onChange={(e) => {
                 // Only allow numbers and + symbol
-                const value = e.target.value.replace(/[^0-9+]/g, '')
+                const value = e.target.value.replace(/[^0-9+]/g, "")
                 setFormData({ ...formData, phoneNumber: value })
               }}
               placeholder="e.g., +2348012345678"

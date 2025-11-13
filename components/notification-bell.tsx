@@ -5,11 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Bell, AlertCircle, CheckCircle, Info, Clock, X, CheckCheck } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -54,12 +50,12 @@ const notificationIconColors = {
 // Format relative time (e.g., "2 minutes ago", "1 hour ago")
 function formatRelativeTime(dateString?: string): string {
   if (!dateString) return "Just now"
-  
+
   try {
     const date = new Date(dateString)
     const now = new Date()
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-    
+
     if (diffInSeconds < 60) return "Just now"
     if (diffInSeconds < 3600) {
       const minutes = Math.floor(diffInSeconds / 60)
@@ -73,7 +69,7 @@ function formatRelativeTime(dateString?: string): string {
       const days = Math.floor(diffInSeconds / 86400)
       return `${days} day${days > 1 ? "s" : ""} ago`
     }
-    
+
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
   } catch {
     return "Just now"
@@ -95,20 +91,22 @@ export function NotificationBell({ isAdmin = false }: NotificationBellProps) {
       setIsLoading(false)
       return
     }
-    
+
     // Lazy import to avoid SSR issues
-    import("@/lib/supabase/client").then(({ createClient }) => {
-      const supabase = createClient()
-      loadNotifications(supabase)
-      
-      // Set up polling every 30 seconds
-      intervalRef.current = setInterval(() => {
+    import("@/lib/supabase/client")
+      .then(({ createClient }) => {
+        const supabase = createClient()
         loadNotifications(supabase)
-      }, 30000)
-    }).catch((error) => {
-      console.error("Error initializing Supabase client:", error)
-      setIsLoading(false)
-    })
+
+        // Set up polling every 30 seconds
+        intervalRef.current = setInterval(() => {
+          loadNotifications(supabase)
+        }, 30000)
+      })
+      .catch((error) => {
+        console.error("Error initializing Supabase client:", error)
+        setIsLoading(false)
+      })
 
     return () => {
       if (intervalRef.current) {
@@ -125,7 +123,7 @@ export function NotificationBell({ isAdmin = false }: NotificationBellProps) {
         const supabase = createClient()
         loadNotifications(supabase)
       })
-      
+
       // Update relative timestamps every minute while open
       const timestampInterval = setInterval(() => {
         setNotifications((prev) =>
@@ -135,7 +133,7 @@ export function NotificationBell({ isAdmin = false }: NotificationBellProps) {
           }))
         )
       }, 60000)
-      
+
       return () => clearInterval(timestampInterval)
     }
   }, [isOpen, isAdmin])
@@ -277,9 +275,7 @@ export function NotificationBell({ isAdmin = false }: NotificationBellProps) {
 
           // Overdue tasks
           const today = new Date().toISOString().split("T")[0]
-          const overdueTasks = assignedTasks.filter(
-            (t: any) => t.due_date && t.due_date < today
-          )
+          const overdueTasks = assignedTasks.filter((t: any) => t.due_date && t.due_date < today)
           if (overdueTasks.length > 0) {
             notificationList.push({
               id: "overdue-tasks",
@@ -298,10 +294,7 @@ export function NotificationBell({ isAdmin = false }: NotificationBellProps) {
           const threeDaysFromNow = new Date()
           threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3)
           const dueSoonTasks = assignedTasks.filter(
-            (t: any) =>
-              t.due_date &&
-              t.due_date >= today &&
-              t.due_date <= threeDaysFromNow.toISOString().split("T")[0]
+            (t: any) => t.due_date && t.due_date >= today && t.due_date <= threeDaysFromNow.toISOString().split("T")[0]
           )
           if (dueSoonTasks.length > 0) {
             notificationList.push({
@@ -361,13 +354,13 @@ export function NotificationBell({ isAdmin = false }: NotificationBellProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="relative h-10 w-10 rounded-full hover:bg-muted transition-colors"
+          className="hover:bg-muted relative h-10 w-10 rounded-full transition-colors"
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs font-semibold animate-pulse"
+              className="absolute -top-1 -right-1 flex h-5 w-5 animate-pulse items-center justify-center p-0 text-xs font-semibold"
             >
               {unreadCount > 9 ? "9+" : unreadCount}
             </Badge>
@@ -376,13 +369,13 @@ export function NotificationBell({ isAdmin = false }: NotificationBellProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-96 p-0 shadow-lg border-2"
+        className="w-96 border-2 p-0 shadow-lg"
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-muted/50">
+        <div className="bg-muted/50 flex items-center justify-between border-b p-4">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-sm">Notifications</h3>
+            <h3 className="text-sm font-semibold">Notifications</h3>
             {unreadCount > 0 && (
               <Badge variant="secondary" className="text-xs font-medium">
                 {unreadCount} new
@@ -390,13 +383,8 @@ export function NotificationBell({ isAdmin = false }: NotificationBellProps) {
             )}
           </div>
           {notifications.length > 0 && unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 text-xs"
-              onClick={markAllAsRead}
-            >
-              <CheckCheck className="h-3 w-3 mr-1" />
+            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={markAllAsRead}>
+              <CheckCheck className="mr-1 h-3 w-3" />
               Mark all read
             </Button>
           )}
@@ -405,16 +393,16 @@ export function NotificationBell({ isAdmin = false }: NotificationBellProps) {
         {/* Notifications List */}
         <ScrollArea className="h-[400px]">
           {notifications.length > 0 ? (
-            <div className="p-1.5 space-y-0.5">
+            <div className="space-y-0.5 p-1.5">
               {notifications.map((notification) => {
                 const Icon = notificationIcons[notification.type]
                 const isRead = readIds.has(notification.id)
-                
+
                 return (
                   <div
                     key={notification.id}
                     className={cn(
-                      "group relative px-3 py-2 rounded-md border-l-2 transition-all duration-200 hover:bg-muted/50 cursor-pointer",
+                      "group hover:bg-muted/50 relative cursor-pointer rounded-md border-l-2 px-3 py-2 transition-all duration-200",
                       notificationColors[notification.type],
                       isRead && "opacity-60"
                     )}
@@ -430,7 +418,7 @@ export function NotificationBell({ isAdmin = false }: NotificationBellProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute top-1.5 right-1.5 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10"
+                      className="hover:bg-destructive/10 absolute top-1.5 right-1.5 h-5 w-5 opacity-0 transition-opacity group-hover:opacity-100"
                       onClick={(e) => {
                         e.stopPropagation()
                         dismissNotification(notification.id)
@@ -441,58 +429,49 @@ export function NotificationBell({ isAdmin = false }: NotificationBellProps) {
 
                     <div className="flex items-center gap-2 pr-6">
                       {/* Icon */}
-                      <div className={cn(
-                        "p-1.5 rounded bg-background/50 shrink-0",
-                        notificationIconColors[notification.type]
-                      )}>
+                      <div
+                        className={cn(
+                          "bg-background/50 shrink-0 rounded p-1.5",
+                          notificationIconColors[notification.type]
+                        )}
+                      >
                         <Icon className="h-3.5 w-3.5" />
                       </div>
 
                       {/* Content - Compact single/two row layout */}
-                      <div className="flex-1 min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <h4 className={cn(
-                            "font-medium text-sm truncate",
-                            !isRead && "font-semibold"
-                          )}>
+                          <h4 className={cn("truncate text-sm font-medium", !isRead && "font-semibold")}>
                             {notification.title}
                           </h4>
                           {notification.timestamp && (
-                            <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+                            <span className="text-muted-foreground shrink-0 text-xs whitespace-nowrap">
                               {notification.timestamp}
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center justify-between gap-2 mt-0.5">
-                          <p className="text-xs text-muted-foreground truncate flex-1">
-                            {notification.message}
-                          </p>
-                          {notification.link && (
-                            <span className="text-xs text-primary font-medium shrink-0">
-                              →
-                            </span>
-                          )}
+                        <div className="mt-0.5 flex items-center justify-between gap-2">
+                          <p className="text-muted-foreground flex-1 truncate text-xs">{notification.message}</p>
+                          {notification.link && <span className="text-primary shrink-0 text-xs font-medium">→</span>}
                         </div>
                       </div>
                     </div>
 
                     {/* Unread indicator */}
                     {!isRead && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-primary rounded-full" />
+                      <div className="bg-primary absolute top-1/2 left-0 h-4 w-0.5 -translate-y-1/2 rounded-full" />
                     )}
                   </div>
                 )
               })}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-16 px-4">
-              <div className="p-4 rounded-full bg-muted mb-4">
-                <Bell className="h-8 w-8 text-muted-foreground opacity-50" />
+            <div className="flex flex-col items-center justify-center px-4 py-16">
+              <div className="bg-muted mb-4 rounded-full p-4">
+                <Bell className="text-muted-foreground h-8 w-8 opacity-50" />
               </div>
-              <p className="text-sm font-medium text-foreground mb-1">
-                No notifications
-              </p>
-              <p className="text-xs text-muted-foreground text-center">
+              <p className="text-foreground mb-1 text-sm font-medium">No notifications</p>
+              <p className="text-muted-foreground text-center text-xs">
                 You're all caught up! We'll notify you when something important happens.
               </p>
             </div>
@@ -501,11 +480,11 @@ export function NotificationBell({ isAdmin = false }: NotificationBellProps) {
 
         {/* Footer */}
         {notifications.length > 0 && (
-          <div className="border-t p-2 bg-muted/30">
+          <div className="bg-muted/30 border-t p-2">
             <Link
               href={isAdmin ? "/admin/notification" : "/notification"}
               onClick={() => setIsOpen(false)}
-              className="text-xs text-center text-primary hover:underline font-medium block w-full py-2"
+              className="text-primary block w-full py-2 text-center text-xs font-medium hover:underline"
             >
               View all notifications →
             </Link>

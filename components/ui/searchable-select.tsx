@@ -32,59 +32,63 @@ export function SearchableSelect({
 
   const filteredOptions = React.useMemo(() => {
     if (!searchQuery) return options
-    return options.filter((option) =>
-      option.label.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    return options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()))
   }, [options, searchQuery])
 
   const selectedOption = options.find((opt) => opt.value === value)
 
   return (
-    <SelectPrimitive.Root value={value} onValueChange={onValueChange} open={open} onOpenChange={setOpen} disabled={disabled}>
+    <SelectPrimitive.Root
+      value={value}
+      onValueChange={onValueChange}
+      open={open}
+      onOpenChange={setOpen}
+      disabled={disabled}
+    >
       <SelectPrimitive.Trigger
         className={cn(
-          "flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+          "border-input ring-offset-background data-[placeholder]:text-muted-foreground focus:ring-ring flex h-9 w-full items-center justify-between rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus:ring-1 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
         disabled={disabled}
       >
-        <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
+        <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
           {icon && <span className="flex-shrink-0">{icon}</span>}
-          <span className="truncate flex-1 min-w-0">
+          <span className="min-w-0 flex-1 truncate">
             <SelectPrimitive.Value placeholder={placeholder}>
               {selectedOption?.label || placeholder}
             </SelectPrimitive.Value>
           </span>
         </div>
         <SelectPrimitive.Icon asChild>
-          <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
+          <ChevronDown className="ml-2 h-4 w-4 flex-shrink-0 opacity-50" />
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>
         <SelectPrimitive.Content
-          className="relative z-50 max-h-[300px] min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
+          className="bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 max-h-[300px] min-w-[8rem] overflow-hidden rounded-md border shadow-md"
           position="popper"
         >
-          <div className="p-2 border-b">
+          <div className="border-b p-2">
             <div className="relative">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="text-muted-foreground absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 transform" />
               <Input
                 placeholder={searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 h-8"
+                className="h-8 pl-8"
                 onClick={(e) => e.stopPropagation()}
                 onKeyDown={(e) => e.stopPropagation()}
               />
             </div>
           </div>
-          <SelectPrimitive.Viewport className="p-1 max-h-[250px] overflow-y-auto">
+          <SelectPrimitive.Viewport className="max-h-[250px] overflow-y-auto p-1">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => (
                 <SelectPrimitive.Item
                   key={option.value}
                   value={option.value}
-                  className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                  className="focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default items-center rounded-sm py-1.5 pr-8 pl-2 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
                   onSelect={() => {
                     setSearchQuery("")
                     setOpen(false)
@@ -95,16 +99,14 @@ export function SearchableSelect({
                       <Check className="h-4 w-4" />
                     </SelectPrimitive.ItemIndicator>
                   </span>
-                  <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
+                  <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
                     {option.icon && <span className="flex-shrink-0">{option.icon}</span>}
                     <SelectPrimitive.ItemText className="truncate">{option.label}</SelectPrimitive.ItemText>
                   </div>
                 </SelectPrimitive.Item>
               ))
             ) : (
-              <div className="py-6 text-center text-sm text-muted-foreground">
-                No results found
-              </div>
+              <div className="text-muted-foreground py-6 text-center text-sm">No results found</div>
             )}
           </SelectPrimitive.Viewport>
         </SelectPrimitive.Content>
@@ -112,4 +114,3 @@ export function SearchableSelect({
     </SelectPrimitive.Root>
   )
 }
-

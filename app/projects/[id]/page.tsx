@@ -122,13 +122,7 @@ export default function ProjectDetailPage() {
 
   const loadProjectData = async () => {
     try {
-      await Promise.all([
-        loadProject(),
-        loadMembers(),
-        loadItems(),
-        loadUpdates(),
-        loadTasks(),
-      ])
+      await Promise.all([loadProject(), loadMembers(), loadItems(), loadUpdates(), loadTasks()])
     } catch (error) {
       console.error("Error loading project data:", error)
       toast.error("Failed to load project data")
@@ -138,7 +132,8 @@ export default function ProjectDetailPage() {
   const loadProject = async () => {
     const { data, error } = await supabase
       .from("projects")
-      .select(`
+      .select(
+        `
         *,
         project_manager:profiles!projects_project_manager_id_fkey (
           first_name,
@@ -149,7 +144,8 @@ export default function ProjectDetailPage() {
           first_name,
           last_name
         )
-      `)
+      `
+      )
       .eq("id", projectId)
       .single()
 
@@ -160,7 +156,8 @@ export default function ProjectDetailPage() {
   const loadMembers = async () => {
     const { data, error } = await supabase
       .from("project_members")
-      .select(`
+      .select(
+        `
         id,
         role,
         assigned_at,
@@ -170,7 +167,8 @@ export default function ProjectDetailPage() {
           company_email,
           department
         )
-      `)
+      `
+      )
       .eq("project_id", projectId)
       .eq("is_active", true)
       .order("assigned_at", { ascending: false })
@@ -193,7 +191,8 @@ export default function ProjectDetailPage() {
   const loadUpdates = async () => {
     const { data, error } = await supabase
       .from("project_updates")
-      .select(`
+      .select(
+        `
         id,
         content,
         update_type,
@@ -202,7 +201,8 @@ export default function ProjectDetailPage() {
           first_name,
           last_name
         )
-      `)
+      `
+      )
       .eq("project_id", projectId)
       .order("created_at", { ascending: false })
 
@@ -213,7 +213,8 @@ export default function ProjectDetailPage() {
   const loadTasks = async () => {
     const { data, error } = await supabase
       .from("tasks")
-      .select(`
+      .select(
+        `
         id,
         title,
         description,
@@ -227,7 +228,8 @@ export default function ProjectDetailPage() {
           first_name,
           last_name
         )
-      `)
+      `
+      )
       .eq("project_id", projectId)
       .order("created_at", { ascending: false })
 
@@ -349,10 +351,10 @@ export default function ProjectDetailPage() {
 
   if (!project) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Project not found</h2>
+          <AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-500" />
+          <h2 className="mb-2 text-xl font-semibold">Project not found</h2>
           <p className="text-muted-foreground mb-4">
             The project you're looking for doesn't exist or you don't have access to it.
           </p>
@@ -368,7 +370,7 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/projects">
@@ -384,9 +386,7 @@ export default function ProjectDetailPage() {
               {project.status.replace("_", " ")}
             </Badge>
           </div>
-          {project.description && (
-            <p className="text-muted-foreground mt-1">{project.description}</p>
-          )}
+          {project.description && <p className="text-muted-foreground mt-1">{project.description}</p>}
         </div>
       </div>
 
@@ -394,11 +394,11 @@ export default function ProjectDetailPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Location</CardTitle>
+            <CardTitle className="text-muted-foreground text-sm font-medium">Location</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-muted-foreground" />
+              <MapPin className="text-muted-foreground h-5 w-5" />
               <p className="text-lg font-semibold">{project.location}</p>
             </div>
           </CardContent>
@@ -406,11 +406,11 @@ export default function ProjectDetailPage() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Duration</CardTitle>
+            <CardTitle className="text-muted-foreground text-sm font-medium">Duration</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-muted-foreground" />
+              <Calendar className="text-muted-foreground h-5 w-5" />
               <div className="text-sm">
                 <p className="font-semibold">{formatDate(project.deployment_start_date)}</p>
                 <p className="text-muted-foreground">to {formatDate(project.deployment_end_date)}</p>
@@ -421,22 +421,18 @@ export default function ProjectDetailPage() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Project Manager
-            </CardTitle>
+            <CardTitle className="text-muted-foreground text-sm font-medium">Project Manager</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <User className="h-5 w-5 text-muted-foreground" />
+              <User className="text-muted-foreground h-5 w-5" />
               <div className="text-sm">
                 {project.project_manager ? (
                   <>
                     <p className="font-semibold">
                       {project.project_manager.first_name} {project.project_manager.last_name}
                     </p>
-                    <p className="text-muted-foreground text-xs">
-                      {project.project_manager.company_email}
-                    </p>
+                    <p className="text-muted-foreground text-xs">{project.project_manager.company_email}</p>
                   </>
                 ) : (
                   <p className="text-muted-foreground">Not assigned</p>
@@ -453,9 +449,7 @@ export default function ProjectDetailPage() {
           {project.capacity_w && (
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Capacity
-                </CardTitle>
+                <CardTitle className="text-muted-foreground text-sm font-medium">Capacity</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2">
@@ -469,13 +463,11 @@ export default function ProjectDetailPage() {
           {project.technology_type && (
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Technology Type
-                </CardTitle>
+                <CardTitle className="text-muted-foreground text-sm font-medium">Technology Type</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2">
-                  <FolderKanban className="h-5 w-5 text-muted-foreground" />
+                  <FolderKanban className="text-muted-foreground h-5 w-5" />
                   <p className="text-lg font-semibold">{project.technology_type}</p>
                 </div>
               </CardContent>
@@ -514,28 +506,21 @@ export default function ProjectDetailPage() {
             </CardHeader>
             <CardContent>
               {members.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No members assigned to this project yet
-                </div>
+                <div className="text-muted-foreground py-8 text-center">No members assigned to this project yet</div>
               ) : (
                 <div className="space-y-3">
                   {members.map((member) => (
-                    <div
-                      key={member.id}
-                      className="flex items-center justify-between p-3 border rounded-lg"
-                    >
+                    <div key={member.id} className="flex items-center justify-between rounded-lg border p-3">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <User className="h-5 w-5 text-primary" />
+                        <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-full">
+                          <User className="text-primary h-5 w-5" />
                         </div>
                         <div>
                           <p className="font-medium">
                             {member.user.first_name} {member.user.last_name}
                           </p>
-                          <p className="text-sm text-muted-foreground">
-                            {member.user.company_email}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{member.user.department}</p>
+                          <p className="text-muted-foreground text-sm">{member.user.company_email}</p>
+                          <p className="text-muted-foreground text-xs">{member.user.department}</p>
                         </div>
                       </div>
                       <Badge variant="outline">{member.role}</Badge>
@@ -556,31 +541,25 @@ export default function ProjectDetailPage() {
             </CardHeader>
             <CardContent>
               {items.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No items added to this project yet
-                </div>
+                <div className="text-muted-foreground py-8 text-center">No items added to this project yet</div>
               ) : (
                 <div className="space-y-3">
                   {items.map((item) => (
-                    <div key={item.id} className="p-3 border rounded-lg">
+                    <div key={item.id} className="rounded-lg border p-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="mb-1 flex items-center gap-2">
                             <p className="font-medium">{item.item_name}</p>
                             <Badge className={getItemStatusColor(item.status)}>{item.status}</Badge>
                           </div>
-                          {item.description && (
-                            <p className="text-sm text-muted-foreground mb-2">{item.description}</p>
-                          )}
+                          {item.description && <p className="text-muted-foreground mb-2 text-sm">{item.description}</p>}
                           <div className="flex items-center gap-4 text-sm">
                             <span className="text-muted-foreground">
-                              Quantity: <span className="font-medium text-foreground">{item.quantity}</span>
+                              Quantity: <span className="text-foreground font-medium">{item.quantity}</span>
                               {item.unit && ` ${item.unit}`}
                             </span>
                           </div>
-                          {item.notes && (
-                            <p className="text-xs text-muted-foreground mt-2">Note: {item.notes}</p>
-                          )}
+                          {item.notes && <p className="text-muted-foreground mt-2 text-xs">Note: {item.notes}</p>}
                         </div>
                       </div>
                     </div>
@@ -600,30 +579,26 @@ export default function ProjectDetailPage() {
             </CardHeader>
             <CardContent>
               {tasks.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No tasks assigned to this project yet
-                </div>
+                <div className="text-muted-foreground py-8 text-center">No tasks assigned to this project yet</div>
               ) : (
                 <div className="space-y-3">
                   {tasks.map((task) => (
                     <Link key={task.id} href={`/tasks`}>
-                      <div className="p-3 border rounded-lg hover:bg-accent transition-colors cursor-pointer">
+                      <div className="hover:bg-accent cursor-pointer rounded-lg border p-3 transition-colors">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="mb-1 flex items-center gap-2">
                               <p className="font-medium">{task.title}</p>
                               <Badge className={getStatusColor(task.status)}>{task.status.replace("_", " ")}</Badge>
                               <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
                             </div>
                             {task.description && (
-                              <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                                {task.description}
-                              </p>
+                              <p className="text-muted-foreground mb-2 line-clamp-2 text-sm">{task.description}</p>
                             )}
                             <div className="flex items-center gap-4 text-sm">
                               <span className="text-muted-foreground">
                                 Assigned to:{" "}
-                                <span className="font-medium text-foreground">
+                                <span className="text-foreground font-medium">
                                   {task.assigned_to_user.first_name} {task.assigned_to_user.last_name}
                                 </span>
                               </span>
@@ -633,7 +608,7 @@ export default function ProjectDetailPage() {
                                 </span>
                               )}
                               <span className="text-muted-foreground">
-                                Progress: <span className="font-medium text-foreground">{task.progress}%</span>
+                                Progress: <span className="text-foreground font-medium">{task.progress}%</span>
                               </span>
                             </div>
                           </div>
@@ -671,30 +646,24 @@ export default function ProjectDetailPage() {
               {/* Activity Timeline */}
               <div className="space-y-4">
                 {updates.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
+                  <div className="text-muted-foreground py-8 text-center">
                     No activity yet. Be the first to comment!
                   </div>
                 ) : (
                   updates.map((update) => (
-                    <div key={update.id} className="flex gap-3 p-3 border rounded-lg">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <MessageSquare className="h-4 w-4 text-primary" />
+                    <div key={update.id} className="flex gap-3 rounded-lg border p-3">
+                      <div className="bg-primary/10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full">
+                        <MessageSquare className="text-primary h-4 w-4" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium text-sm">
-                            {update.user
-                              ? `${update.user.first_name} ${update.user.last_name}`
-                              : "Unknown User"}
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1 flex items-center gap-2">
+                          <p className="text-sm font-medium">
+                            {update.user ? `${update.user.first_name} ${update.user.last_name}` : "Unknown User"}
                           </p>
-                          <span className="text-xs text-muted-foreground">
-                            {formatDateTime(update.created_at)}
-                          </span>
+                          <span className="text-muted-foreground text-xs">{formatDateTime(update.created_at)}</span>
                         </div>
                         {update.content && (
-                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                            {update.content}
-                          </p>
+                          <p className="text-muted-foreground text-sm whitespace-pre-wrap">{update.content}</p>
                         )}
                       </div>
                     </div>

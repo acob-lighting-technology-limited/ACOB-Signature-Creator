@@ -5,34 +5,12 @@ import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import { formatName } from "@/lib/utils"
 import { ASSET_TYPE_MAP } from "@/lib/asset-types"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import {
-  AlertCircle,
-  CheckCircle2,
-  Trash2,
-  Search,
-  Package,
-  Calendar,
-  User,
-  Filter,
-} from "lucide-react"
+import { AlertCircle, CheckCircle2, Trash2, Search, Package, Calendar, User, Filter } from "lucide-react"
 import { SearchableSelect } from "@/components/ui/searchable-select"
 
 interface AssetIssue {
@@ -132,18 +110,11 @@ export default function AssetIssuesPage() {
 
   const handleToggleResolved = async (issue: AssetIssue) => {
     try {
-      const { error } = await supabase
-        .from("asset_issues")
-        .update({ resolved: !issue.resolved })
-        .eq("id", issue.id)
+      const { error } = await supabase.from("asset_issues").update({ resolved: !issue.resolved }).eq("id", issue.id)
 
       if (error) throw error
 
-      toast.success(
-        issue.resolved
-          ? "Issue marked as unresolved"
-          : "Issue marked as resolved"
-      )
+      toast.success(issue.resolved ? "Issue marked as unresolved" : "Issue marked as resolved")
       await loadIssues()
     } catch (error: any) {
       console.error("Error toggling issue:", error)
@@ -155,10 +126,7 @@ export default function AssetIssuesPage() {
     if (!confirm("Are you sure you want to delete this issue?")) return
 
     try {
-      const { error } = await supabase
-        .from("asset_issues")
-        .delete()
-        .eq("id", issueId)
+      const { error } = await supabase.from("asset_issues").delete().eq("id", issueId)
 
       if (error) throw error
 
@@ -181,9 +149,7 @@ export default function AssetIssuesPage() {
       (statusFilter === "resolved" && issue.resolved) ||
       (statusFilter === "unresolved" && !issue.resolved)
 
-    const matchesAssetType =
-      assetTypeFilter === "all" ||
-      issue.asset?.asset_type === assetTypeFilter
+    const matchesAssetType = assetTypeFilter === "all" || issue.asset?.asset_type === assetTypeFilter
 
     return matchesSearch && matchesStatus && matchesAssetType
   })
@@ -195,13 +161,11 @@ export default function AssetIssuesPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Asset Issues</h1>
-        <p className="text-muted-foreground mt-1">
-          Track and manage all asset issues across the organization
-        </p>
+        <h1 className="text-foreground text-3xl font-bold">Asset Issues</h1>
+        <p className="text-muted-foreground mt-1">Track and manage all asset issues across the organization</p>
       </div>
 
       {/* Stats Cards */}
@@ -209,47 +173,33 @@ export default function AssetIssuesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Issues</CardTitle>
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+            <AlertCircle className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">
-              All tracked issues
-            </p>
+            <p className="text-muted-foreground text-xs">All tracked issues</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Unresolved Issues
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Unresolved Issues</CardTitle>
             <AlertCircle className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
-              {stats.unresolved}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Requiring attention
-            </p>
+            <div className="text-2xl font-bold text-orange-600">{stats.unresolved}</div>
+            <p className="text-muted-foreground text-xs">Requiring attention</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Resolved Issues
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Resolved Issues</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {stats.resolved}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Successfully fixed
-            </p>
+            <div className="text-2xl font-bold text-green-600">{stats.resolved}</div>
+            <p className="text-muted-foreground text-xs">Successfully fixed</p>
           </CardContent>
         </Card>
       </div>
@@ -262,7 +212,7 @@ export default function AssetIssuesPage() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
               <Input
                 placeholder="Search issues or asset codes..."
                 value={searchQuery}
@@ -313,26 +263,24 @@ export default function AssetIssuesPage() {
       {/* Issues Table */}
       <Card>
         <CardHeader>
-          <CardTitle>
-            Issues List ({filteredIssues.length})
-          </CardTitle>
+          <CardTitle>Issues List ({filteredIssues.length})</CardTitle>
           <CardDescription>
             {statusFilter === "unresolved"
               ? "Showing unresolved issues requiring attention"
               : statusFilter === "resolved"
-              ? "Showing resolved issues"
-              : "Showing all issues"}
+                ? "Showing resolved issues"
+                : "Showing all issues"}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <div className="py-12 text-center">
+              <div className="border-primary mx-auto h-8 w-8 animate-spin rounded-full border-b-2"></div>
               <p className="text-muted-foreground mt-4">Loading issues...</p>
             </div>
           ) : filteredIssues.length === 0 ? (
-            <div className="text-center py-12">
-              <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <div className="py-12 text-center">
+              <AlertCircle className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
               <p className="text-muted-foreground">
                 {searchQuery || statusFilter !== "all" || assetTypeFilter !== "all"
                   ? "No issues match your filters"
@@ -357,9 +305,7 @@ export default function AssetIssuesPage() {
                     <TableRow
                       key={issue.id}
                       className={
-                        issue.resolved
-                          ? "bg-green-50/50 dark:bg-green-950/10"
-                          : "bg-orange-50/50 dark:bg-orange-950/10"
+                        issue.resolved ? "bg-green-50/50 dark:bg-green-950/10" : "bg-orange-50/50 dark:bg-orange-950/10"
                       }
                     >
                       <TableCell>
@@ -378,16 +324,13 @@ export default function AssetIssuesPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <div className="p-1.5 bg-primary/10 rounded">
-                            <Package className="h-3 w-3 text-primary" />
+                          <div className="bg-primary/10 rounded p-1.5">
+                            <Package className="text-primary h-3 w-3" />
                           </div>
                           <div>
-                            <div className="font-mono text-xs font-medium">
-                              {issue.asset?.unique_code}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {ASSET_TYPE_MAP[issue.asset?.asset_type || ""]
-                                ?.label || issue.asset?.asset_type}
+                            <div className="font-mono text-xs font-medium">{issue.asset?.unique_code}</div>
+                            <div className="text-muted-foreground text-xs">
+                              {ASSET_TYPE_MAP[issue.asset?.asset_type || ""]?.label || issue.asset?.asset_type}
                             </div>
                           </div>
                         </div>
@@ -396,27 +339,20 @@ export default function AssetIssuesPage() {
                         <div className="max-w-md">
                           <p
                             className={`text-sm ${
-                              issue.resolved
-                                ? "line-through text-muted-foreground"
-                                : "text-foreground"
+                              issue.resolved ? "text-muted-foreground line-through" : "text-foreground"
                             }`}
                           >
                             {issue.description}
                           </p>
                           {issue.resolved && issue.resolved_at && (
-                            <div className="flex items-center gap-1 mt-1 text-xs text-green-600">
+                            <div className="mt-1 flex items-center gap-1 text-xs text-green-600">
                               <CheckCircle2 className="h-3 w-3" />
                               <span>
-                                Resolved{" "}
-                                {new Date(
-                                  issue.resolved_at
-                                ).toLocaleDateString()}
+                                Resolved {new Date(issue.resolved_at).toLocaleDateString()}
                                 {issue.resolver && (
                                   <span>
                                     {" "}
-                                    by{" "}
-                                    {formatName(issue.resolver.first_name)}{" "}
-                                    {formatName(issue.resolver.last_name)}
+                                    by {formatName(issue.resolver.first_name)} {formatName(issue.resolver.last_name)}
                                   </span>
                                 )}
                               </span>
@@ -426,7 +362,7 @@ export default function AssetIssuesPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1.5">
-                          <User className="h-3 w-3 text-muted-foreground" />
+                          <User className="text-muted-foreground h-3 w-3" />
                           <span className="text-sm">
                             {issue.creator
                               ? `${formatName(issue.creator.first_name)} ${formatName(issue.creator.last_name)}`
@@ -435,7 +371,7 @@ export default function AssetIssuesPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
                           <Calendar className="h-3 w-3" />
                           {new Date(issue.created_at).toLocaleDateString()}
                         </div>
@@ -445,7 +381,7 @@ export default function AssetIssuesPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteIssue(issue.id)}
-                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                          className="text-destructive hover:text-destructive h-8 w-8 p-0"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -461,4 +397,3 @@ export default function AssetIssuesPage() {
     </div>
   )
 }
-

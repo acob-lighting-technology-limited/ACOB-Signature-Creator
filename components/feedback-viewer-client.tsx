@@ -44,7 +44,9 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
     const loadFilterData = async () => {
       try {
         // Get current user profile to check if they're a lead
-        const { data: { user } } = await supabase.auth.getUser()
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
         if (!user) return
 
         const { data: userProfile } = await supabase
@@ -73,15 +75,13 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
 
         if (staffData) {
           setStaff(staffData)
-          
+
           // Extract unique departments - for leads, only show their lead departments
           let uniqueDepartments: string[] = []
           if (userProfile?.role === "lead" && userProfile.lead_departments && userProfile.lead_departments.length > 0) {
             uniqueDepartments = userProfile.lead_departments.sort()
           } else {
-            uniqueDepartments = Array.from(
-              new Set(staffData.map((s: any) => s.department).filter(Boolean))
-            ) as string[]
+            uniqueDepartments = Array.from(new Set(staffData.map((s: any) => s.department).filter(Boolean))) as string[]
             uniqueDepartments.sort()
           }
           setDepartments(uniqueDepartments)
@@ -102,7 +102,7 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
     if (searchQuery) {
       filtered = filtered.filter((item) => {
         const titleMatch = item.title?.toLowerCase().includes(searchQuery.toLowerCase())
-        const userMatch = 
+        const userMatch =
           item.profiles?.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.profiles?.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.profiles?.company_email?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -134,7 +134,7 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
     filtered = filtered.sort((a, b) => {
       const lastNameA = formatName(a.profiles?.last_name || "").toLowerCase()
       const lastNameB = formatName(b.profiles?.last_name || "").toLowerCase()
-      
+
       if (nameSortOrder === "asc") {
         return lastNameA.localeCompare(lastNameB)
       } else {
@@ -211,11 +211,11 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
       })
 
       toast.success("Status updated successfully!")
-      
+
       // Update local state
       const updatedFeedback = { ...selectedFeedback, status: newStatus }
       setSelectedFeedback(updatedFeedback)
-      
+
       // Trigger a re-render by updating the feedback list
       window.location.reload()
     } catch (error: unknown) {
@@ -230,13 +230,13 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
     <div className="space-y-6">
       {/* Filters and Search */}
       <Card className="border-2 shadow-lg">
-        <CardHeader className="border-b bg-muted/30">
+        <CardHeader className="bg-muted/30 border-b">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5 text-primary" />
+              <Filter className="text-primary h-5 w-5" />
               Filters & Search
             </CardTitle>
-            <div className="flex items-center border rounded-lg p-1">
+            <div className="flex items-center rounded-lg border p-1">
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
@@ -258,10 +258,10 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-6 space-y-4">
+        <CardContent className="space-y-4 p-6">
           {/* Search Input */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
             <Input
               placeholder="Search by title or user name..."
               value={searchQuery}
@@ -273,7 +273,7 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
           {/* Filter Selects */}
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Feedback Type</label>
+              <label className="text-foreground text-sm font-medium">Feedback Type</label>
               <Select value={selectedType} onValueChange={setSelectedType}>
                 <SelectTrigger>
                   <SelectValue />
@@ -289,7 +289,7 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Status</label>
+              <label className="text-foreground text-sm font-medium">Status</label>
               <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                 <SelectTrigger>
                   <SelectValue />
@@ -307,7 +307,7 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
             {/* Department filter - hidden for leads */}
             {userRole !== "lead" && (
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Department</label>
+                <label className="text-foreground text-sm font-medium">Department</label>
                 <SearchableSelect
                   value={departmentFilter}
                   onValueChange={setDepartmentFilter}
@@ -327,10 +327,8 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
-                {userRole === "lead" && departments.length > 0 
-                  ? `Staff (${departments.join(", ")})`
-                  : "Staff"}
+              <label className="text-foreground text-sm font-medium">
+                {userRole === "lead" && departments.length > 0 ? `Staff (${departments.join(", ")})` : "Staff"}
               </label>
               <SearchableSelect
                 value={staffFilter}
@@ -343,11 +341,12 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
                 searchPlaceholder="Search staff..."
                 icon={<User className="h-4 w-4" />}
                 options={[
-                  { 
-                    value: "all", 
-                    label: userRole === "lead" && departments.length > 0
-                      ? `All ${departments.length === 1 ? departments[0] : "Department"} Staff`
-                      : "All Staff"
+                  {
+                    value: "all",
+                    label:
+                      userRole === "lead" && departments.length > 0
+                        ? `All ${departments.length === 1 ? departments[0] : "Department"} Staff`
+                        : "All Staff",
                   },
                   ...staff.map((member) => ({
                     value: member.id,
@@ -359,8 +358,8 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Results</label>
-              <div className="px-3 py-2 border rounded-md bg-muted text-sm font-medium">
+              <label className="text-foreground text-sm font-medium">Results</label>
+              <div className="bg-muted rounded-md border px-3 py-2 text-sm font-medium">
                 {filteredFeedback.length} item{filteredFeedback.length !== 1 ? "s" : ""}
               </div>
             </div>
@@ -372,9 +371,9 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
       {filteredFeedback.length > 0 ? (
         viewMode === "list" ? (
           <Card className="border-2 shadow-lg">
-            <CardHeader className="border-b bg-muted/30">
+            <CardHeader className="bg-muted/30 border-b">
               <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-primary" />
+                <MessageSquare className="text-primary h-5 w-5" />
                 Feedback Items
               </CardTitle>
               <CardDescription>Total: {filteredFeedback.length} items</CardDescription>
@@ -412,14 +411,14 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
                   </TableHeader>
                   <TableBody>
                     {filteredFeedback.map((item, index) => (
-                      <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50">
+                      <TableRow key={item.id} className="hover:bg-muted/50 cursor-pointer">
                         <TableCell className="text-muted-foreground font-medium">{index + 1}</TableCell>
                         <TableCell>
                           <div className="text-sm">
                             <p className="font-medium">
                               {formatName(item.profiles?.last_name)}, {formatName(item.profiles?.first_name)}
                             </p>
-                            <p className="text-xs text-muted-foreground">{item.profiles?.company_email}</p>
+                            <p className="text-muted-foreground text-xs">{item.profiles?.company_email}</p>
                           </div>
                         </TableCell>
                         <TableCell className="text-sm">{item.profiles?.department || "-"}</TableCell>
@@ -430,7 +429,7 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
                         <TableCell>
                           <Badge className={getStatusColor(item.status)}>{item.status}</Badge>
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="text-muted-foreground text-sm">
                           {new Date(item.created_at).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
@@ -457,48 +456,39 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredFeedback.map((item) => (
-              <Card key={item.id} className="border-2 hover:shadow-lg transition-shadow">
-                <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-background">
+              <Card key={item.id} className="border-2 transition-shadow hover:shadow-lg">
+                <CardHeader className="from-primary/5 to-background border-b bg-gradient-to-r">
                   <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className="p-2 bg-primary/10 rounded-lg">
-                        <MessageSquare className="h-5 w-5 text-primary" />
+                    <div className="flex flex-1 items-start gap-3">
+                      <div className="bg-primary/10 rounded-lg p-2">
+                        <MessageSquare className="text-primary h-5 w-5" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg line-clamp-2">{item.title}</CardTitle>
-                        <div className="flex items-center gap-2 mt-2 flex-wrap">
-                          <Badge className={getTypeColor(item.feedback_type)}>
-                            {item.feedback_type}
-                          </Badge>
-                          <Badge className={getStatusColor(item.status)}>
-                            {item.status}
-                          </Badge>
+                      <div className="min-w-0 flex-1">
+                        <CardTitle className="line-clamp-2 text-lg">{item.title}</CardTitle>
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <Badge className={getTypeColor(item.feedback_type)}>{item.feedback_type}</Badge>
+                          <Badge className={getStatusColor(item.status)}>{item.status}</Badge>
                         </div>
                       </div>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="p-4 space-y-3">
+                <CardContent className="space-y-3 p-4">
                   <div className="text-sm">
                     <p className="font-medium">
                       {formatName(item.profiles?.last_name)}, {formatName(item.profiles?.first_name)}
                     </p>
-                    <p className="text-xs text-muted-foreground">{item.profiles?.company_email}</p>
-                    <p className="text-xs text-muted-foreground">{item.profiles?.department}</p>
+                    <p className="text-muted-foreground text-xs">{item.profiles?.company_email}</p>
+                    <p className="text-muted-foreground text-xs">{item.profiles?.department}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
+                  <p className="text-muted-foreground line-clamp-2 text-sm">
                     {item.description || "No description provided."}
                   </p>
                   <div className="flex items-center justify-between pt-2">
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       {new Date(item.created_at).toLocaleDateString()}
                     </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleViewDetails(item)}
-                      className="gap-2"
-                    >
+                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(item)} className="gap-2">
                       <Eye className="h-4 w-4" />
                       View
                     </Button>
@@ -511,12 +501,14 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
       ) : (
         <Card className="border-2">
           <CardContent className="p-12 text-center">
-            <MessageSquare className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-foreground mb-2">
-              No Feedback Found
-            </h3>
+            <MessageSquare className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
+            <h3 className="text-foreground mb-2 text-xl font-semibold">No Feedback Found</h3>
             <p className="text-muted-foreground">
-              {searchQuery || selectedType !== "all" || selectedStatus !== "all" || departmentFilter !== "all" || staffFilter !== "all"
+              {searchQuery ||
+              selectedType !== "all" ||
+              selectedStatus !== "all" ||
+              departmentFilter !== "all" ||
+              staffFilter !== "all"
                 ? "No feedback matches your filters"
                 : "No feedback has been submitted yet"}
             </p>
@@ -526,7 +518,7 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
 
       {/* Feedback Details Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl">Feedback Details</DialogTitle>
             <DialogDescription>View and manage feedback details</DialogDescription>
@@ -537,18 +529,19 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
               {/* User Information */}
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">Submitted By</Label>
-                <div className="p-4 bg-muted/50 rounded-lg border">
-                  <p className="font-medium text-lg">
-                    {formatName(selectedFeedback.profiles?.first_name)} {formatName(selectedFeedback.profiles?.last_name)}
+                <div className="bg-muted/50 rounded-lg border p-4">
+                  <p className="text-lg font-medium">
+                    {formatName(selectedFeedback.profiles?.first_name)}{" "}
+                    {formatName(selectedFeedback.profiles?.last_name)}
                   </p>
-                  <p className="text-sm text-muted-foreground">{selectedFeedback.profiles?.company_email}</p>
-                  <p className="text-sm text-muted-foreground">{selectedFeedback.profiles?.department}</p>
-                  <div className="mt-2 pt-2 border-t">
-                    <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">{selectedFeedback.profiles?.company_email}</p>
+                  <p className="text-muted-foreground text-sm">{selectedFeedback.profiles?.department}</p>
+                  <div className="mt-2 border-t pt-2">
+                    <p className="text-muted-foreground text-xs">
                       Submitted: {new Date(selectedFeedback.created_at).toLocaleString()}
                     </p>
                     {selectedFeedback.updated_at !== selectedFeedback.created_at && (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         Updated: {new Date(selectedFeedback.updated_at).toLocaleString()}
                       </p>
                     )}
@@ -577,7 +570,7 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
               {/* Title */}
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">Title</Label>
-                <div className="p-3 bg-muted/50 rounded-lg border">
+                <div className="bg-muted/50 rounded-lg border p-3">
                   <p className="font-medium">{selectedFeedback.title}</p>
                 </div>
               </div>
@@ -585,7 +578,7 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
               {/* Description */}
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">Description</Label>
-                <div className="p-4 bg-muted/50 rounded-lg border min-h-[100px]">
+                <div className="bg-muted/50 min-h-[100px] rounded-lg border p-4">
                   <p className="whitespace-pre-wrap">{selectedFeedback.description || "No description provided."}</p>
                 </div>
               </div>
@@ -611,7 +604,7 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-2 pt-4 border-t">
+              <div className="flex gap-2 border-t pt-4">
                 <Button onClick={() => setIsModalOpen(false)} variant="outline" className="flex-1">
                   Close
                 </Button>
@@ -623,4 +616,3 @@ export function FeedbackViewerClient({ feedback }: FeedbackViewerClientProps) {
     </div>
   )
 }
-

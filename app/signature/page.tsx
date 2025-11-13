@@ -23,10 +23,10 @@ export default async function SignaturePage({ searchParams }: { searchParams: { 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", targetUserId).single()
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       <div className="mx-auto max-w-6xl p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Email Signature Creator</h1>
+          <h1 className="text-foreground text-3xl font-bold">Email Signature Creator</h1>
           <p className="text-muted-foreground">Generate your professional email signature</p>
         </div>
 

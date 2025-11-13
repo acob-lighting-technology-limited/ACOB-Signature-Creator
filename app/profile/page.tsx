@@ -6,14 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import { formatName } from "@/lib/utils"
@@ -128,7 +121,10 @@ export default function ProfilePage() {
   const loadUserData = async () => {
     try {
       // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser()
       if (userError || !user) {
         toast.error("Please log in to view your profile")
         router.push("/auth/login")
@@ -160,10 +156,7 @@ export default function ProfilePage() {
         .order("created_at", { ascending: false })
 
       // Load multiple-user tasks
-      const { data: taskAssignments } = await supabase
-        .from("task_assignments")
-        .select("task_id")
-        .eq("user_id", userId)
+      const { data: taskAssignments } = await supabase.from("task_assignments").select("task_id").eq("user_id", userId)
 
       let multipleUserTasks: Task[] = []
       if (taskAssignments && taskAssignments.length > 0) {
@@ -185,11 +178,7 @@ export default function ProfilePage() {
         .eq("assignment_type", "department")
         .order("created_at", { ascending: false })
 
-      const allTasks = [
-        ...(individualTasks || []),
-        ...multipleUserTasks,
-        ...(departmentTasks || []),
-      ]
+      const allTasks = [...(individualTasks || []), ...multipleUserTasks, ...(departmentTasks || [])]
       setTasks(allTasks)
 
       // Load devices assigned to user
@@ -201,10 +190,7 @@ export default function ProfilePage() {
 
       if (deviceAssignments && deviceAssignments.length > 0) {
         const deviceIds = deviceAssignments.map((da) => da.device_id)
-        const { data: devicesData } = await supabase
-          .from("devices")
-          .select("*")
-          .in("id", deviceIds)
+        const { data: devicesData } = await supabase.from("devices").select("*").in("id", deviceIds)
 
         if (devicesData) {
           const devicesWithAssignment = devicesData.map((device) => {
@@ -232,17 +218,11 @@ export default function ProfilePage() {
         .eq("department", profileData.department)
         .eq("is_current", true)
 
-      const allAssetAssignments = [
-        ...(individualAssetAssignments || []),
-        ...(departmentAssetAssignments || []),
-      ]
+      const allAssetAssignments = [...(individualAssetAssignments || []), ...(departmentAssetAssignments || [])]
 
       if (allAssetAssignments.length > 0) {
         const assetIds = allAssetAssignments.map((aa) => aa.asset_id)
-        const { data: assetsData } = await supabase
-          .from("assets")
-          .select("*")
-          .in("id", assetIds)
+        const { data: assetsData } = await supabase.from("assets").select("*").in("id", assetIds)
 
         if (assetsData) {
           const assetsWithAssignment = assetsData.map((asset) => {
@@ -314,7 +294,7 @@ export default function ProfilePage() {
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">Profile not found</p>
+            <p className="text-muted-foreground text-center">Profile not found</p>
           </CardContent>
         </Card>
       </div>
@@ -325,7 +305,7 @@ export default function ProfilePage() {
   const initials = `${profile.first_name?.[0] || ""}${profile.last_name?.[0] || ""}`.toUpperCase()
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -333,7 +313,7 @@ export default function ProfilePage() {
           <p className="text-muted-foreground">{profile.company_email}</p>
         </div>
         <Button onClick={() => router.push("/profile/edit")}>
-          <Edit className="h-4 w-4 mr-2" />
+          <Edit className="mr-2 h-4 w-4" />
           Edit Profile
         </Button>
       </div>
@@ -347,69 +327,63 @@ export default function ProfilePage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             <div className="flex items-center gap-3">
               <Avatar className="h-12 w-12">
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  {initials}
-                </AvatarFallback>
+                <AvatarFallback className="bg-primary text-primary-foreground">{initials}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-sm text-muted-foreground">Full Name</p>
+                <p className="text-muted-foreground text-sm">Full Name</p>
                 <p className="font-medium">{fullName}</p>
-                {profile.other_names && (
-                  <p className="text-xs text-muted-foreground">({profile.other_names})</p>
-                )}
+                {profile.other_names && <p className="text-muted-foreground text-xs">({profile.other_names})</p>}
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <Mail className="h-5 w-5 text-muted-foreground" />
+              <Mail className="text-muted-foreground h-5 w-5" />
               <div>
-                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="text-muted-foreground text-sm">Email</p>
                 <p className="font-medium">{profile.company_email}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <Building2 className="h-5 w-5 text-muted-foreground" />
+              <Building2 className="text-muted-foreground h-5 w-5" />
               <div>
-                <p className="text-sm text-muted-foreground">Department</p>
+                <p className="text-muted-foreground text-sm">Department</p>
                 <p className="font-medium">{profile.department || "N/A"}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <Shield className="h-5 w-5 text-muted-foreground" />
+              <Shield className="text-muted-foreground h-5 w-5" />
               <div>
-                <p className="text-sm text-muted-foreground">Role</p>
-                <div className="flex gap-2 mt-1">
+                <p className="text-muted-foreground text-sm">Role</p>
+                <div className="mt-1 flex gap-2">
                   <Badge className={getRoleBadgeColor(profile.role as UserRole)}>
                     {getRoleDisplayName(profile.role as UserRole)}
                   </Badge>
-                  {profile.is_department_lead && (
-                    <Badge variant="outline">Department Lead</Badge>
-                  )}
+                  {profile.is_department_lead && <Badge variant="outline">Department Lead</Badge>}
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <User className="h-5 w-5 text-muted-foreground" />
+              <User className="text-muted-foreground h-5 w-5" />
               <div>
-                <p className="text-sm text-muted-foreground">Position</p>
+                <p className="text-muted-foreground text-sm">Position</p>
                 <p className="font-medium">{profile.company_role || "N/A"}</p>
               </div>
             </div>
 
             {profile.phone_number && (
               <div className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-muted-foreground" />
+                <Phone className="text-muted-foreground h-5 w-5" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Phone</p>
+                  <p className="text-muted-foreground text-sm">Phone</p>
                   <p className="font-medium">{profile.phone_number}</p>
                   {profile.additional_phone && (
-                    <p className="text-xs text-muted-foreground">{profile.additional_phone}</p>
+                    <p className="text-muted-foreground text-xs">{profile.additional_phone}</p>
                   )}
                 </div>
               </div>
@@ -417,9 +391,9 @@ export default function ProfilePage() {
 
             {profile.residential_address && (
               <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 text-muted-foreground" />
+                <MapPin className="text-muted-foreground h-5 w-5" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Address</p>
+                  <p className="text-muted-foreground text-sm">Address</p>
                   <p className="font-medium">{profile.residential_address}</p>
                 </div>
               </div>
@@ -427,9 +401,9 @@ export default function ProfilePage() {
 
             {profile.current_work_location && (
               <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 text-muted-foreground" />
+                <MapPin className="text-muted-foreground h-5 w-5" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Work Location</p>
+                  <p className="text-muted-foreground text-sm">Work Location</p>
                   <p className="font-medium">{profile.current_work_location}</p>
                 </div>
               </div>
@@ -437,10 +411,10 @@ export default function ProfilePage() {
 
             {profile.lead_departments && profile.lead_departments.length > 0 && (
               <div className="flex items-center gap-3">
-                <Building2 className="h-5 w-5 text-muted-foreground" />
+                <Building2 className="text-muted-foreground h-5 w-5" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Leading Departments</p>
-                  <div className="flex flex-wrap gap-1 mt-1">
+                  <p className="text-muted-foreground text-sm">Leading Departments</p>
+                  <div className="mt-1 flex flex-wrap gap-1">
                     {profile.lead_departments.map((dept) => (
                       <Badge key={dept} variant="outline">
                         {dept}
@@ -452,12 +426,10 @@ export default function ProfilePage() {
             )}
 
             <div className="flex items-center gap-3">
-              <Calendar className="h-5 w-5 text-muted-foreground" />
+              <Calendar className="text-muted-foreground h-5 w-5" />
               <div>
-                <p className="text-sm text-muted-foreground">Member Since</p>
-                <p className="font-medium">
-                  {new Date(profile.created_at).toLocaleDateString()}
-                </p>
+                <p className="text-muted-foreground text-sm">Member Since</p>
+                <p className="font-medium">{new Date(profile.created_at).toLocaleDateString()}</p>
               </div>
             </div>
           </div>
@@ -468,23 +440,23 @@ export default function ProfilePage() {
       <Tabs defaultValue="tasks" className="space-y-4">
         <TabsList>
           <TabsTrigger value="tasks">
-            <CheckSquare className="h-4 w-4 mr-2" />
+            <CheckSquare className="mr-2 h-4 w-4" />
             Tasks ({tasks.length})
           </TabsTrigger>
           <TabsTrigger value="devices">
-            <Laptop className="h-4 w-4 mr-2" />
+            <Laptop className="mr-2 h-4 w-4" />
             Devices ({devices.length})
           </TabsTrigger>
           <TabsTrigger value="assets">
-            <Package className="h-4 w-4 mr-2" />
+            <Package className="mr-2 h-4 w-4" />
             Assets ({assets.length})
           </TabsTrigger>
           <TabsTrigger value="documentation">
-            <FileText className="h-4 w-4 mr-2" />
+            <FileText className="mr-2 h-4 w-4" />
             Documentation ({documentation.length})
           </TabsTrigger>
           <TabsTrigger value="feedback">
-            <MessageSquare className="h-4 w-4 mr-2" />
+            <MessageSquare className="mr-2 h-4 w-4" />
             Feedback ({feedback.length})
           </TabsTrigger>
         </TabsList>
@@ -513,27 +485,15 @@ export default function ProfilePage() {
                       <TableRow key={task.id}>
                         <TableCell className="font-medium">{task.title}</TableCell>
                         <TableCell>
-                          <Badge className={getStatusColor(task.status)}>
-                            {task.status}
-                          </Badge>
+                          <Badge className={getStatusColor(task.status)}>{task.status}</Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getPriorityColor(task.priority)}>
-                            {task.priority}
-                          </Badge>
+                          <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
                         </TableCell>
                         <TableCell>{task.department || "N/A"}</TableCell>
+                        <TableCell>{task.due_date ? new Date(task.due_date).toLocaleDateString() : "N/A"}</TableCell>
                         <TableCell>
-                          {task.due_date
-                            ? new Date(task.due_date).toLocaleDateString()
-                            : "N/A"}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            asChild
-                          >
+                          <Button variant="ghost" size="sm" asChild>
                             <Link href={`/tasks?taskId=${task.id}`}>View</Link>
                           </Button>
                         </TableCell>
@@ -542,9 +502,7 @@ export default function ProfilePage() {
                   </TableBody>
                 </Table>
               ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  No tasks assigned
-                </p>
+                <p className="text-muted-foreground py-8 text-center">No tasks assigned</p>
               )}
             </CardContent>
           </Card>
@@ -578,19 +536,11 @@ export default function ProfilePage() {
                         <TableCell>{device.device_model || "N/A"}</TableCell>
                         <TableCell>{device.serial_number || "N/A"}</TableCell>
                         <TableCell>
-                          <Badge className={getStatusColor(device.status)}>
-                            {device.status}
-                          </Badge>
+                          <Badge className={getStatusColor(device.status)}>{device.status}</Badge>
                         </TableCell>
+                        <TableCell>{new Date(device.assigned_at).toLocaleDateString()}</TableCell>
                         <TableCell>
-                          {new Date(device.assigned_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            asChild
-                          >
+                          <Button variant="ghost" size="sm" asChild>
                             <Link href={`/devices?deviceId=${device.id}`}>View</Link>
                           </Button>
                         </TableCell>
@@ -599,9 +549,7 @@ export default function ProfilePage() {
                   </TableBody>
                 </Table>
               ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  No devices assigned
-                </p>
+                <p className="text-muted-foreground py-8 text-center">No devices assigned</p>
               )}
             </CardContent>
           </Card>
@@ -634,7 +582,7 @@ export default function ProfilePage() {
                           {asset.asset_name}
                           {asset.assignment_type === "department" && (
                             <Badge variant="outline" className="ml-2">
-                              <Building2 className="h-3 w-3 mr-1" />
+                              <Building2 className="mr-1 h-3 w-3" />
                               Department
                             </Badge>
                           )}
@@ -643,19 +591,11 @@ export default function ProfilePage() {
                         <TableCell>{asset.asset_model || "N/A"}</TableCell>
                         <TableCell>{asset.serial_number || "N/A"}</TableCell>
                         <TableCell>
-                          <Badge className={getStatusColor(asset.status)}>
-                            {asset.status}
-                          </Badge>
+                          <Badge className={getStatusColor(asset.status)}>{asset.status}</Badge>
                         </TableCell>
+                        <TableCell>{new Date(asset.assigned_at).toLocaleDateString()}</TableCell>
                         <TableCell>
-                          {new Date(asset.assigned_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            asChild
-                          >
+                          <Button variant="ghost" size="sm" asChild>
                             <Link href={`/assets?assetId=${asset.id}`}>View</Link>
                           </Button>
                         </TableCell>
@@ -664,9 +604,7 @@ export default function ProfilePage() {
                   </TableBody>
                 </Table>
               ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  No assets assigned
-                </p>
+                <p className="text-muted-foreground py-8 text-center">No assets assigned</p>
               )}
             </CardContent>
           </Card>
@@ -696,15 +634,9 @@ export default function ProfilePage() {
                         <TableCell>
                           <Badge variant="outline">{doc.category || "N/A"}</Badge>
                         </TableCell>
+                        <TableCell>{new Date(doc.created_at).toLocaleDateString()}</TableCell>
                         <TableCell>
-                          {new Date(doc.created_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            asChild
-                          >
+                          <Button variant="ghost" size="sm" asChild>
                             <Link href={`/documentation?docId=${doc.id}`}>View</Link>
                           </Button>
                         </TableCell>
@@ -713,9 +645,7 @@ export default function ProfilePage() {
                   </TableBody>
                 </Table>
               ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  No documentation created
-                </p>
+                <p className="text-muted-foreground py-8 text-center">No documentation created</p>
               )}
             </CardContent>
           </Card>
@@ -747,19 +677,11 @@ export default function ProfilePage() {
                           <Badge variant="outline">{item.feedback_type}</Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getStatusColor(item.status)}>
-                            {item.status}
-                          </Badge>
+                          <Badge className={getStatusColor(item.status)}>{item.status}</Badge>
                         </TableCell>
+                        <TableCell>{new Date(item.created_at).toLocaleDateString()}</TableCell>
                         <TableCell>
-                          {new Date(item.created_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            asChild
-                          >
+                          <Button variant="ghost" size="sm" asChild>
                             <Link href={`/feedback?feedbackId=${item.id}`}>View</Link>
                           </Button>
                         </TableCell>
@@ -768,14 +690,11 @@ export default function ProfilePage() {
                   </TableBody>
                 </Table>
               ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  No feedback submitted
-                </p>
+                <p className="text-muted-foreground py-8 text-center">No feedback submitted</p>
               )}
             </CardContent>
           </Card>
         </TabsContent>
-
       </Tabs>
     </div>
   )

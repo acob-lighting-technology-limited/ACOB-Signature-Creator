@@ -17,13 +17,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -84,7 +78,9 @@ export default function DocumentationPage() {
 
   const loadDocumentation = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
       const { data, error } = await supabase
@@ -160,7 +156,9 @@ export default function DocumentationPage() {
 
     setIsSaving(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) throw new Error("Not authenticated")
 
       const tags = formData.tags
@@ -182,10 +180,7 @@ export default function DocumentationPage() {
 
       if (selectedDoc) {
         // Update existing
-        const { error } = await supabase
-          .from("user_documentation")
-          .update(docData)
-          .eq("id", selectedDoc.id)
+        const { error } = await supabase.from("user_documentation").update(docData).eq("id", selectedDoc.id)
 
         if (error) throw error
 
@@ -276,13 +271,13 @@ export default function DocumentationPage() {
   const stats = getStats()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
+    <div className="from-background via-background to-muted/20 min-h-screen bg-gradient-to-br p-4 md:p-8">
       <div className="mx-auto max-w-6xl space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-              <FileText className="h-8 w-8 text-primary" />
+            <h1 className="text-foreground flex items-center gap-3 text-3xl font-bold">
+              <FileText className="text-primary h-8 w-8" />
               My Documentation
             </h1>
             <p className="text-muted-foreground mt-2">Create and manage your work documentation</p>
@@ -299,8 +294,8 @@ export default function DocumentationPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Total Documents</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.total}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Total Documents</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{stats.total}</p>
                 </div>
                 <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
               </div>
@@ -310,8 +305,8 @@ export default function DocumentationPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Published</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.published}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Published</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{stats.published}</p>
                 </div>
                 <Eye className="h-8 w-8 text-green-600 dark:text-green-400" />
               </div>
@@ -321,8 +316,8 @@ export default function DocumentationPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Drafts</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.draft}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Drafts</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{stats.draft}</p>
                 </div>
                 <EyeOff className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
               </div>
@@ -333,10 +328,10 @@ export default function DocumentationPage() {
         {/* Filters */}
         <Card className="border-2">
           <CardContent className="p-4">
-            <div className="flex gap-4 flex-wrap">
-              <div className="flex-1 min-w-[200px]">
+            <div className="flex flex-wrap gap-4">
+              <div className="min-w-[200px] flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
                   <Input
                     placeholder="Search documentation..."
                     value={searchQuery}
@@ -368,11 +363,11 @@ export default function DocumentationPage() {
         {filteredDocs.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2">
             {filteredDocs.map((doc) => (
-              <Card key={doc.id} className="border-2 shadow-md hover:shadow-lg transition-all">
-                <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-background">
+              <Card key={doc.id} className="border-2 shadow-md transition-all hover:shadow-lg">
+                <CardHeader className="from-primary/5 to-background border-b bg-gradient-to-r">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
-                      <CardTitle className="text-lg flex items-center gap-2">
+                      <CardTitle className="flex items-center gap-2 text-lg">
                         {doc.title}
                         {doc.is_draft && (
                           <Badge variant="outline" className="bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30">
@@ -380,17 +375,15 @@ export default function DocumentationPage() {
                           </Badge>
                         )}
                       </CardTitle>
-                      {doc.category && (
-                        <CardDescription className="mt-1">{doc.category}</CardDescription>
-                      )}
+                      {doc.category && <CardDescription className="mt-1">{doc.category}</CardDescription>}
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="p-6 space-y-4">
-                  <p className="text-sm text-muted-foreground line-clamp-3">{doc.content}</p>
+                <CardContent className="space-y-4 p-6">
+                  <p className="text-muted-foreground line-clamp-3 text-sm">{doc.content}</p>
 
                   {doc.tags && doc.tags.length > 0 && (
-                    <div className="flex gap-2 flex-wrap">
+                    <div className="flex flex-wrap gap-2">
                       {doc.tags.map((tag, i) => (
                         <Badge key={i} variant="outline" className="gap-1">
                           <Tag className="h-3 w-3" />
@@ -400,12 +393,10 @@ export default function DocumentationPage() {
                     </div>
                   )}
 
-                  <div className="text-xs text-muted-foreground">
-                    Last updated: {formatDate(doc.updated_at)}
-                  </div>
+                  <div className="text-muted-foreground text-xs">Last updated: {formatDate(doc.updated_at)}</div>
 
                   <div className="flex gap-2 pt-2">
-                    <Button size="sm" variant="outline" onClick={() => openEditDialog(doc)} className="gap-2 flex-1">
+                    <Button size="sm" variant="outline" onClick={() => openEditDialog(doc)} className="flex-1 gap-2">
                       <Edit2 className="h-4 w-4" />
                       Edit
                     </Button>
@@ -429,8 +420,8 @@ export default function DocumentationPage() {
         ) : (
           <Card className="border-2">
             <CardContent className="p-12 text-center">
-              <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">
+              <FileText className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
+              <h3 className="text-foreground mb-2 text-xl font-semibold">
                 {searchQuery || categoryFilter !== "all" ? "No documents found" : "No documentation yet"}
               </h3>
               <p className="text-muted-foreground mb-4">
@@ -451,7 +442,7 @@ export default function DocumentationPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedDoc ? "Edit Document" : "Create New Document"}</DialogTitle>
             <DialogDescription>
@@ -459,7 +450,7 @@ export default function DocumentationPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 mt-4">
+          <div className="mt-4 space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Title *</label>
               <Input
@@ -472,7 +463,10 @@ export default function DocumentationPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Category</label>
-                <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) => setFormData({ ...formData, category: value })}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
@@ -511,12 +505,7 @@ export default function DocumentationPage() {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSaving}>
               Cancel
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleSave(true)}
-              disabled={isSaving}
-              className="gap-2"
-            >
+            <Button variant="outline" onClick={() => handleSave(true)} disabled={isSaving} className="gap-2">
               <EyeOff className="h-4 w-4" />
               Save as Draft
             </Button>

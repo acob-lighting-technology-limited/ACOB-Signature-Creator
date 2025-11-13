@@ -22,7 +22,10 @@ export default function EditProfilePage() {
   const loadUserData = async () => {
     try {
       // Get current user
-      const { data: { user: authUser }, error: userError } = await supabase.auth.getUser()
+      const {
+        data: { user: authUser },
+        error: userError,
+      } = await supabase.auth.getUser()
       if (userError || !authUser) {
         toast.error("Please log in to edit your profile")
         router.push("/auth/login")
@@ -81,11 +84,11 @@ export default function EditProfilePage() {
 
   if (!user || !profile) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="bg-background min-h-screen">
         <div className="mx-auto max-w-4xl p-6">
           <Card>
             <CardContent className="pt-6">
-              <p className="text-center text-muted-foreground">Profile not found</p>
+              <p className="text-muted-foreground text-center">Profile not found</p>
               <Button onClick={() => router.push("/profile")} className="mt-4 w-full">
                 Back to Profile
               </Button>
@@ -97,19 +100,15 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       <div className="mx-auto max-w-4xl p-6">
         <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.push("/profile")}
-            >
+          <div className="mb-4 flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => router.push("/profile")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Edit Profile</h1>
+              <h1 className="text-foreground text-3xl font-bold">Edit Profile</h1>
               <p className="text-muted-foreground">Update your personal and professional information</p>
             </div>
           </div>
@@ -120,4 +119,3 @@ export default function EditProfilePage() {
     </div>
   )
 }
-

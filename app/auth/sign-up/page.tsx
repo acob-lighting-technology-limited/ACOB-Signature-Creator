@@ -78,15 +78,13 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-4 md:p-6 bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="from-background via-background to-muted/20 flex min-h-screen w-full items-center justify-center bg-gradient-to-br p-4 md:p-6">
       <div className="w-full max-w-2xl">
         <div className="flex flex-col gap-8">
           {/* Header Section */}
-          <div className="text-center space-y-2">
+          <div className="space-y-2 text-center">
             <h1 className="text-4xl font-bold tracking-tight">Join ACOB</h1>
-            <p className="text-muted-foreground text-lg">
-              Create your account to access the staff portal
-            </p>
+            <p className="text-muted-foreground text-lg">Create your account to access the staff portal</p>
           </div>
 
           <Card className="border-2 shadow-xl">
@@ -100,7 +98,9 @@ export default function SignUpPage() {
                   {/* Name Fields */}
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div className="grid gap-3">
-                      <Label htmlFor="firstName" className="text-sm font-medium">First Name *</Label>
+                      <Label htmlFor="firstName" className="text-sm font-medium">
+                        First Name *
+                      </Label>
                       <Input
                         id="firstName"
                         value={formData.firstName}
@@ -110,7 +110,9 @@ export default function SignUpPage() {
                       />
                     </div>
                     <div className="grid gap-3">
-                      <Label htmlFor="lastName" className="text-sm font-medium">Last Name *</Label>
+                      <Label htmlFor="lastName" className="text-sm font-medium">
+                        Last Name *
+                      </Label>
                       <Input
                         id="lastName"
                         value={formData.lastName}
@@ -122,7 +124,9 @@ export default function SignUpPage() {
                   </div>
 
                   <div className="grid gap-3">
-                    <Label htmlFor="otherNames" className="text-sm font-medium">Other Names</Label>
+                    <Label htmlFor="otherNames" className="text-sm font-medium">
+                      Other Names
+                    </Label>
                     <Input
                       id="otherNames"
                       value={formData.otherNames}
@@ -135,7 +139,9 @@ export default function SignUpPage() {
                   {/* Email and Password */}
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div className="grid gap-3">
-                      <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
+                      <Label htmlFor="email" className="text-sm font-medium">
+                        Email *
+                      </Label>
                       <Input
                         id="email"
                         type="email"
@@ -147,7 +153,9 @@ export default function SignUpPage() {
                       />
                     </div>
                     <div className="grid gap-3">
-                      <Label htmlFor="password" className="text-sm font-medium">Password *</Label>
+                      <Label htmlFor="password" className="text-sm font-medium">
+                        Password *
+                      </Label>
                       <Input
                         id="password"
                         type="password"
@@ -164,7 +172,9 @@ export default function SignUpPage() {
                   {/* Department and Phone */}
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div className="grid gap-3">
-                      <Label htmlFor="department" className="text-sm font-medium">Department</Label>
+                      <Label htmlFor="department" className="text-sm font-medium">
+                        Department
+                      </Label>
                       <Select
                         value={formData.department}
                         onValueChange={(value) => setFormData({ ...formData, department: value })}
@@ -182,14 +192,16 @@ export default function SignUpPage() {
                       </Select>
                     </div>
                     <div className="grid gap-3">
-                      <Label htmlFor="phoneNumber" className="text-sm font-medium">Phone Number</Label>
+                      <Label htmlFor="phoneNumber" className="text-sm font-medium">
+                        Phone Number
+                      </Label>
                       <Input
                         id="phoneNumber"
                         type="tel"
                         value={formData.phoneNumber}
                         onChange={(e) => {
                           // Only allow numbers and + symbol
-                          const value = e.target.value.replace(/[^0-9+]/g, '')
+                          const value = e.target.value.replace(/[^0-9+]/g, "")
                           setFormData({ ...formData, phoneNumber: value })
                         }}
                         placeholder="+2348012345678"
@@ -200,7 +212,9 @@ export default function SignUpPage() {
 
                   {/* Residential Address */}
                   <div className="grid gap-3">
-                    <Label htmlFor="residentialAddress" className="text-sm font-medium">Residential Address</Label>
+                    <Label htmlFor="residentialAddress" className="text-sm font-medium">
+                      Residential Address
+                    </Label>
                     <Input
                       id="residentialAddress"
                       value={formData.residentialAddress}
@@ -210,15 +224,15 @@ export default function SignUpPage() {
                     />
                   </div>
 
-                  {error && <p className="text-sm text-red-500 bg-red-50 dark:bg-red-950/30 p-3 rounded-md">{error}</p>}
-                  <Button type="submit" className="w-full h-12 text-base font-semibold mt-2" disabled={isLoading}>
+                  {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-500 dark:bg-red-950/30">{error}</p>}
+                  <Button type="submit" className="mt-2 h-12 w-full text-base font-semibold" disabled={isLoading}>
                     {isLoading ? "Creating account..." : "Create Account"}
                   </Button>
                 </div>
                 <div className="mt-6 text-center">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Already have an account?{" "}
-                    <Link href="/auth/login" className="font-semibold text-primary hover:underline underline-offset-4">
+                    <Link href="/auth/login" className="text-primary font-semibold underline-offset-4 hover:underline">
                       Login
                     </Link>
                   </p>

@@ -15,7 +15,7 @@ export default async function AdminStaffSignaturePage({ params }: { params: { us
 
   // Check if user is admin
   const { data: me } = await supabase.from("profiles").select("is_admin, role").eq("id", data.user.id).single()
-  if (!me?.is_admin && !['super_admin', 'admin'].includes(me?.role || '')) {
+  if (!me?.is_admin && !["super_admin", "admin"].includes(me?.role || "")) {
     redirect("/dashboard")
   }
 
@@ -27,7 +27,7 @@ export default async function AdminStaffSignaturePage({ params }: { params: { us
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       <div className="mx-auto max-w-6xl p-6">
         <div className="mb-8">
           <Button variant="ghost" asChild className="mb-4">
@@ -36,7 +36,7 @@ export default async function AdminStaffSignaturePage({ params }: { params: { us
               Back to Staff
             </Link>
           </Button>
-          <h1 className="text-3xl font-bold text-foreground">
+          <h1 className="text-foreground text-3xl font-bold">
             Email Signature - {profile.first_name} {profile.last_name}
           </h1>
           <p className="text-muted-foreground">View and manage signature for this staff member</p>

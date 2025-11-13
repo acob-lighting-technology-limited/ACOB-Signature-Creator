@@ -16,13 +16,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SearchableSelect } from "@/components/ui/searchable-select"
 import {
   AlertDialog,
@@ -36,17 +30,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
-import {
-  ArrowLeft,
-  Plus,
-  Edit,
-  Trash2,
-  Users,
-  Package,
-  User,
-  UserPlus,
-  X,
-} from "lucide-react"
+import { ArrowLeft, Plus, Edit, Trash2, Users, Package, User, UserPlus, X } from "lucide-react"
 import Link from "next/link"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -136,7 +120,10 @@ export default function AdminProjectDetailPage() {
       console.log("🔄 Starting to load project data...")
 
       // Check auth first
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser()
       console.log("👤 Current user:", user?.id, authError ? `Error: ${authError.message}` : "✅")
 
       if (authError || !user) {
@@ -158,11 +145,7 @@ export default function AdminProjectDetailPage() {
 
   const loadProject = async () => {
     console.log("📋 Loading project details...")
-    const { data, error } = await supabase
-      .from("projects")
-      .select("*")
-      .eq("id", projectId)
-      .single()
+    const { data, error } = await supabase.from("projects").select("*").eq("id", projectId).single()
 
     console.log("Project result:", { data, error })
     if (error) throw error
@@ -185,7 +168,8 @@ export default function AdminProjectDetailPage() {
     console.log("👨‍👩‍👧‍👦 Loading project members...")
     const { data, error } = await supabase
       .from("project_members")
-      .select(`
+      .select(
+        `
         id,
         user_id,
         role,
@@ -197,7 +181,8 @@ export default function AdminProjectDetailPage() {
           company_email,
           department
         )
-      `)
+      `
+      )
       .eq("project_id", projectId)
       .eq("is_active", true)
       .order("assigned_at", { ascending: false })
@@ -344,10 +329,7 @@ export default function AdminProjectDetailPage() {
       }
 
       if (selectedItem) {
-        const { error } = await supabase
-          .from("project_items")
-          .update(itemData)
-          .eq("id", selectedItem.id)
+        const { error } = await supabase.from("project_items").update(itemData).eq("id", selectedItem.id)
 
         if (error) throw error
         toast.success("Item updated successfully")
@@ -410,9 +392,9 @@ export default function AdminProjectDetailPage() {
 
   if (!project) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Project not found</h2>
+          <h2 className="mb-2 text-xl font-semibold">Project not found</h2>
           <Link href="/admin/projects">
             <Button>
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -425,7 +407,7 @@ export default function AdminProjectDetailPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/admin/projects">
@@ -467,35 +449,28 @@ export default function AdminProjectDetailPage() {
             </CardHeader>
             <CardContent>
               {members.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-muted-foreground py-8 text-center">
                   No members assigned yet. Click "Add Member" to get started.
                 </div>
               ) : (
                 <div className="space-y-3">
                   {members.map((member) => (
-                    <div
-                      key={member.id}
-                      className="flex items-center justify-between p-3 border rounded-lg"
-                    >
+                    <div key={member.id} className="flex items-center justify-between rounded-lg border p-3">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <User className="h-5 w-5 text-primary" />
+                        <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-full">
+                          <User className="text-primary h-5 w-5" />
                         </div>
                         <div>
                           <p className="font-medium">
                             {member.user.first_name} {member.user.last_name}
                           </p>
-                          <p className="text-sm text-muted-foreground">{member.user.company_email}</p>
-                          <p className="text-xs text-muted-foreground">{member.user.department}</p>
+                          <p className="text-muted-foreground text-sm">{member.user.company_email}</p>
+                          <p className="text-muted-foreground text-xs">{member.user.department}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline">{member.role}</Badge>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => setMemberToDelete(member)}
-                        >
+                        <Button variant="outline" size="icon" onClick={() => setMemberToDelete(member)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -522,46 +497,33 @@ export default function AdminProjectDetailPage() {
             </CardHeader>
             <CardContent>
               {items.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-muted-foreground py-8 text-center">
                   No items added yet. Click "Add Item" to get started.
                 </div>
               ) : (
                 <div className="space-y-3">
                   {items.map((item) => (
-                    <div key={item.id} className="p-3 border rounded-lg">
+                    <div key={item.id} className="rounded-lg border p-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="mb-1 flex items-center gap-2">
                             <p className="font-medium">{item.item_name}</p>
                             <Badge className={getItemStatusColor(item.status)}>{item.status}</Badge>
                           </div>
-                          {item.description && (
-                            <p className="text-sm text-muted-foreground mb-2">{item.description}</p>
-                          )}
+                          {item.description && <p className="text-muted-foreground mb-2 text-sm">{item.description}</p>}
                           <div className="flex items-center gap-4 text-sm">
                             <span className="text-muted-foreground">
-                              Quantity:{" "}
-                              <span className="font-medium text-foreground">{item.quantity}</span>
+                              Quantity: <span className="text-foreground font-medium">{item.quantity}</span>
                               {item.unit && ` ${item.unit}`}
                             </span>
                           </div>
-                          {item.notes && (
-                            <p className="text-xs text-muted-foreground mt-2">Note: {item.notes}</p>
-                          )}
+                          {item.notes && <p className="text-muted-foreground mt-2 text-xs">Note: {item.notes}</p>}
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleOpenItemDialog(item)}
-                          >
+                          <Button variant="outline" size="icon" onClick={() => handleOpenItemDialog(item)}>
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => setItemToDelete(item)}
-                          >
+                          <Button variant="outline" size="icon" onClick={() => setItemToDelete(item)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -601,10 +563,7 @@ export default function AdminProjectDetailPage() {
 
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
-              <Select
-                value={memberForm.role}
-                onValueChange={(value) => setMemberForm({ ...memberForm, role: value })}
-              >
+              <Select value={memberForm.role} onValueChange={(value) => setMemberForm({ ...memberForm, role: value })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -682,10 +641,7 @@ export default function AdminProjectDetailPage() {
 
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
-              <Select
-                value={itemForm.status}
-                onValueChange={(value) => setItemForm({ ...itemForm, status: value })}
-              >
+              <Select value={itemForm.status} onValueChange={(value) => setItemForm({ ...itemForm, status: value })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -745,8 +701,7 @@ export default function AdminProjectDetailPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Item?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{itemToDelete?.item_name}"? This action cannot be
-              undone.
+              Are you sure you want to delete "{itemToDelete?.item_name}"? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

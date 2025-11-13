@@ -3,11 +3,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export default function SignatureLoading() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       <div className="mx-auto max-w-6xl p-6">
         <div className="mb-8">
-          <Skeleton className="h-10 w-32 mb-4" />
-          <Skeleton className="h-9 w-96 mb-2" />
+          <Skeleton className="mb-4 h-10 w-32" />
+          <Skeleton className="mb-2 h-9 w-96" />
           <Skeleton className="h-5 w-64" />
         </div>
 

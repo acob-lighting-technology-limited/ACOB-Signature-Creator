@@ -12,11 +12,11 @@ export default function SignUpSuccessPage() {
             <CardDescription>We&apos;ve sent you a confirmation link</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Please check your email inbox and click the confirmation link to verify your account. Once confirmed, you
               can log in to access the staff portal.
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               If you don&apos;t see the email, check your spam folder or try signing up again.
             </p>
             <Link href="/auth/login" className="block">

@@ -17,14 +17,12 @@ import { formatName } from "@/lib/utils"
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   // Fetch user profile with role
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user?.id)
-    .single()
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user?.id).single()
 
   // Fetch stats
   const [
@@ -44,14 +42,16 @@ export default async function AdminDashboardPage() {
   // Recent activity
   const { data: recentTasks } = await supabase
     .from("tasks")
-    .select(`
+    .select(
+      `
       id,
       title,
       status,
       priority,
       created_at,
       assigned_to
-    `)
+    `
+    )
     .order("created_at", { ascending: false })
     .limit(5)
 
@@ -59,13 +59,10 @@ export default async function AdminDashboardPage() {
   let tasksWithUsers = []
   if (recentTasks && recentTasks.length > 0) {
     const userIds = recentTasks.map((t: any) => t.assigned_to).filter(Boolean)
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, first_name, last_name")
-      .in("id", userIds)
+    const { data: profiles } = await supabase.from("profiles").select("id, first_name, last_name").in("id", userIds)
 
     const profilesMap = new Map(profiles?.map((p: any) => [p.id, p]) || [])
-    
+
     tasksWithUsers = recentTasks.map((task: any) => ({
       ...task,
       assigned_to_user: profilesMap.get(task.assigned_to) || null,
@@ -74,14 +71,16 @@ export default async function AdminDashboardPage() {
 
   const { data: recentFeedback } = await supabase
     .from("feedback")
-    .select(`
+    .select(
+      `
       id,
       title,
       feedback_type,
       status,
       created_at,
       user_id
-    `)
+    `
+    )
     .order("created_at", { ascending: false })
     .limit(5)
 
@@ -89,13 +88,10 @@ export default async function AdminDashboardPage() {
   let feedbackWithUsers = []
   if (recentFeedback && recentFeedback.length > 0) {
     const userIds = recentFeedback.map((f: any) => f.user_id).filter(Boolean)
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, first_name, last_name")
-      .in("id", userIds)
+    const { data: profiles } = await supabase.from("profiles").select("id, first_name, last_name").in("id", userIds)
 
     const profilesMap = new Map(profiles?.map((p: any) => [p.id, p]) || [])
-    
+
     feedbackWithUsers = recentFeedback.map((feedback: any) => ({
       ...feedback,
       user: profilesMap.get(feedback.user_id) || null,
@@ -289,13 +285,13 @@ export default async function AdminDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-6">
+    <div className="from-background via-background to-muted/20 min-h-screen bg-gradient-to-br p-4 md:p-6">
       <div className="mx-auto max-w-7xl space-y-5">
         {/* Header */}
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Shield className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Admin Dashboard</h1>
+          <div className="mb-1 flex items-center gap-2">
+            <Shield className="text-primary h-6 w-6" />
+            <h1 className="text-foreground text-2xl font-bold md:text-3xl">Admin Dashboard</h1>
           </div>
           <p className="text-muted-foreground text-sm">
             Welcome back, {formatName(profile?.first_name) || "Admin"}! Manage your organization from here.
@@ -308,10 +304,10 @@ export default async function AdminDashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Total Staff</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">{staffCount || 0}</p>
+                  <p className="text-muted-foreground text-xs font-medium">Total Staff</p>
+                  <p className="text-foreground mt-1 text-2xl font-bold">{staffCount || 0}</p>
                 </div>
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
                   <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
@@ -322,10 +318,10 @@ export default async function AdminDashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Assets</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">{assetCount || 0}</p>
+                  <p className="text-muted-foreground text-xs font-medium">Assets</p>
+                  <p className="text-foreground mt-1 text-2xl font-bold">{assetCount || 0}</p>
                 </div>
-                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                <div className="rounded-lg bg-purple-100 p-2 dark:bg-purple-900/30">
                   <Package className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
@@ -336,10 +332,10 @@ export default async function AdminDashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Active Tasks</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">{taskCount || 0}</p>
+                  <p className="text-muted-foreground text-xs font-medium">Active Tasks</p>
+                  <p className="text-foreground mt-1 text-2xl font-bold">{taskCount || 0}</p>
                 </div>
-                <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <div className="rounded-lg bg-green-100 p-2 dark:bg-green-900/30">
                   <ClipboardList className="h-4 w-4 text-green-600 dark:text-green-400" />
                 </div>
               </div>
@@ -350,10 +346,10 @@ export default async function AdminDashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Documents</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">{docCount || 0}</p>
+                  <p className="text-muted-foreground text-xs font-medium">Documents</p>
+                  <p className="text-foreground mt-1 text-2xl font-bold">{docCount || 0}</p>
                 </div>
-                <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                <div className="rounded-lg bg-orange-100 p-2 dark:bg-orange-900/30">
                   <FileText className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                 </div>
               </div>
@@ -364,10 +360,10 @@ export default async function AdminDashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Feedback</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">{feedbackCount || 0}</p>
+                  <p className="text-muted-foreground text-xs font-medium">Feedback</p>
+                  <p className="text-foreground mt-1 text-2xl font-bold">{feedbackCount || 0}</p>
                 </div>
-                <div className="p-2 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg">
+                <div className="rounded-lg bg-cyan-100 p-2 dark:bg-cyan-900/30">
                   <MessageSquare className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
                 </div>
               </div>
@@ -377,21 +373,21 @@ export default async function AdminDashboardPage() {
 
         {/* Quick Actions */}
         <div>
-          <h2 className="text-xl font-bold mb-3">Quick Actions</h2>
+          <h2 className="mb-3 text-xl font-bold">Quick Actions</h2>
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {filteredActions.map((action) => (
               <Link key={action.href} href={action.href} className="h-full">
-                <Card className="border hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer h-full flex flex-col">
-                  <CardContent className="p-4 flex-1 flex flex-col">
+                <Card className="flex h-full cursor-pointer flex-col border transition-all hover:-translate-y-0.5 hover:shadow-md">
+                  <CardContent className="flex flex-1 flex-col p-4">
                     <div className="flex items-center gap-3">
-                      <div className={`${action.color} p-2 rounded-lg text-white shrink-0`}>
+                      <div className={`${action.color} shrink-0 rounded-lg p-2 text-white`}>
                         <action.icon className="h-4 w-4" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm text-foreground mb-0.5 truncate">{action.title}</h3>
-                        <p className="text-xs text-muted-foreground line-clamp-1">{action.description}</p>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-foreground mb-0.5 truncate text-sm font-semibold">{action.title}</h3>
+                        <p className="text-muted-foreground line-clamp-1 text-xs">{action.description}</p>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+                      <ArrowRight className="text-muted-foreground group-hover:text-primary h-4 w-4 flex-shrink-0 transition-colors" />
                     </div>
                   </CardContent>
                 </Card>
@@ -404,14 +400,14 @@ export default async function AdminDashboardPage() {
         <div className="grid gap-4 lg:grid-cols-2">
           {/* Recent Tasks */}
           <Card className="border">
-            <CardHeader className="border-b bg-muted/30 py-3 px-4">
+            <CardHeader className="bg-muted/30 border-b px-4 py-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <ClipboardList className="h-4 w-4" />
                   Recent Tasks
                 </CardTitle>
                 <Link href="/admin/tasks">
-                  <Badge variant="outline" className="cursor-pointer hover:bg-accent text-xs">
+                  <Badge variant="outline" className="hover:bg-accent cursor-pointer text-xs">
                     View All
                   </Badge>
                 </Link>
@@ -421,45 +417,43 @@ export default async function AdminDashboardPage() {
               {tasksWithUsers && tasksWithUsers.length > 0 ? (
                 <div className="space-y-2">
                   {tasksWithUsers.map((task: any) => (
-                    <div key={task.id} className="flex items-center gap-2 py-2 border-b last:border-0">
-                      <p className="font-medium text-sm text-foreground truncate flex-1 min-w-0">
-                        {task.title}
-                      </p>
-                      <Badge className={`${getStatusColor(task.status)} text-xs shrink-0`} variant="outline">
+                    <div key={task.id} className="flex items-center gap-2 border-b py-2 last:border-0">
+                      <p className="text-foreground min-w-0 flex-1 truncate text-sm font-medium">{task.title}</p>
+                      <Badge className={`${getStatusColor(task.status)} shrink-0 text-xs`} variant="outline">
                         {task.status}
                       </Badge>
                       {task.priority && (
-                        <Badge variant="outline" className="text-xs shrink-0">
+                        <Badge variant="outline" className="shrink-0 text-xs">
                           {task.priority}
                         </Badge>
                       )}
                       {task.assigned_to_user && (
-                        <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+                        <span className="text-muted-foreground shrink-0 text-xs whitespace-nowrap">
                           {formatName(task.assigned_to_user.first_name)} {formatName(task.assigned_to_user.last_name)}
                         </span>
                       )}
-                      <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+                      <span className="text-muted-foreground shrink-0 text-xs whitespace-nowrap">
                         {formatDate(task.created_at)}
                       </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground text-center py-8">No recent tasks</p>
+                <p className="text-muted-foreground py-8 text-center text-sm">No recent tasks</p>
               )}
             </CardContent>
           </Card>
 
           {/* Recent Feedback */}
           <Card className="border">
-            <CardHeader className="border-b bg-muted/30 py-3 px-4">
+            <CardHeader className="bg-muted/30 border-b px-4 py-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <MessageSquare className="h-4 w-4" />
                   Recent Feedback
                 </CardTitle>
                 <Link href="/admin/feedback">
-                  <Badge variant="outline" className="cursor-pointer hover:bg-accent text-xs">
+                  <Badge variant="outline" className="hover:bg-accent cursor-pointer text-xs">
                     View All
                   </Badge>
                 </Link>
@@ -469,29 +463,27 @@ export default async function AdminDashboardPage() {
               {feedbackWithUsers && feedbackWithUsers.length > 0 ? (
                 <div className="space-y-2">
                   {feedbackWithUsers.map((feedback: any) => (
-                    <div key={feedback.id} className="flex items-center gap-2 py-2 border-b last:border-0">
-                      <p className="font-medium text-sm text-foreground truncate flex-1 min-w-0">
-                        {feedback.title}
-                      </p>
-                      <Badge variant="outline" className="text-xs shrink-0">
+                    <div key={feedback.id} className="flex items-center gap-2 border-b py-2 last:border-0">
+                      <p className="text-foreground min-w-0 flex-1 truncate text-sm font-medium">{feedback.title}</p>
+                      <Badge variant="outline" className="shrink-0 text-xs">
                         {feedback.feedback_type || "N/A"}
                       </Badge>
-                      <Badge className={`${getStatusColor(feedback.status)} text-xs shrink-0`} variant="outline">
+                      <Badge className={`${getStatusColor(feedback.status)} shrink-0 text-xs`} variant="outline">
                         {feedback.status}
                       </Badge>
                       {feedback.user && (
-                        <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+                        <span className="text-muted-foreground shrink-0 text-xs whitespace-nowrap">
                           {formatName(feedback.user.first_name)} {formatName(feedback.user.last_name)}
                         </span>
                       )}
-                      <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+                      <span className="text-muted-foreground shrink-0 text-xs whitespace-nowrap">
                         {formatDate(feedback.created_at)}
                       </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground text-center py-8">No recent feedback</p>
+                <p className="text-muted-foreground py-8 text-center text-sm">No recent feedback</p>
               )}
             </CardContent>
           </Card>

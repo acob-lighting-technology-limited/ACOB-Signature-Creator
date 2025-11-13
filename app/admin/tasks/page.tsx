@@ -7,14 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   Dialog,
   DialogContent,
@@ -23,13 +16,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SearchableSelect } from "@/components/ui/searchable-select"
 import {
   AlertDialog,
@@ -156,7 +143,9 @@ export default function AdminTasksPage() {
 
   const loadData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
       // Get user profile
@@ -169,10 +158,7 @@ export default function AdminTasksPage() {
       setUserProfile(profile)
 
       // Build query based on role
-      let tasksQuery = supabase
-        .from("tasks")
-        .select("*")
-        .order("created_at", { ascending: false })
+      let tasksQuery = supabase.from("tasks").select("*").order("created_at", { ascending: false })
 
       // Filter by department for leads - STRICTLY by their departments
       if (profile?.role === "lead" && profile?.lead_departments && profile.lead_departments.length > 0) {
@@ -193,10 +179,7 @@ export default function AdminTasksPage() {
       const [tasksData, staffData, projectsData] = await Promise.all([
         tasksQuery,
         staffQuery,
-        supabase
-          .from("projects")
-          .select("id, project_name")
-          .order("project_name", { ascending: true }),
+        supabase.from("projects").select("id, project_name").order("project_name", { ascending: true }),
       ])
 
       if (tasksData.error) throw tasksData.error
@@ -206,54 +189,57 @@ export default function AdminTasksPage() {
       console.log("Loaded staff count:", staffData.data?.length)
 
       // Fetch task assignments and user details
-      const tasksWithUsers = await Promise.all((tasksData.data || []).map(async (task: any) => {
-        const taskData: any = { ...task }
-        
-        // For individual tasks, fetch assigned user
-        if (task.assignment_type === "individual" && task.assigned_to) {
-          const { data: userProfile } = await supabase
-            .from("profiles")
-            .select("first_name, last_name, department")
-            .eq("id", task.assigned_to)
-            .single()
-          
-          taskData.assigned_to_user = userProfile
-        }
-        
-        // For multiple-user tasks, fetch all assignments
-        if (task.assignment_type === "multiple") {
-          const { data: assignments } = await supabase
-            .from("task_assignments")
-            .select("user_id")
-            .eq("task_id", task.id)
-          
-          if (assignments && assignments.length > 0) {
-            const userIds = assignments.map((a: any) => a.user_id)
-            const { data: userProfiles } = await supabase
+      const tasksWithUsers = await Promise.all(
+        (tasksData.data || []).map(async (task: any) => {
+          const taskData: any = { ...task }
+
+          // For individual tasks, fetch assigned user
+          if (task.assignment_type === "individual" && task.assigned_to) {
+            const { data: userProfile } = await supabase
               .from("profiles")
-              .select("id, first_name, last_name, department")
-              .in("id", userIds)
-            
-            // Fetch completion status
-            const { data: completions } = await supabase
-              .from("task_user_completion")
+              .select("first_name, last_name, department")
+              .eq("id", task.assigned_to)
+              .single()
+
+            taskData.assigned_to_user = userProfile
+          }
+
+          // For multiple-user tasks, fetch all assignments
+          if (task.assignment_type === "multiple") {
+            const { data: assignments } = await supabase
+              .from("task_assignments")
               .select("user_id")
               .eq("task_id", task.id)
-            
-            const completedUserIds = new Set(completions?.map((c: any) => c.user_id) || [])
-            
-            taskData.assigned_users = userProfiles?.map((profile: any) => ({
-              ...profile,
-              completed: completedUserIds.has(profile.id)
-            })) || []
+
+            if (assignments && assignments.length > 0) {
+              const userIds = assignments.map((a: any) => a.user_id)
+              const { data: userProfiles } = await supabase
+                .from("profiles")
+                .select("id, first_name, last_name, department")
+                .in("id", userIds)
+
+              // Fetch completion status
+              const { data: completions } = await supabase
+                .from("task_user_completion")
+                .select("user_id")
+                .eq("task_id", task.id)
+
+              const completedUserIds = new Set(completions?.map((c: any) => c.user_id) || [])
+
+              taskData.assigned_users =
+                userProfiles?.map((profile: any) => ({
+                  ...profile,
+                  completed: completedUserIds.has(profile.id),
+                })) || []
+            }
           }
-        }
-        
-        return taskData
-      }))
+
+          return taskData
+        })
+      )
 
       // For leads, filter tasks strictly by their departments
-      let filteredTasks = tasksWithUsers as any || []
+      let filteredTasks = (tasksWithUsers as any) || []
       if (profile?.role === "lead" && profile?.lead_departments && profile.lead_departments.length > 0) {
         filteredTasks = filteredTasks.filter((task: any) => {
           // Check if task department is in lead's departments
@@ -261,14 +247,15 @@ export default function AdminTasksPage() {
             return true
           }
           // Check if assigned user is in lead's departments
-          if (task.assigned_to_user?.department && profile.lead_departments.includes(task.assigned_to_user.department)) {
+          if (
+            task.assigned_to_user?.department &&
+            profile.lead_departments.includes(task.assigned_to_user.department)
+          ) {
             return true
           }
           // Check if any assigned user in multiple-user tasks is in lead's departments
           if (task.assigned_users && task.assigned_users.length > 0) {
-            return task.assigned_users.some((u: any) => 
-              u.department && profile.lead_departments.includes(u.department)
-            )
+            return task.assigned_users.some((u: any) => u.department && profile.lead_departments.includes(u.department))
           }
           return false
         })
@@ -301,18 +288,15 @@ export default function AdminTasksPage() {
   const handleOpenTaskDialog = async (task?: Task) => {
     if (task) {
       setSelectedTask(task)
-      
+
       // Load assignment data for multiple-user tasks
       let assignedUsers: string[] = []
       if (task.assignment_type === "multiple" && task.id) {
-        const { data: assignments } = await supabase
-          .from("task_assignments")
-          .select("user_id")
-          .eq("task_id", task.id)
-        
+        const { data: assignments } = await supabase.from("task_assignments").select("user_id").eq("task_id", task.id)
+
         assignedUsers = assignments?.map((a: any) => a.user_id) || []
       }
-      
+
       setTaskForm({
         title: task.title,
         description: task.description || "",
@@ -349,7 +333,9 @@ export default function AdminTasksPage() {
 
   const handleSaveTask = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
       // Validate based on assignment type
@@ -385,7 +371,7 @@ export default function AdminTasksPage() {
         priority: taskForm.priority,
         status: taskForm.status,
         due_date: taskForm.due_date || null,
-        department: taskForm.assignment_type === "department" ? taskForm.department : (taskForm.department || null),
+        department: taskForm.assignment_type === "department" ? taskForm.department : taskForm.department || null,
         assignment_type: taskForm.assignment_type,
         assigned_to: taskForm.assignment_type === "individual" ? taskForm.assigned_to : null,
         assigned_by: user.id,
@@ -396,20 +382,14 @@ export default function AdminTasksPage() {
 
       if (selectedTask) {
         // Update existing task
-        const { error: taskError } = await supabase
-          .from("tasks")
-          .update(taskData)
-          .eq("id", selectedTask.id)
+        const { error: taskError } = await supabase.from("tasks").update(taskData).eq("id", selectedTask.id)
 
         if (taskError) throw taskError
 
         // Update task assignments for multiple-user tasks
         if (taskForm.assignment_type === "multiple") {
           // Delete existing assignments
-          await supabase
-            .from("task_assignments")
-            .delete()
-            .eq("task_id", selectedTask.id)
+          await supabase.from("task_assignments").delete().eq("task_id", selectedTask.id)
 
           // Insert new assignments
           if (taskForm.assigned_users.length > 0) {
@@ -418,9 +398,7 @@ export default function AdminTasksPage() {
               user_id: userId,
             }))
 
-            const { error: assignError } = await supabase
-              .from("task_assignments")
-              .insert(assignments)
+            const { error: assignError } = await supabase.from("task_assignments").insert(assignments)
 
             if (assignError) throw assignError
           }
@@ -445,11 +423,7 @@ export default function AdminTasksPage() {
         toast.success("Task updated successfully")
       } else {
         // Create new task
-        const { data: newTask, error: taskError } = await supabase
-          .from("tasks")
-          .insert(taskData)
-          .select()
-          .single()
+        const { data: newTask, error: taskError } = await supabase.from("tasks").insert(taskData).select().single()
 
         if (taskError) throw taskError
 
@@ -460,9 +434,7 @@ export default function AdminTasksPage() {
             user_id: userId,
           }))
 
-          const { error: assignError } = await supabase
-            .from("task_assignments")
-            .insert(assignments)
+          const { error: assignError } = await supabase.from("task_assignments").insert(assignments)
 
           if (assignError) throw assignError
         }
@@ -490,13 +462,12 @@ export default function AdminTasksPage() {
     try {
       if (!taskToDelete) return
 
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
-      const { error } = await supabase
-        .from("tasks")
-        .delete()
-        .eq("id", taskToDelete.id)
+      const { error } = await supabase.from("tasks").delete().eq("id", taskToDelete.id)
 
       if (error) throw error
 
@@ -532,21 +503,24 @@ export default function AdminTasksPage() {
       // Leads: tasks are already filtered, but ensure they match lead's departments
       if (userProfile.lead_departments && userProfile.lead_departments.length > 0) {
         const leadDepartments = userProfile.lead_departments
-        matchesDepartment = leadDepartments.includes(task.department || "") ||
+        matchesDepartment =
+          leadDepartments.includes(task.department || "") ||
           (task.assigned_to_user ? leadDepartments.includes(task.assigned_to_user.department || "") : false) ||
-          (task.assigned_users && task.assigned_users.some((u: any) =>
-            u.department && leadDepartments.includes(u.department)
-          )) || false
+          (task.assigned_users &&
+            task.assigned_users.some((u: any) => u.department && leadDepartments.includes(u.department))) ||
+          false
       }
     } else {
       // Admins: use department filter
-      matchesDepartment = departmentFilter === "all" || 
+      matchesDepartment =
+        departmentFilter === "all" ||
         task.department === departmentFilter ||
         (task.assigned_to_user ? staff.find((s) => s.id === task.assigned_to)?.department === departmentFilter : false)
     }
 
     // Filter by staff
-    const matchesStaff = staffFilter === "all" || 
+    const matchesStaff =
+      staffFilter === "all" ||
       task.assigned_to === staffFilter ||
       (task.assigned_users && task.assigned_users.some((u: any) => u.id === staffFilter))
 
@@ -597,21 +571,19 @@ export default function AdminTasksPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 w-full overflow-x-hidden">
+    <div className="from-background via-background to-muted/20 min-h-screen w-full overflow-x-hidden bg-gradient-to-br">
       <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2 sm:gap-3">
-              <ClipboardList className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            <h1 className="text-foreground flex items-center gap-2 text-2xl font-bold sm:gap-3 sm:text-3xl">
+              <ClipboardList className="text-primary h-6 w-6 sm:h-8 sm:w-8" />
               Task Management
             </h1>
-            <p className="text-muted-foreground mt-2 text-sm sm:text-base">
-              Create and manage tasks for your team
-            </p>
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base">Create and manage tasks for your team</p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center border rounded-lg p-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center rounded-lg border p-1">
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
@@ -645,10 +617,10 @@ export default function AdminTasksPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Total Tasks</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.total}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Total Tasks</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{stats.total}</p>
                 </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <div className="rounded-lg bg-blue-100 p-3 dark:bg-blue-900/30">
                   <ClipboardList className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
@@ -659,10 +631,10 @@ export default function AdminTasksPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Pending</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.pending}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Pending</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{stats.pending}</p>
                 </div>
-                <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+                <div className="rounded-lg bg-yellow-100 p-3 dark:bg-yellow-900/30">
                   <ClipboardList className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
                 </div>
               </div>
@@ -673,10 +645,10 @@ export default function AdminTasksPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">In Progress</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.in_progress}</p>
+                  <p className="text-muted-foreground text-sm font-medium">In Progress</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{stats.in_progress}</p>
                 </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <div className="rounded-lg bg-blue-100 p-3 dark:bg-blue-900/30">
                   <ClipboardList className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
@@ -687,10 +659,10 @@ export default function AdminTasksPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground font-medium">Completed</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.completed}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Completed</p>
+                  <p className="text-foreground mt-2 text-3xl font-bold">{stats.completed}</p>
                 </div>
-                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <div className="rounded-lg bg-green-100 p-3 dark:bg-green-900/30">
                   <ClipboardList className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
               </div>
@@ -701,9 +673,9 @@ export default function AdminTasksPage() {
         {/* Filters */}
         <Card className="border-2">
           <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="flex flex-col gap-4 md:flex-row">
+              <div className="relative flex-1">
+                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
                 <Input
                   placeholder="Search tasks..."
                   value={searchQuery}
@@ -765,11 +737,12 @@ export default function AdminTasksPage() {
                 icon={<User className="h-4 w-4" />}
                 className="w-full md:w-48"
                 options={[
-                  { 
-                    value: "all", 
-                    label: userProfile?.role === "lead" && departments.length > 0
-                      ? `All ${departments.length === 1 ? departments[0] : "Department"} Staff`
-                      : "All Staff"
+                  {
+                    value: "all",
+                    label:
+                      userProfile?.role === "lead" && departments.length > 0
+                        ? `All ${departments.length === 1 ? departments[0] : "Department"} Staff`
+                        : "All Staff",
                   },
                   ...staff.map((member) => ({
                     value: member.id,
@@ -800,148 +773,142 @@ export default function AdminTasksPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                  {filteredTasks.map((task, index) => (
-                    <TableRow key={task.id}>
-                      <TableCell className="text-muted-foreground font-medium">{index + 1}</TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium text-foreground">{task.title}</div>
-                          {task.description && (
-                            <div className="text-sm text-muted-foreground line-clamp-1 mt-1">
-                              {task.description}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {task.assignment_type === "multiple" && task.assigned_users ? (
-                          <div className="text-sm">
-                            <div className="flex items-center gap-1 text-foreground">
-                              <Users className="h-3 w-3" />
-                              <span>{task.assigned_users.length} people</span>
-                            </div>
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {task.assigned_users.slice(0, 2).map((u: any) => `${formatName(u.first_name)} ${formatName(u.last_name)}`).join(", ")}
-                              {task.assigned_users.length > 2 && ` +${task.assigned_users.length - 2} more`}
-                            </div>
-                            {task.assigned_users.some((u: any) => u.completed) && (
-                              <div className="text-xs text-green-600 dark:text-green-400 mt-1">
-                                {task.assigned_users.filter((u: any) => u.completed).length}/{task.assigned_users.length} completed
+                    {filteredTasks.map((task, index) => (
+                      <TableRow key={task.id}>
+                        <TableCell className="text-muted-foreground font-medium">{index + 1}</TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="text-foreground font-medium">{task.title}</div>
+                            {task.description && (
+                              <div className="text-muted-foreground mt-1 line-clamp-1 text-sm">{task.description}</div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {task.assignment_type === "multiple" && task.assigned_users ? (
+                            <div className="text-sm">
+                              <div className="text-foreground flex items-center gap-1">
+                                <Users className="h-3 w-3" />
+                                <span>{task.assigned_users.length} people</span>
                               </div>
-                            )}
-                          </div>
-                        ) : task.assignment_type === "department" && task.department ? (
-                          <div className="text-sm">
-                            <div className="flex items-center gap-1 text-foreground">
-                              <Building2 className="h-3 w-3" />
-                              <span>{task.department}</span>
+                              <div className="text-muted-foreground mt-1 text-xs">
+                                {task.assigned_users
+                                  .slice(0, 2)
+                                  .map((u: any) => `${formatName(u.first_name)} ${formatName(u.last_name)}`)
+                                  .join(", ")}
+                                {task.assigned_users.length > 2 && ` +${task.assigned_users.length - 2} more`}
+                              </div>
+                              {task.assigned_users.some((u: any) => u.completed) && (
+                                <div className="mt-1 text-xs text-green-600 dark:text-green-400">
+                                  {task.assigned_users.filter((u: any) => u.completed).length}/
+                                  {task.assigned_users.length} completed
+                                </div>
+                              )}
                             </div>
-                            <div className="text-xs text-muted-foreground">Department</div>
-                          </div>
-                        ) : task.assigned_to_user ? (
-                          <div className="text-sm">
-                            <div className="text-foreground">
-                              {formatName((task.assigned_to_user as any)?.first_name)} {formatName((task.assigned_to_user as any)?.last_name)}
+                          ) : task.assignment_type === "department" && task.department ? (
+                            <div className="text-sm">
+                              <div className="text-foreground flex items-center gap-1">
+                                <Building2 className="h-3 w-3" />
+                                <span>{task.department}</span>
+                              </div>
+                              <div className="text-muted-foreground text-xs">Department</div>
                             </div>
-                            {task.department && (
-                              <div className="text-xs text-muted-foreground">{task.department}</div>
-                            )}
+                          ) : task.assigned_to_user ? (
+                            <div className="text-sm">
+                              <div className="text-foreground">
+                                {formatName((task.assigned_to_user as any)?.first_name)}{" "}
+                                {formatName((task.assigned_to_user as any)?.last_name)}
+                              </div>
+                              {task.department && (
+                                <div className="text-muted-foreground text-xs">{task.department}</div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">Unassigned</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(task.status)}>{task.status.replace("_", " ")}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          {task.due_date ? (
+                            <span className="text-foreground text-sm">{formatDate(task.due_date)}</span>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">No due date</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1 sm:gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleOpenTaskDialog(task)}
+                              className="h-8 w-8 p-0"
+                              title="Edit task"
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setTaskToDelete(task)
+                                setIsDeleteDialogOpen(true)
+                              }}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                              title="Delete task"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
                           </div>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">Unassigned</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(task.status)}>
-                          {task.status.replace("_", " ")}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getPriorityColor(task.priority)}>
-                          {task.priority}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {task.due_date ? (
-                          <span className="text-sm text-foreground">{formatDate(task.due_date)}</span>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">No due date</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1 sm:gap-2 ">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleOpenTaskDialog(task)}
-                            className="h-8 w-8 p-0"
-                            title="Edit task"
-                          >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setTaskToDelete(task)
-                              setIsDeleteDialogOpen(true)
-                            }}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                            title="Delete task"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {filteredTasks.map((task) => (
-                <Card key={task.id} className="border-2 hover:shadow-lg transition-shadow">
-                  <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-background">
+                <Card key={task.id} className="border-2 transition-shadow hover:shadow-lg">
+                  <CardHeader className="from-primary/5 to-background border-b bg-gradient-to-r">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <CardTitle className="text-lg">{task.title}</CardTitle>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Badge className={getStatusColor(task.status)}>
-                            {task.status.replace("_", " ")}
-                          </Badge>
-                          <Badge className={getPriorityColor(task.priority)}>
-                            {task.priority}
-                          </Badge>
+                        <div className="mt-2 flex items-center gap-2">
+                          <Badge className={getStatusColor(task.status)}>{task.status.replace("_", " ")}</Badge>
+                          <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
                         </div>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-4 space-y-3">
+                  <CardContent className="space-y-3 p-4">
                     {task.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {task.description}
-                      </p>
+                      <p className="text-muted-foreground line-clamp-2 text-sm">{task.description}</p>
                     )}
 
                     {task.assignment_type === "multiple" && task.assigned_users ? (
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 text-sm">
-                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <Users className="text-muted-foreground h-4 w-4" />
                           <span className="text-muted-foreground">Assigned to:</span>
-                          <span className="text-foreground font-medium">
-                            {task.assigned_users.length} people
-                          </span>
+                          <span className="text-foreground font-medium">{task.assigned_users.length} people</span>
                         </div>
-                        <div className="text-xs text-muted-foreground space-y-1 pl-6">
+                        <div className="text-muted-foreground space-y-1 pl-6 text-xs">
                           {task.assigned_users.map((u: any, idx: number) => (
                             <div key={u.id} className="flex items-center gap-2">
                               <span>
                                 {formatName(u.first_name)} {formatName(u.last_name)}
                               </span>
                               {u.completed && (
-                                <Badge variant="outline" className="text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                <Badge
+                                  variant="outline"
+                                  className="bg-green-100 text-xs text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                >
                                   Done
                                 </Badge>
                               )}
@@ -951,23 +918,26 @@ export default function AdminTasksPage() {
                       </div>
                     ) : task.assignment_type === "department" && task.department ? (
                       <div className="flex items-center gap-2 text-sm">
-                        <Building2 className="h-4 w-4 text-muted-foreground" />
+                        <Building2 className="text-muted-foreground h-4 w-4" />
                         <span className="text-muted-foreground">Department:</span>
                         <span className="text-foreground font-medium">{task.department}</span>
                       </div>
-                    ) : task.assigned_to_user && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Assigned to:</span>
-                        <span className="text-foreground font-medium">
-                          {formatName((task.assigned_to_user as any)?.first_name)} {formatName((task.assigned_to_user as any)?.last_name)}
-                        </span>
-                      </div>
+                    ) : (
+                      task.assigned_to_user && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <User className="text-muted-foreground h-4 w-4" />
+                          <span className="text-muted-foreground">Assigned to:</span>
+                          <span className="text-foreground font-medium">
+                            {formatName((task.assigned_to_user as any)?.first_name)}{" "}
+                            {formatName((task.assigned_to_user as any)?.last_name)}
+                          </span>
+                        </div>
+                      )
                     )}
 
                     {task.due_date && (
                       <div className="flex items-center gap-2 text-sm">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <Calendar className="text-muted-foreground h-4 w-4" />
                         <span className="text-muted-foreground">Due:</span>
                         <span className="text-foreground">{formatDate(task.due_date)}</span>
                       </div>
@@ -1003,8 +973,8 @@ export default function AdminTasksPage() {
         ) : (
           <Card className="border-2">
             <CardContent className="p-12 text-center">
-              <ClipboardList className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">No Tasks Found</h3>
+              <ClipboardList className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
+              <h3 className="text-foreground mb-2 text-xl font-semibold">No Tasks Found</h3>
               <p className="text-muted-foreground">
                 {searchQuery || statusFilter !== "all" || priorityFilter !== "all"
                   ? "No tasks match your filters"
@@ -1019,13 +989,9 @@ export default function AdminTasksPage() {
       <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>
-              {selectedTask ? "Edit Task" : "Create New Task"}
-            </DialogTitle>
+            <DialogTitle>{selectedTask ? "Edit Task" : "Create New Task"}</DialogTitle>
             <DialogDescription>
-              {selectedTask
-                ? "Update the task information below"
-                : "Enter the details for the new task"}
+              {selectedTask ? "Update the task information below" : "Enter the details for the new task"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -1071,10 +1037,7 @@ export default function AdminTasksPage() {
 
               <div>
                 <Label htmlFor="status">Status</Label>
-                <Select
-                  value={taskForm.status}
-                  onValueChange={(value) => setTaskForm({ ...taskForm, status: value })}
-                >
+                <Select value={taskForm.status} onValueChange={(value) => setTaskForm({ ...taskForm, status: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
@@ -1157,19 +1120,14 @@ export default function AdminTasksPage() {
             {taskForm.assignment_type === "multiple" && (
               <div>
                 <Label>Assign To Multiple People *</Label>
-                <Card className="border-2 mt-2">
+                <Card className="mt-2 border-2">
                   <ScrollArea className="h-[200px]">
-                    <CardContent className="p-4 space-y-2">
+                    <CardContent className="space-y-2 p-4">
                       {staff.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-4">
-                          No staff members found
-                        </p>
+                        <p className="text-muted-foreground py-4 text-center text-sm">No staff members found</p>
                       ) : (
                         staff.map((member) => (
-                          <div
-                            key={member.id}
-                            className="flex items-center space-x-2 p-2 hover:bg-muted rounded-md"
-                          >
+                          <div key={member.id} className="hover:bg-muted flex items-center space-x-2 rounded-md p-2">
                             <Checkbox
                               id={`member-${member.id}`}
                               checked={taskForm.assigned_users.includes(member.id)}
@@ -1182,16 +1140,14 @@ export default function AdminTasksPage() {
                                 } else {
                                   setTaskForm({
                                     ...taskForm,
-                                    assigned_users: taskForm.assigned_users.filter(
-                                      (id) => id !== member.id
-                                    ),
+                                    assigned_users: taskForm.assigned_users.filter((id) => id !== member.id),
                                   })
                                 }
                               }}
                             />
                             <label
                               htmlFor={`member-${member.id}`}
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+                              className="flex-1 cursor-pointer text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
                               {member.first_name} {member.last_name} - {member.department}
                             </label>
@@ -1201,8 +1157,9 @@ export default function AdminTasksPage() {
                     </CardContent>
                   </ScrollArea>
                 </Card>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {taskForm.assigned_users.length} staff member{taskForm.assigned_users.length !== 1 ? 's' : ''} selected
+                <p className="text-muted-foreground mt-1 text-xs">
+                  {taskForm.assigned_users.length} staff member{taskForm.assigned_users.length !== 1 ? "s" : ""}{" "}
+                  selected
                 </p>
               </div>
             )}
@@ -1225,9 +1182,7 @@ export default function AdminTasksPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {departments.length === 0 ? (
-                      <div className="p-4 text-center text-sm text-muted-foreground">
-                        No departments found
-                      </div>
+                      <div className="text-muted-foreground p-4 text-center text-sm">No departments found</div>
                     ) : (
                       departments.map((dept) => (
                         <SelectItem key={dept} value={dept}>
@@ -1237,8 +1192,9 @@ export default function AdminTasksPage() {
                     )}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground mt-1">
-                  All staff in this department will see this task. Only department leads, admins, and super admins can change the status.
+                <p className="text-muted-foreground mt-1 text-xs">
+                  All staff in this department will see this task. Only department leads, admins, and super admins can
+                  change the status.
                 </p>
               </div>
             )}
@@ -1323,18 +1279,12 @@ export default function AdminTasksPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the task "{taskToDelete?.title}". This action cannot be
-              undone.
+              This will permanently delete the task "{taskToDelete?.title}". This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setTaskToDelete(null)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteTask}
-              className="bg-red-600 hover:bg-red-700"
-            >
+            <AlertDialogCancel onClick={() => setTaskToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteTask} className="bg-red-600 hover:bg-red-700">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

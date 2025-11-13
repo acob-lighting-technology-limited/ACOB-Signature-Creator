@@ -98,15 +98,15 @@ export function AdminSidebar({ user, profile }: AdminSidebarProps) {
   const SidebarContent = () => (
     <>
       {/* Empty space for logo (moved to navbar) */}
-      <div className={cn("", isCollapsed ? "px-2 py-8" : "px-6 py-8")}>
-        {/* Logo space maintained but empty */}
-      </div>
+      <div className={cn("", isCollapsed ? "px-2 py-8" : "px-6 py-8")}>{/* Logo space maintained but empty */}</div>
 
       {/* Admin Badge & User Profile - Fixed height container */}
-      <div className={cn(
-        "border-b transition-all duration-300 pt-10 min-h-[100px] flex flex-col py-6",
-        isCollapsed ? "items-center mx-0 px-0" : "mx-6"
-      )}>
+      <div
+        className={cn(
+          "flex min-h-[100px] flex-col border-b py-6 pt-10 transition-all duration-300",
+          isCollapsed ? "mx-0 items-center px-0" : "mx-6"
+        )}
+      >
         {/* Admin Panel Badge - Commented out */}
         {/* <div className={cn("transition-all duration-300 overflow-hidden", isCollapsed ? "max-h-0 opacity-0" : "max-h-10 opacity-100")}>
         <div className="flex items-center gap-2">
@@ -118,40 +118,55 @@ export function AdminSidebar({ user, profile }: AdminSidebarProps) {
         </div> */}
 
         {/* User Profile - Fixed height container */}
-        <div className={cn("flex items-center transition-all duration-300 flex-shrink-0", isCollapsed ? "justify-center" : "gap-3")}>
-          <Avatar className={cn("ring-2 ring-primary/10 transition-all duration-300 flex-shrink-0", "h-12 w-12")}>
+        <div
+          className={cn(
+            "flex flex-shrink-0 items-center transition-all duration-300",
+            isCollapsed ? "justify-center" : "gap-3"
+          )}
+        >
+          <Avatar className={cn("ring-primary/10 flex-shrink-0 ring-2 transition-all duration-300", "h-12 w-12")}>
             <AvatarFallback className="bg-primary text-primary-foreground text-lg font-semibold">
               {getInitials(user?.email, profile?.first_name, profile?.last_name)}
             </AvatarFallback>
           </Avatar>
-          <div className={cn(
-            "transition-all duration-300 overflow-hidden",
-            isCollapsed 
-              ? "w-0 opacity-0 max-w-0" 
-              : "w-auto opacity-100 max-w-full flex-1 min-w-0 ml-0"
-          )}>
-            <div className={cn("transition-all duration-300 overflow-hidden", isCollapsed ? "max-h-0 opacity-0" : "max-h-24 opacity-100")}>
-              <p className="text-sm font-semibold text-foreground truncate whitespace-nowrap">
-              {profile?.first_name && profile?.last_name
-                ? `${formatName(profile.first_name)} ${formatName(profile.last_name)}`
-                : user?.email?.split("@")[0]}
-            </p>
-            {profile?.role && (
-                <Badge variant="outline" className={cn("text-xs mt-1 whitespace-nowrap", getRoleBadgeColor(profile.role))}>
-                {getRoleDisplayName(profile.role)}
-              </Badge>
+          <div
+            className={cn(
+              "overflow-hidden transition-all duration-300",
+              isCollapsed ? "w-0 max-w-0 opacity-0" : "ml-0 w-auto max-w-full min-w-0 flex-1 opacity-100"
             )}
+          >
+            <div
+              className={cn(
+                "overflow-hidden transition-all duration-300",
+                isCollapsed ? "max-h-0 opacity-0" : "max-h-24 opacity-100"
+              )}
+            >
+              <p className="text-foreground truncate text-sm font-semibold whitespace-nowrap">
+                {profile?.first_name && profile?.last_name
+                  ? `${formatName(profile.first_name)} ${formatName(profile.last_name)}`
+                  : user?.email?.split("@")[0]}
+              </p>
+              {profile?.role && (
+                <Badge
+                  variant="outline"
+                  className={cn("mt-1 text-xs whitespace-nowrap", getRoleBadgeColor(profile.role))}
+                >
+                  {getRoleDisplayName(profile.role)}
+                </Badge>
+              )}
             </div>
           </div>
         </div>
 
         {/* Leading Departments - Fixed height container */}
-        <div className={cn(
-          "transition-all duration-300 overflow-hidden flex-shrink-0",
-          isCollapsed || !profile?.lead_departments || profile.lead_departments.length === 0 
-            ? "max-h-0 opacity-0" 
-            : "max-h-32 opacity-100"
-        )}>
+        <div
+          className={cn(
+            "flex-shrink-0 overflow-hidden transition-all duration-300",
+            isCollapsed || !profile?.lead_departments || profile.lead_departments.length === 0
+              ? "max-h-0 opacity-0"
+              : "max-h-32 opacity-100"
+          )}
+        >
           <div className="pt-2 text-xs">
             <p className="text-muted-foreground mb-1">Leading:</p>
             <div className="flex flex-wrap gap-1">
@@ -166,21 +181,20 @@ export function AdminSidebar({ user, profile }: AdminSidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-1">
+      <nav className="flex-1 space-y-1 px-4 py-6">
         {filteredNavigation.map((item) => {
-          const isActive = item.href === "/admin" 
-            ? pathname === "/admin"
-            : pathname === item.href || pathname?.startsWith(item.href + "/")
+          const isActive =
+            item.href === "/admin"
+              ? pathname === "/admin"
+              : pathname === item.href || pathname?.startsWith(item.href + "/")
           return (
             <Link
               key={item.name}
               href={item.href}
               onClick={() => setIsMobileMenuOpen(false)}
               className={cn(
-                "flex items-center rounded-lg transition-all duration-300 min-h-[44px]",
-                isCollapsed
-                  ? "justify-center px-3 py-3"
-                  : "gap-3 px-4 py-3",
+                "flex min-h-[44px] items-center rounded-lg transition-all duration-300",
+                isCollapsed ? "justify-center px-3 py-3" : "gap-3 px-4 py-3",
                 "text-sm font-medium",
                 isActive
                   ? "bg-primary text-primary-foreground shadow-sm"
@@ -189,38 +203,59 @@ export function AdminSidebar({ user, profile }: AdminSidebarProps) {
               title={isCollapsed ? item.name : undefined}
             >
               <item.icon className="h-5 w-5 flex-shrink-0" />
-              <span className={cn("transition-all duration-300 overflow-hidden whitespace-nowrap", isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-0")}>{item.name}</span>
+              <span
+                className={cn(
+                  "overflow-hidden whitespace-nowrap transition-all duration-300",
+                  isCollapsed ? "w-0 opacity-0" : "ml-0 w-auto opacity-100"
+                )}
+              >
+                {item.name}
+              </span>
             </Link>
           )
         })}
       </nav>
 
       {/* Back to Dashboard & Logout */}
-      <div className="px-4 py-4 border-t space-y-2">
+      <div className="space-y-2 border-t px-4 py-4">
         <Link href="/dashboard">
           <Button
             variant="outline"
             className={cn(
-              "w-full mb-2 text-muted-foreground hover:text-foreground transition-all duration-300 min-h-[44px]",
+              "text-muted-foreground hover:text-foreground mb-2 min-h-[44px] w-full transition-all duration-300",
               isCollapsed ? "justify-center px-3" : "justify-start gap-3"
             )}
             title={isCollapsed ? "Back to Dashboard" : undefined}
           >
             <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
-            <span className={cn("transition-all duration-300 overflow-hidden whitespace-nowrap", isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-0")}>Back to Dashboard</span>
+            <span
+              className={cn(
+                "overflow-hidden whitespace-nowrap transition-all duration-300",
+                isCollapsed ? "w-0 opacity-0" : "ml-0 w-auto opacity-100"
+              )}
+            >
+              Back to Dashboard
+            </span>
           </Button>
         </Link>
         <Button
           variant="outline"
           className={cn(
-            "w-full text-muted-foreground hover:text-foreground transition-all duration-300 min-h-[44px]",
+            "text-muted-foreground hover:text-foreground min-h-[44px] w-full transition-all duration-300",
             isCollapsed ? "justify-center px-3" : "justify-start gap-3"
           )}
           onClick={handleLogout}
           title={isCollapsed ? "Logout" : undefined}
         >
           <LogOut className="h-5 w-5 flex-shrink-0" />
-          <span className={cn("transition-all duration-300 overflow-hidden whitespace-nowrap", isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-0")}>Logout</span>
+          <span
+            className={cn(
+              "overflow-hidden whitespace-nowrap transition-all duration-300",
+              isCollapsed ? "w-0 opacity-0" : "ml-0 w-auto opacity-100"
+            )}
+          >
+            Logout
+          </span>
         </Button>
       </div>
     </>
@@ -231,7 +266,7 @@ export function AdminSidebar({ user, profile }: AdminSidebarProps) {
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          "hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-card border-r transition-all duration-300",
+          "bg-card hidden border-r transition-all duration-300 lg:fixed lg:inset-y-0 lg:flex lg:flex-col",
           isCollapsed ? "lg:w-20" : "lg:w-64"
         )}
       >
@@ -239,13 +274,11 @@ export function AdminSidebar({ user, profile }: AdminSidebarProps) {
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-card border-b">
+      <div className="bg-card fixed top-0 right-0 left-0 z-40 border-b lg:hidden">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
             <Image src="/acob-logo.webp" alt="ACOB Lighting" width={120} height={120} />
-            <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs">
-              Admin
-            </Badge>
+            <Badge className="bg-red-100 text-xs text-red-800 dark:bg-red-900/30 dark:text-red-400">Admin</Badge>
           </div>
           <Button
             variant="ghost"
@@ -262,31 +295,24 @@ export function AdminSidebar({ user, profile }: AdminSidebarProps) {
       <>
         <div
           className={cn(
-            "lg:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-40 transition-opacity duration-300",
-            isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+            "bg-background/80 fixed inset-0 z-40 backdrop-blur-sm transition-opacity duration-300 lg:hidden",
+            isMobileMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
           )}
           onClick={() => setIsMobileMenuOpen(false)}
         />
-        <aside 
+        <aside
           className={cn(
-            "lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-card border-r shadow-xl flex flex-col transition-transform duration-300 ease-out",
+            "bg-card fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r shadow-xl transition-transform duration-300 ease-out lg:hidden",
             isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
           {/* Close button for mobile */}
-          <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b">
+          <div className="flex items-center justify-between border-b px-4 py-3 lg:hidden">
             <div className="flex items-center gap-2">
               <Image src="/acob-logo.webp" alt="ACOB Lighting" width={100} height={100} />
-              <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs">
-                Admin
-              </Badge>
+              <Badge className="bg-red-100 text-xs text-red-800 dark:bg-red-900/30 dark:text-red-400">Admin</Badge>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="h-8 w-8"
-            >
+            <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)} className="h-8 w-8">
               <X className="h-5 w-5" />
             </Button>
           </div>
