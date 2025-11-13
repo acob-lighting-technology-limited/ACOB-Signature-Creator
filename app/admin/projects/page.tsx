@@ -51,6 +51,7 @@ import {
   Package,
 } from "lucide-react"
 import Link from "next/link"
+import { dateValidation } from "@/lib/validation"
 
 interface Project {
   id: string
@@ -211,6 +212,17 @@ export default function AdminProjectsPage() {
   const handleSaveProject = async () => {
     if (!projectForm.project_name || !projectForm.location || !projectForm.deployment_start_date || !projectForm.deployment_end_date) {
       toast.error("Please fill in all required fields")
+      return
+    }
+
+    // Validate deployment dates
+    const dateError = dateValidation.validateDateRange(
+      projectForm.deployment_start_date,
+      projectForm.deployment_end_date,
+      "deployment date"
+    )
+    if (dateError) {
+      toast.error(dateError)
       return
     }
 
@@ -620,6 +632,7 @@ export default function AdminProjectsPage() {
                 <Input
                   id="deployment_end_date"
                   type="date"
+                  min={projectForm.deployment_start_date}
                   value={projectForm.deployment_end_date}
                   onChange={(e) =>
                     setProjectForm({ ...projectForm, deployment_end_date: e.target.value })

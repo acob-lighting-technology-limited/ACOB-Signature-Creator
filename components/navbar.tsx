@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
 import { LogOut, Menu, X, User, MessageSquare, LayoutDashboard, FileSignature, ShieldCheck, Droplet, ChevronLeft, ChevronRight } from "lucide-react"
-import { NotificationBell } from "@/components/notification-bell"
+import { ProfessionalNotificationBell } from "@/components/professional-notification-bell"
 import { UniversalSearch } from "@/components/universal-search"
 import Image from "next/image"
 import { useSidebarSafe } from "@/components/sidebar-context"
@@ -63,8 +63,8 @@ export function Navbar({ user, isAdmin = false }: NavbarProps) {
   }
 
   return (
-    <nav className="border-b border-border bg-background sticky top-0 z-40">
-      <div className="flex h-16 items-center w-full">
+    <nav className="border-b border-border bg-background fixed top-0 left-0 right-0 z-50 w-full overflow-x-hidden">
+      <div className="flex h-16 items-center w-full max-w-full">
         {/* Left side - Collapse Button and Logo (aligned with sidebar edge) */}
         {sidebarContext && (
           <div className="hidden lg:flex items-center h-full">
@@ -93,17 +93,17 @@ export function Navbar({ user, isAdmin = false }: NavbarProps) {
             </div>
 
           {/* Right side - search, notifications and user menu */}
-          <div className="flex-1 flex items-center justify-end gap-4 px-4 sm:px-6 lg:px-8">
+          <div className="flex-1 flex items-center justify-end gap-2 sm:gap-4 px-2 sm:px-4 lg:px-8">
             <div className="hidden md:flex items-center gap-4 flex-1 max-w-md">
               {isAdmin && <UniversalSearch />}
             </div>
             <div className="hidden md:flex items-center gap-4">
-            <NotificationBell isAdmin={isAdmin} />
+            <ProfessionalNotificationBell isAdmin={isAdmin} />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+                  <Button variant="ghost" className="relative h-10 w-10 lg:h-12 lg:w-12 rounded-full">
+                    <Avatar className="h-10 w-10 lg:h-12 lg:w-12">
+                      <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-base lg:text-lg">
                         {getInitials(user?.email)}
                       </AvatarFallback>
                     </Avatar>

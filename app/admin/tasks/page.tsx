@@ -60,6 +60,7 @@ import {
 } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { dateValidation } from "@/lib/validation"
 
 interface Task {
   id: string
@@ -365,6 +366,19 @@ export default function AdminTasksPage() {
         return
       }
 
+      // Validate task dates if both are provided
+      if (taskForm.task_start_date && taskForm.task_end_date) {
+        const dateError = dateValidation.validateDateRange(
+          taskForm.task_start_date,
+          taskForm.task_end_date,
+          "task date"
+        )
+        if (dateError) {
+          toast.error(dateError)
+          return
+        }
+      }
+
       const taskData: any = {
         title: taskForm.title,
         description: taskForm.description || null,
@@ -583,8 +597,8 @@ export default function AdminTasksPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
-      <div className="mx-auto max-w-7xl space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 w-full overflow-x-hidden">
+      <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -772,7 +786,7 @@ export default function AdminTasksPage() {
         {filteredTasks.length > 0 ? (
           viewMode === "list" ? (
             <Card className="border-2">
-              <div className="overflow-x-auto">
+              <div className="table-responsive">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -1276,6 +1290,7 @@ export default function AdminTasksPage() {
                   <Input
                     id="task_end_date"
                     type="date"
+                    min={taskForm.task_start_date || undefined}
                     value={taskForm.task_end_date}
                     onChange={(e) => setTaskForm({ ...taskForm, task_end_date: e.target.value })}
                   />

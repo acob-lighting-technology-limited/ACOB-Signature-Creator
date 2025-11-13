@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
-import Link from "next/link"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -15,7 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -23,19 +23,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { SearchableSelect } from "@/components/ui/searchable-select"
-import { User } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
-import { toast } from "sonner"
-import { formatName } from "@/lib/utils"
+} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { User } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
+import { formatName } from "@/lib/utils";
 import {
   Users,
   Search,
@@ -53,45 +53,65 @@ import {
   ArrowUp,
   ArrowDown,
   FileSignature,
-} from "lucide-react"
-import type { UserRole } from "@/types/database"
-import { getRoleDisplayName, getRoleBadgeColor, canAssignRoles, DEPARTMENTS } from "@/lib/permissions"
+  Download,
+  FileText,
+} from "lucide-react";
+import type { UserRole } from "@/types/database";
+import {
+  getRoleDisplayName,
+  getRoleBadgeColor,
+  canAssignRoles,
+  DEPARTMENTS,
+} from "@/lib/permissions";
+import { SignatureCreator } from "@/components/signature-creator";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Calendar, User as UserIcon } from "lucide-react";
 
 interface Staff {
-  id: string
-  first_name: string
-  last_name: string
-  other_names: string | null
-  company_email: string
-  department: string
-  company_role: string | null
-  role: UserRole
-  phone_number: string | null
-  residential_address: string | null
-  current_work_location: string | null
-  is_admin: boolean
-  is_department_lead: boolean
-  lead_departments: string[]
-  created_at: string
+  id: string;
+  first_name: string;
+  last_name: string;
+  other_names: string | null;
+  company_email: string;
+  department: string;
+  company_role: string | null;
+  role: UserRole;
+  phone_number: string | null;
+  residential_address: string | null;
+  current_work_location: string | null;
+  is_admin: boolean;
+  is_department_lead: boolean;
+  lead_departments: string[];
+  created_at: string;
 }
 
 interface UserProfile {
-  role: UserRole
+  role: UserRole;
 }
 
 export default function AdminStaffPage() {
-  const searchParams = useSearchParams()
-  const [staff, setStaff] = useState<Staff[]>([])
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
-  const [, setIsLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [departmentFilter, setDepartmentFilter] = useState("all")
-  const [staffFilter, setStaffFilter] = useState("all")
-  const [roleFilter, setRoleFilter] = useState("all")
-  const [nameSortOrder, setNameSortOrder] = useState<"asc" | "desc">("asc")
-  const [viewMode, setViewMode] = useState<"list" | "card">("list")
-  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const searchParams = useSearchParams();
+  const [staff, setStaff] = useState<Staff[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [staffFilter, setStaffFilter] = useState("all");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [nameSortOrder, setNameSortOrder] = useState<"asc" | "desc">("asc");
+  const [viewMode, setViewMode] = useState<"list" | "card">("list");
+  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isSignatureDialogOpen, setIsSignatureDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [viewStaffProfile, setViewStaffProfile] = useState<any>(null);
+  const [viewStaffData, setViewStaffData] = useState<{
+    tasks: any[];
+    assets: any[];
+    documentation: any[];
+  }>({ tasks: [], assets: [], documentation: [] });
 
   // Form states
   const [editForm, setEditForm] = useState({
@@ -99,92 +119,173 @@ export default function AdminStaffPage() {
     department: "",
     company_role: "",
     lead_departments: [] as string[],
-  })
+  });
 
-  const supabase = createClient()
+  const supabase = createClient();
 
   useEffect(() => {
-    loadData()
-  }, [])
+    loadData();
+  }, []);
 
   // Handle userId from search params (for edit dialog)
   useEffect(() => {
-    const userId = searchParams?.get("userId")
+    const userId = searchParams?.get("userId");
     if (userId && staff.length > 0 && !isEditDialogOpen) {
-      const user = staff.find((s) => s.id === userId)
+      const user = staff.find((s) => s.id === userId);
       if (user) {
-        handleEditStaff(user)
+        handleEditStaff(user);
       }
     }
-  }, [searchParams, staff, isEditDialogOpen])
+  }, [searchParams, staff, isEditDialogOpen]);
 
   const loadData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
 
       // Get user profile
       const { data: profile } = await supabase
         .from("profiles")
         .select("role, lead_departments")
         .eq("id", user.id)
-        .single()
+        .single();
 
-      setUserProfile(profile)
+      setUserProfile(profile);
 
       // Fetch staff - leads can only see staff in their departments
       let query = supabase
         .from("profiles")
         .select("*")
-        .order("last_name", { ascending: true })
+        .order("last_name", { ascending: true });
 
       // If user is a lead, filter by their lead departments
-      if (profile?.role === "lead" && profile.lead_departments && profile.lead_departments.length > 0) {
-        query = query.in("department", profile.lead_departments)
+      if (
+        profile?.role === "lead" &&
+        profile.lead_departments &&
+        profile.lead_departments.length > 0
+      ) {
+        query = query.in("department", profile.lead_departments);
       }
 
-      const { data, error } = await query
+      const { data, error } = await query;
 
-      if (error) throw error
+      if (error) throw error;
 
-      setStaff(data || [])
+      setStaff(data || []);
     } catch (error: any) {
-      console.error("Error loading staff:", error)
-      toast.error("Failed to load staff")
+      console.error("Error loading staff:", error);
+      toast.error("Failed to load staff");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleEditStaff = (staffMember: Staff) => {
-    setSelectedStaff(staffMember)
+    setSelectedStaff(staffMember);
     setEditForm({
       role: staffMember.role,
       department: staffMember.department,
       company_role: staffMember.company_role || "",
       lead_departments: staffMember.lead_departments || [],
-    })
-    setIsEditDialogOpen(true)
-  }
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleViewSignature = async (staffMember: Staff) => {
+    try {
+      setSelectedStaff(staffMember);
+      setIsSignatureDialogOpen(true);
+
+      // Load full profile data for signature
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", staffMember.id)
+        .single();
+
+      if (profileData) {
+        setSelectedStaff(profileData as any);
+      }
+    } catch (error: any) {
+      console.error("Error loading profile for signature:", error);
+      toast.error("Failed to load profile data");
+    }
+  };
+
+  const handleViewDetails = async (staffMember: Staff) => {
+    try {
+      setSelectedStaff(staffMember);
+      setIsViewDialogOpen(true);
+
+      // Load full profile data
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", staffMember.id)
+        .single();
+
+      if (profileData) {
+        setViewStaffProfile(profileData);
+
+        // Load related data
+        const [tasksResult, assetsResult, docsResult] = await Promise.all([
+          supabase
+            .from("tasks")
+            .select("*")
+            .eq("assigned_to", staffMember.id)
+            .order("created_at", { ascending: false })
+            .limit(10),
+          supabase
+            .from("asset_assignments")
+            .select(
+              `
+              *,
+              Asset:assets(id, asset_name, asset_type, status)
+            `
+            )
+            .eq("assigned_to", staffMember.id)
+            .eq("is_current", true)
+            .limit(10),
+          supabase
+            .from("user_documentation")
+            .select("*")
+            .eq("user_id", staffMember.id)
+            .order("created_at", { ascending: false })
+            .limit(10),
+        ]);
+
+        setViewStaffData({
+          tasks: tasksResult.data || [],
+          assets: assetsResult.data || [],
+          documentation: docsResult.data || [],
+        });
+      }
+    } catch (error: any) {
+      console.error("Error loading staff details:", error);
+      toast.error("Failed to load staff details");
+    }
+  };
 
   const handleSaveStaff = async () => {
     try {
-      if (!selectedStaff) return
+      if (!selectedStaff) return;
 
       // Check if user can assign this role
       if (userProfile && !canAssignRoles(userProfile.role, editForm.role)) {
-        toast.error("You don't have permission to assign this role")
-        return
+        toast.error("You don't have permission to assign this role");
+        return;
       }
 
       // Validate: If role is lead, at least one department must be selected
       if (editForm.role === "lead" && editForm.lead_departments.length === 0) {
-        toast.error("Please select at least one department for this lead")
-        return
+        toast.error("Please select at least one department for this lead");
+        return;
       }
 
       // If role is lead, automatically set is_department_lead to true
-      const isLead = editForm.role === "lead"
+      const isLead = editForm.role === "lead";
 
       const { error } = await supabase
         .from("profiles")
@@ -194,79 +295,403 @@ export default function AdminStaffPage() {
           company_role: editForm.company_role || null,
           is_department_lead: isLead,
           lead_departments: isLead ? editForm.lead_departments : [],
-          is_admin: ['super_admin', 'admin'].includes(editForm.role),
+          is_admin: ["super_admin", "admin"].includes(editForm.role),
         })
-        .eq("id", selectedStaff.id)
+        .eq("id", selectedStaff.id);
 
-      if (error) throw error
+      if (error) throw error;
 
-      toast.success("Staff member updated successfully")
-      setIsEditDialogOpen(false)
-      loadData()
+      toast.success("Staff member updated successfully");
+      setIsEditDialogOpen(false);
+      loadData();
     } catch (error: any) {
-      console.error("Error updating staff:", error)
-      toast.error("Failed to update staff member")
+      console.error("Error updating staff:", error);
+      toast.error("Failed to update staff member");
     }
-  }
+  };
 
   const filteredStaff = staff
     .filter((member) => {
       const matchesSearch =
         member.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.company_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.company_role?.toLowerCase().includes(searchQuery.toLowerCase())
+        member.company_email
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        member.company_role?.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesDepartment =
-        departmentFilter === "all" || member.department === departmentFilter
+        departmentFilter === "all" || member.department === departmentFilter;
 
-      const matchesStaff =
-        staffFilter === "all" || member.id === staffFilter
+      const matchesStaff = staffFilter === "all" || member.id === staffFilter;
 
-      const matchesRole =
-        roleFilter === "all" || member.role === roleFilter
+      const matchesRole = roleFilter === "all" || member.role === roleFilter;
 
-      return matchesSearch && matchesDepartment && matchesStaff && matchesRole
+      return matchesSearch && matchesDepartment && matchesStaff && matchesRole;
     })
     .sort((a, b) => {
-      const lastNameA = formatName(a.last_name).toLowerCase()
-      const lastNameB = formatName(b.last_name).toLowerCase()
-      
+      const lastNameA = formatName(a.last_name).toLowerCase();
+      const lastNameB = formatName(b.last_name).toLowerCase();
+
       if (nameSortOrder === "asc") {
-        return lastNameA.localeCompare(lastNameB)
+        return lastNameA.localeCompare(lastNameB);
       } else {
-        return lastNameB.localeCompare(lastNameA)
+        return lastNameB.localeCompare(lastNameA);
       }
-    })
+    });
 
   const departments = Array.from(
     new Set(staff.map((s) => s.department).filter(Boolean))
-  ) as string[]
+  ) as string[];
 
-  const roles: UserRole[] = ["visitor", "staff", "lead", "admin", "super_admin"]
+  const roles: UserRole[] = [
+    "visitor",
+    "staff",
+    "lead",
+    "admin",
+    "super_admin",
+  ];
 
   const stats = {
     total: staff.length,
-    admins: staff.filter((s) => ["super_admin", "admin"].includes(s.role)).length,
+    admins: staff.filter((s) => ["super_admin", "admin"].includes(s.role))
+      .length,
     leads: staff.filter((s) => s.role === "lead").length,
     staff: staff.filter((s) => s.role === "staff").length,
-  }
+  };
+
+  const exportStaffToExcel = async () => {
+    try {
+      if (filteredStaff.length === 0) {
+        toast.error("No staff data to export");
+        return;
+      }
+
+      const XLSX = await import("xlsx");
+      const { default: saveAs } = await import("file-saver");
+
+      const dataToExport = filteredStaff.map((member, index) => ({
+        "#": index + 1,
+        Name: `${formatName(member.first_name)} ${formatName(
+          member.last_name
+        )}`,
+        Email: member.company_email,
+        Department: member.department || "-",
+        Role: getRoleDisplayName(member.role),
+        Position: member.company_role || "-",
+        Phone: member.phone_number || "-",
+        "Work Location": member.current_work_location || "-",
+        "Is Lead": member.is_department_lead ? "Yes" : "No",
+        "Lead Departments": member.lead_departments?.length
+          ? member.lead_departments.join(", ")
+          : "-",
+        "Created At": member.created_at
+          ? new Date(member.created_at).toLocaleDateString()
+          : "-",
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(dataToExport);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Staff");
+
+      const maxWidth = 60;
+      const cols = Object.keys(dataToExport[0] || {}).map((key) => ({
+        wch: Math.min(
+          Math.max(
+            key.length,
+            ...dataToExport.map(
+              (row) => String(row[key as keyof typeof row]).length
+            )
+          ),
+          maxWidth
+        ),
+      }));
+      ws["!cols"] = cols;
+
+      const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const data = new Blob([excelBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      saveAs(
+        data,
+        `staff-export-${new Date().toISOString().split("T")[0]}.xlsx`
+      );
+      toast.success("Staff exported to Excel successfully");
+    } catch (error: any) {
+      console.error("Error exporting staff to Excel:", error);
+      toast.error("Failed to export staff to Excel");
+    }
+  };
+
+  const exportStaffToPDF = async () => {
+    try {
+      if (filteredStaff.length === 0) {
+        toast.error("No staff data to export");
+        return;
+      }
+
+      const jsPDF = (await import("jspdf")).default;
+      const autoTable = (await import("jspdf-autotable")).default;
+
+      const doc = new jsPDF({ orientation: "landscape" });
+      doc.setFontSize(16);
+      doc.text("Staff Report", 14, 15);
+      doc.setFontSize(10);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 22);
+      doc.text(`Total Staff: ${filteredStaff.length}`, 14, 28);
+
+      const dataToExport = filteredStaff.map((member, index) => [
+        index + 1,
+        `${formatName(member.first_name)} ${formatName(member.last_name)}`,
+        member.company_email,
+        member.department || "-",
+        getRoleDisplayName(member.role),
+        member.company_role || "-",
+        member.phone_number || "-",
+        member.is_department_lead
+          ? member.lead_departments?.length
+            ? member.lead_departments.join(", ")
+            : "Yes"
+          : "-",
+      ]);
+
+      autoTable(doc, {
+        head: [
+          [
+            "#",
+            "Name",
+            "Email",
+            "Department",
+            "Role",
+            "Position",
+            "Phone",
+            "Lead Departments",
+          ],
+        ],
+        body: dataToExport,
+        startY: 35,
+        styles: { fontSize: 8, cellPadding: 2 },
+        headStyles: { fillColor: [59, 130, 246], textColor: 255 },
+        alternateRowStyles: { fillColor: [245, 247, 250] },
+      });
+
+      doc.save(`staff-export-${new Date().toISOString().split("T")[0]}.pdf`);
+      toast.success("Staff exported to PDF successfully");
+    } catch (error: any) {
+      console.error("Error exporting staff to PDF:", error);
+      toast.error("Failed to export staff to PDF");
+    }
+  };
+
+  const exportStaffToWord = async () => {
+    try {
+      if (filteredStaff.length === 0) {
+        toast.error("No staff data to export");
+        return;
+      }
+
+      const {
+        Document,
+        Packer,
+        Paragraph,
+        Table,
+        TableCell,
+        TableRow,
+        WidthType,
+        AlignmentType,
+        HeadingLevel,
+        TextRun,
+      } = await import("docx");
+      const { default: saveAs } = await import("file-saver");
+
+      const tableRows = [
+        new TableRow({
+          children: [
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: "#", bold: true })],
+                }),
+              ],
+            }),
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: "Name", bold: true })],
+                }),
+              ],
+            }),
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: "Email", bold: true })],
+                }),
+              ],
+            }),
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: "Department", bold: true })],
+                }),
+              ],
+            }),
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: "Role", bold: true })],
+                }),
+              ],
+            }),
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: "Position", bold: true })],
+                }),
+              ],
+            }),
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: "Phone", bold: true })],
+                }),
+              ],
+            }),
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: "Work Location", bold: true }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: "Is Lead", bold: true })],
+                }),
+              ],
+            }),
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: "Lead Departments", bold: true }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+        ...filteredStaff.map(
+          (member, index) =>
+            new TableRow({
+              children: [
+                new TableCell({
+                  children: [new Paragraph((index + 1).toString())],
+                }),
+                new TableCell({
+                  children: [
+                    new Paragraph(
+                      `${formatName(member.first_name)} ${formatName(
+                        member.last_name
+                      )}`
+                    ),
+                  ],
+                }),
+                new TableCell({
+                  children: [new Paragraph(member.company_email)],
+                }),
+                new TableCell({
+                  children: [new Paragraph(member.department || "-")],
+                }),
+                new TableCell({
+                  children: [new Paragraph(getRoleDisplayName(member.role))],
+                }),
+                new TableCell({
+                  children: [new Paragraph(member.company_role || "-")],
+                }),
+                new TableCell({
+                  children: [new Paragraph(member.phone_number || "-")],
+                }),
+                new TableCell({
+                  children: [
+                    new Paragraph(member.current_work_location || "-"),
+                  ],
+                }),
+                new TableCell({
+                  children: [
+                    new Paragraph(member.is_department_lead ? "Yes" : "No"),
+                  ],
+                }),
+                new TableCell({
+                  children: [
+                    new Paragraph(
+                      member.lead_departments?.length
+                        ? member.lead_departments.join(", ")
+                        : "-"
+                    ),
+                  ],
+                }),
+              ],
+            })
+        ),
+      ];
+
+      const doc = new Document({
+        sections: [
+          {
+            children: [
+              new Paragraph({
+                text: "Staff Report",
+                heading: HeadingLevel.HEADING_1,
+                alignment: AlignmentType.CENTER,
+              }),
+              new Paragraph({
+                text: `Generated on: ${new Date().toLocaleDateString()}`,
+                alignment: AlignmentType.CENTER,
+              }),
+              new Paragraph({
+                text: `Total Staff: ${filteredStaff.length}`,
+                alignment: AlignmentType.CENTER,
+              }),
+              new Paragraph({ text: "" }),
+              new Table({
+                width: { size: 100, type: WidthType.PERCENTAGE },
+                rows: tableRows,
+              }),
+            ],
+          },
+        ],
+      });
+
+      const blob = await Packer.toBlob(doc);
+      saveAs(
+        blob,
+        `staff-export-${new Date().toISOString().split("T")[0]}.docx`
+      );
+      toast.success("Staff exported to Word successfully");
+    } catch (error: any) {
+      console.error("Error exporting staff to Word:", error);
+      toast.error("Failed to export staff to Word");
+    }
+  };
 
   const getAvailableRoles = (): UserRole[] => {
-    if (!userProfile) return []
+    if (!userProfile) return [];
 
     if (userProfile.role === "super_admin") {
-      return ["visitor", "staff", "lead", "admin", "super_admin"]
+      return ["visitor", "staff", "lead", "admin", "super_admin"];
     } else if (userProfile.role === "admin") {
-      return ["visitor", "staff", "lead"]
+      return ["visitor", "staff", "lead"];
     }
 
-    return []
-  }
+    return [];
+  };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-background via-background to-muted/20 p-4 md:p-8">
-      <div className="mx-auto max-w-7xl space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 w-full overflow-x-hidden">
+      <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -301,63 +726,125 @@ export default function AdminStaffPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 md:grid-cols-4">
           <Card className="border-2">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground font-medium">Total Staff</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.total}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] xs:text-xs text-muted-foreground font-medium truncate">
+                    Total Staff
+                  </p>
+                  <p className="text-lg sm:text-xl md:text-3xl font-bold text-foreground mt-1 md:mt-2">
+                    {stats.total}
+                  </p>
                 </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                  <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <div className="p-1.5 sm:p-2 md:p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg shrink-0 ml-1">
+                  <Users className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-2">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground font-medium">Admins</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.admins}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] xs:text-xs text-muted-foreground font-medium truncate">
+                    Admins
+                  </p>
+                  <p className="text-lg sm:text-xl md:text-3xl font-bold text-foreground mt-1 md:mt-2">
+                    {stats.admins}
+                  </p>
                 </div>
-                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                  <Shield className="h-6 w-6 text-red-600 dark:text-red-400" />
+                <div className="p-1.5 sm:p-2 md:p-3 bg-red-100 dark:bg-red-900/30 rounded-lg flex-shrink-0 ml-1">
+                  <Shield className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-red-600 dark:text-red-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-2">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground font-medium">Leads</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.leads}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] xs:text-xs text-muted-foreground font-medium truncate">
+                    Leads
+                  </p>
+                  <p className="text-lg sm:text-xl md:text-3xl font-bold text-foreground mt-1 md:mt-2">
+                    {stats.leads}
+                  </p>
                 </div>
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                  <UserCog className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                <div className="p-1.5 sm:p-2 md:p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0 ml-1">
+                  <UserCog className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-2">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground font-medium">Staff Members</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stats.staff}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] xs:text-xs text-muted-foreground font-medium truncate">
+                    Staff Members
+                  </p>
+                  <p className="text-lg sm:text-xl md:text-3xl font-bold text-foreground mt-1 md:mt-2">
+                    {stats.staff}
+                  </p>
                 </div>
-                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                  <Users className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <div className="p-1.5 sm:p-2 md:p-3 bg-green-100 dark:bg-green-900/30 rounded-lg flex-shrink-0 ml-1">
+                  <Users className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-green-600 dark:text-green-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Export Buttons */}
+        <Card className="border-2">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-2">
+                <Download className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">
+                  Export Filtered Staff:
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exportStaffToExcel}
+                  className="gap-2"
+                  disabled={filteredStaff.length === 0}
+                >
+                  <FileText className="h-4 w-4" />
+                  Excel (.xlsx)
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exportStaffToPDF}
+                  className="gap-2"
+                  disabled={filteredStaff.length === 0}
+                >
+                  <FileText className="h-4 w-4" />
+                  PDF
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exportStaffToWord}
+                  className="gap-2"
+                  disabled={filteredStaff.length === 0}
+                >
+                  <FileText className="h-4 w-4" />
+                  Word (.docx)
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Filters */}
         <Card className="border-2">
@@ -399,7 +886,9 @@ export default function AdminStaffPage() {
                   { value: "all", label: "All Staff" },
                   ...staff.map((member) => ({
                     value: member.id,
-                    label: `${formatName(member.first_name)} ${formatName(member.last_name)} - ${member.department}`,
+                    label: `${formatName(member.first_name)} ${formatName(
+                      member.last_name
+                    )} - ${member.department || "No Dept"}`,
                     icon: <User className="h-3 w-3" />,
                   })),
                 ]}
@@ -425,7 +914,7 @@ export default function AdminStaffPage() {
         {filteredStaff.length > 0 ? (
           viewMode === "list" ? (
             <Card className="border-2">
-              <div className="overflow-x-auto">
+              <div className="table-responsive">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -436,7 +925,11 @@ export default function AdminStaffPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setNameSortOrder(nameSortOrder === "asc" ? "desc" : "asc")}
+                            onClick={() =>
+                              setNameSortOrder(
+                                nameSortOrder === "asc" ? "desc" : "asc"
+                              )
+                            }
                             className="h-6 w-6 p-0"
                           >
                             {nameSortOrder === "asc" ? (
@@ -454,91 +947,104 @@ export default function AdminStaffPage() {
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
-                <TableBody>
-                  {filteredStaff.map((member, index) => (
-                    <TableRow key={member.id}>
-                      <TableCell className="text-muted-foreground font-medium">{index + 1}</TableCell>
-                      <TableCell>
-                        <Link
-                          href={`/admin/staff/${member.id}`}
-                          className="flex items-center gap-2 hover:text-primary transition-colors"
-                        >
-                          <div className="p-2 bg-primary/10 rounded-lg">
-                            <Users className="h-4 w-4 text-primary" />
+                  <TableBody>
+                    {filteredStaff.map((member, index) => (
+                      <TableRow key={member.id}>
+                        <TableCell className="text-muted-foreground font-medium">
+                          {index + 1}
+                        </TableCell>
+                        <TableCell>
+                          <Link
+                            href={`/admin/staff/${member.id}`}
+                            className="flex items-center gap-2 hover:text-primary transition-colors"
+                          >
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                              <Users className="h-4 w-4 text-primary" />
+                            </div>
+                            <span className="font-medium text-foreground">
+                              {formatName(member.last_name)},{" "}
+                              {formatName(member.first_name)}
+                            </span>
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Mail className="h-3 w-3" />
+                            <span className="truncate max-w-[200px]">
+                              {member.company_email}
+                            </span>
                           </div>
-                          <span className="font-medium text-foreground">
-                            {formatName(member.last_name)}, {formatName(member.first_name)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm text-foreground">
+                            {member.department || "-"}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            <Badge className={getRoleBadgeColor(member.role)}>
+                              {getRoleDisplayName(member.role)}
+                            </Badge>
+                            {member.role === "lead" &&
+                              member.lead_departments &&
+                              member.lead_departments.length > 0 && (
+                                <Badge variant="outline" className="text-xs">
+                                  {member.lead_departments.length} Dept
+                                  {member.lead_departments.length > 1
+                                    ? "s"
+                                    : ""}
+                                </Badge>
+                              )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm text-muted-foreground">
+                            {member.company_role || "-"}
                           </span>
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Mail className="h-3 w-3" />
-                          <span className="truncate max-w-[200px]">{member.company_email}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm text-foreground">{member.department}</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          <Badge className={getRoleBadgeColor(member.role)}>
-                            {getRoleDisplayName(member.role)}
-                          </Badge>
-                          {member.is_department_lead && (
-                            <Badge variant="outline">Lead</Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm text-muted-foreground">
-                          {member.company_role || "-"}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1 sm:gap-2 ">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            asChild
-                            className="h-8 w-8 sm:h-auto sm:w-auto p-0 sm:p-2"
-                            title="View Signature"
-                          >
-                            <Link href={`/admin/staff/signature/${member.id}`}>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1 sm:gap-2 ">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 w-8 sm:h-auto sm:w-auto p-0 sm:p-2"
+                              title="View Signature"
+                              onClick={() => handleViewSignature(member)}
+                            >
                               <FileSignature className="h-3 w-3" />
-                            </Link>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            asChild
-                            className="h-8 sm:h-auto text-xs sm:text-sm"
-                          >
-                            <Link href={`/admin/staff/${member.id}`}>
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 sm:h-auto text-xs sm:text-sm"
+                              onClick={() => handleViewDetails(member)}
+                            >
                               <span className="hidden sm:inline">View</span>
                               <span className="sm:hidden">👁</span>
-                            </Link>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 w-8 sm:h-auto sm:w-auto p-0 sm:p-2"
-                            onClick={() => handleEditStaff(member)}
-                          >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 w-8 sm:h-auto sm:w-auto p-0 sm:p-2"
+                              onClick={() => handleEditStaff(member)}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredStaff.map((member) => (
-                <Card key={member.id} className="border-2 hover:shadow-lg transition-shadow">
+                <Card
+                  key={member.id}
+                  className="border-2 hover:shadow-lg transition-shadow"
+                >
                   <CardHeader className="border-b bg-linear-to-r from-primary/5 to-background">
                     <div className="flex items-start justify-between">
                       <Link
@@ -556,9 +1062,16 @@ export default function AdminStaffPage() {
                             <Badge className={getRoleBadgeColor(member.role)}>
                               {getRoleDisplayName(member.role)}
                             </Badge>
-                            {member.is_department_lead && (
-                              <Badge variant="outline">Lead</Badge>
-                            )}
+                            {member.role === "lead" &&
+                              member.lead_departments &&
+                              member.lead_departments.length > 0 && (
+                                <Badge variant="outline" className="text-xs">
+                                  {member.lead_departments.length} Dept
+                                  {member.lead_departments.length > 1
+                                    ? "s"
+                                    : ""}
+                                </Badge>
+                              )}
                           </div>
                         </div>
                       </Link>
@@ -566,8 +1079,8 @@ export default function AdminStaffPage() {
                         variant="ghost"
                         size="sm"
                         onClick={(e) => {
-                          e.stopPropagation()
-                          handleEditStaff(member)
+                          e.stopPropagation();
+                          handleEditStaff(member);
                         }}
                       >
                         <Edit className="h-4 w-4" />
@@ -582,7 +1095,7 @@ export default function AdminStaffPage() {
 
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Building2 className="h-4 w-4" />
-                      <span>{member.department}</span>
+                      <span>{member.department || "-"}</span>
                     </div>
 
                     {member.company_role && (
@@ -606,30 +1119,42 @@ export default function AdminStaffPage() {
                       </div>
                     )}
 
-                    {member.is_department_lead && member.lead_departments.length > 0 && (
-                      <div className="pt-2 border-t">
-                        <p className="text-xs text-muted-foreground mb-1">Leading:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {member.lead_departments.map((dept, idx) => (
-                            <span
-                              key={idx}
-                              className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 px-2 py-1 rounded"
-                            >
-                              {dept}
-                            </span>
-                          ))}
+                    {member.is_department_lead &&
+                      member.lead_departments.length > 0 && (
+                        <div className="pt-2 border-t">
+                          <p className="text-xs text-muted-foreground mb-1">
+                            Leading:
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {member.lead_departments.map((dept, idx) => (
+                              <span
+                                key={idx}
+                                className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 px-2 py-1 rounded"
+                              >
+                                {dept}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     <div className="flex gap-2 mt-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        asChild
+                        onClick={() => handleViewDetails(member)}
                         className="flex-1"
                       >
-                        <Link href={`/admin/staff/${member.id}`}>View Details</Link>
+                        View Details
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewSignature(member)}
+                        className="flex-1"
+                        title="View Signature"
+                      >
+                        <FileSignature className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
@@ -654,7 +1179,9 @@ export default function AdminStaffPage() {
                 No Staff Found
               </h3>
               <p className="text-muted-foreground">
-                {searchQuery || departmentFilter !== "all" || roleFilter !== "all"
+                {searchQuery ||
+                departmentFilter !== "all" ||
+                roleFilter !== "all"
                   ? "No staff matches your filters"
                   : "No staff members found"}
               </p>
@@ -679,7 +1206,17 @@ export default function AdminStaffPage() {
               <Label htmlFor="role">Role *</Label>
               <Select
                 value={editForm.role}
-                onValueChange={(value: UserRole) => setEditForm({ ...editForm, role: value })}
+                onValueChange={(value: UserRole) => {
+                  setEditForm({ ...editForm, role: value });
+                  // Clear lead departments when role is not lead
+                  if (value !== "lead") {
+                    setEditForm((prev) => ({
+                      ...prev,
+                      role: value,
+                      lead_departments: [],
+                    }));
+                  }
+                }}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -697,13 +1234,20 @@ export default function AdminStaffPage() {
                   ? "As Admin, you can assign: Visitor, Staff, and Lead roles"
                   : "As Super Admin, you can assign any role"}
               </p>
+              {editForm.role === "lead" && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  ⚠️ Lead role requires selecting at least one department below
+                </p>
+              )}
             </div>
 
             <div>
               <Label htmlFor="department">Department *</Label>
               <Select
                 value={editForm.department}
-                onValueChange={(value) => setEditForm({ ...editForm, department: value })}
+                onValueChange={(value) =>
+                  setEditForm({ ...editForm, department: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select department" />
@@ -723,7 +1267,9 @@ export default function AdminStaffPage() {
               <Input
                 id="company_role"
                 value={editForm.company_role}
-                onChange={(e) => setEditForm({ ...editForm, company_role: e.target.value })}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, company_role: e.target.value })
+                }
                 placeholder="e.g., Senior Developer"
               />
             </div>
@@ -752,15 +1298,19 @@ export default function AdminStaffPage() {
                             if (e.target.checked) {
                               setEditForm({
                                 ...editForm,
-                                lead_departments: [...editForm.lead_departments, dept],
-                              })
+                                lead_departments: [
+                                  ...editForm.lead_departments,
+                                  dept,
+                                ],
+                              });
                             } else {
                               setEditForm({
                                 ...editForm,
-                                lead_departments: editForm.lead_departments.filter(
-                                  (d) => d !== dept
-                                ),
-                              })
+                                lead_departments:
+                                  editForm.lead_departments.filter(
+                                    (d) => d !== dept
+                                  ),
+                              });
                             }
                           }}
                           className="rounded"
@@ -781,13 +1331,360 @@ export default function AdminStaffPage() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button onClick={handleSaveStaff}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Signature Dialog */}
+      <Dialog
+        open={isSignatureDialogOpen}
+        onOpenChange={setIsSignatureDialogOpen}
+      >
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Email Signature - {selectedStaff?.first_name}{" "}
+              {selectedStaff?.last_name}
+            </DialogTitle>
+            <DialogDescription>
+              View and manage signature for this staff member
+            </DialogDescription>
+          </DialogHeader>
+          {selectedStaff && (
+            <div className="mt-4">
+              <SignatureCreator profile={selectedStaff} />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* View Details Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>
+              {viewStaffProfile
+                ? `${formatName(viewStaffProfile.first_name)} ${formatName(
+                    viewStaffProfile.last_name
+                  )}`
+                : "Staff Details"}
+            </DialogTitle>
+            <DialogDescription>
+              View complete profile and related information
+            </DialogDescription>
+          </DialogHeader>
+          {viewStaffProfile && (
+            <ScrollArea className="max-h-[70vh] pr-4">
+              <div className="space-y-4">
+                {/* Profile Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <UserIcon className="h-5 w-5" />
+                      Profile Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarFallback className="bg-primary text-primary-foreground">
+                            {formatName(viewStaffProfile.first_name)?.[0]}
+                            {formatName(viewStaffProfile.last_name)?.[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Full Name
+                          </p>
+                          <p className="font-medium">
+                            {formatName(viewStaffProfile.first_name)}{" "}
+                            {formatName(viewStaffProfile.last_name)}
+                          </p>
+                          {viewStaffProfile.other_names && (
+                            <p className="text-xs text-muted-foreground">
+                              ({viewStaffProfile.other_names})
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <Mail className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm text-muted-foreground">Email</p>
+                          <p className="font-medium">
+                            {viewStaffProfile.company_email}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <Building2 className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Department
+                          </p>
+                          <p className="font-medium">
+                            {viewStaffProfile.department || "N/A"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <Shield className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm text-muted-foreground">Role</p>
+                          <div className="flex gap-2 mt-1">
+                            <Badge
+                              className={getRoleBadgeColor(
+                                viewStaffProfile.role as UserRole
+                              )}
+                            >
+                              {getRoleDisplayName(
+                                viewStaffProfile.role as UserRole
+                              )}
+                            </Badge>
+                            {viewStaffProfile.role === "lead" &&
+                              viewStaffProfile.lead_departments &&
+                              viewStaffProfile.lead_departments.length > 0 && (
+                                <Badge variant="outline">
+                                  Leading{" "}
+                                  {viewStaffProfile.lead_departments.length}{" "}
+                                  Dept
+                                  {viewStaffProfile.lead_departments.length > 1
+                                    ? "s"
+                                    : ""}
+                                </Badge>
+                              )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <UserIcon className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Position
+                          </p>
+                          <p className="font-medium">
+                            {viewStaffProfile.company_role || "N/A"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {viewStaffProfile.phone_number && (
+                        <div className="flex items-center gap-3">
+                          <Phone className="h-5 w-5 text-muted-foreground" />
+                          <div>
+                            <p className="text-sm text-muted-foreground">
+                              Phone
+                            </p>
+                            <p className="font-medium">
+                              {viewStaffProfile.phone_number}
+                            </p>
+                            {viewStaffProfile.additional_phone && (
+                              <p className="text-xs text-muted-foreground">
+                                {viewStaffProfile.additional_phone}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {viewStaffProfile.residential_address && (
+                        <div className="flex items-center gap-3">
+                          <MapPin className="h-5 w-5 text-muted-foreground" />
+                          <div>
+                            <p className="text-sm text-muted-foreground">
+                              Address
+                            </p>
+                            <p className="font-medium">
+                              {viewStaffProfile.residential_address}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {viewStaffProfile.current_work_location && (
+                        <div className="flex items-center gap-3">
+                          <MapPin className="h-5 w-5 text-muted-foreground" />
+                          <div>
+                            <p className="text-sm text-muted-foreground">
+                              Work Location
+                            </p>
+                            <p className="font-medium">
+                              {viewStaffProfile.current_work_location}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {viewStaffProfile.lead_departments &&
+                        viewStaffProfile.lead_departments.length > 0 && (
+                          <div className="flex items-center gap-3">
+                            <Building2 className="h-5 w-5 text-muted-foreground" />
+                            <div>
+                              <p className="text-sm text-muted-foreground">
+                                Leading Departments
+                              </p>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {viewStaffProfile.lead_departments.map(
+                                  (dept: string) => (
+                                    <Badge key={dept} variant="outline">
+                                      {dept}
+                                    </Badge>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                      <div className="flex items-center gap-3">
+                        <Calendar className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Member Since
+                          </p>
+                          <p className="font-medium">
+                            {new Date(
+                              viewStaffProfile.created_at
+                            ).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Related Data Tabs */}
+                <Tabs defaultValue="tasks" className="space-y-4">
+                  <TabsList>
+                    <TabsTrigger value="tasks">
+                      Tasks ({viewStaffData.tasks.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="assets">
+                      Assets ({viewStaffData.assets.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="documentation">
+                      Documentation ({viewStaffData.documentation.length})
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="tasks">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Assigned Tasks</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {viewStaffData.tasks.length > 0 ? (
+                          <div className="space-y-2">
+                            {viewStaffData.tasks.map((task: any) => (
+                              <div
+                                key={task.id}
+                                className="p-3 border rounded-lg"
+                              >
+                                <p className="font-medium">{task.title}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {task.status}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            No tasks assigned
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="assets">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Assigned Assets</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {viewStaffData.assets.length > 0 ? (
+                          <div className="space-y-2">
+                            {viewStaffData.assets.map((assignment: any) => (
+                              <div
+                                key={assignment.id}
+                                className="p-3 border rounded-lg"
+                              >
+                                <p className="font-medium">
+                                  {assignment.Asset?.asset_name || "N/A"}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {assignment.Asset?.asset_type || "N/A"}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            No assets assigned
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="documentation">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Documentation</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {viewStaffData.documentation.length > 0 ? (
+                          <div className="space-y-2">
+                            {viewStaffData.documentation.map((doc: any) => (
+                              <div
+                                key={doc.id}
+                                className="p-3 border rounded-lg"
+                              >
+                                <p className="font-medium">
+                                  {doc.title || "Untitled"}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {new Date(
+                                    doc.created_at
+                                  ).toLocaleDateString()}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            No documentation
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </ScrollArea>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsViewDialogOpen(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
-  )
+  );
 }

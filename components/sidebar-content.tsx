@@ -10,10 +10,10 @@ export function SidebarContent({ children }: { children: React.ReactNode }) {
     <main
       className={cn(
         "flex-1 transition-all duration-300",
-        isCollapsed ? "lg:pl-20" : "lg:pl-64"
+        isCollapsed ? "lg:pl-20" : "lg:pl-64",
+        "pt-16" // Padding top for fixed navbar (h-16 = 64px)
       )}
     >
-      <div className="lg:hidden h-16" /> {/* Spacer for mobile header */}
       {children}
     </main>
   )

@@ -43,19 +43,21 @@ export function SearchableSelect({
     <SelectPrimitive.Root value={value} onValueChange={onValueChange} open={open} onOpenChange={setOpen} disabled={disabled}>
       <SelectPrimitive.Trigger
         className={cn(
-          "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+          "flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
         disabled={disabled}
       >
-        <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
           {icon && <span className="flex-shrink-0">{icon}</span>}
-          <SelectPrimitive.Value placeholder={placeholder}>
-            {selectedOption?.label || placeholder}
-          </SelectPrimitive.Value>
+          <span className="truncate flex-1 min-w-0">
+            <SelectPrimitive.Value placeholder={placeholder}>
+              {selectedOption?.label || placeholder}
+            </SelectPrimitive.Value>
+          </span>
         </div>
         <SelectPrimitive.Icon asChild>
-          <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0" />
+          <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>
@@ -93,9 +95,9 @@ export function SearchableSelect({
                       <Check className="h-4 w-4" />
                     </SelectPrimitive.ItemIndicator>
                   </span>
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
                     {option.icon && <span className="flex-shrink-0">{option.icon}</span>}
-                    <SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>
+                    <SelectPrimitive.ItemText className="truncate">{option.label}</SelectPrimitive.ItemText>
                   </div>
                 </SelectPrimitive.Item>
               ))

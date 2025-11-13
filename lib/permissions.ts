@@ -142,14 +142,31 @@ export function getRoleBadgeColor(role: UserRole): string {
 
 export const DEPARTMENTS = [
   'Accounts',
-  'Legal, Regulatory and Compliance',
-  'IT and Communications',
-  'Operations',
-  'Logistics',
-  'Technical',
-  'Administrative',
+  'Admin & HR',
   'Business Growth and Innovation',
-  'Others',
+  'IT and Communications',
+  'Legal, Regulatory and Compliance',
+  'Logistics',
+  'Operations',
+  'Technical',
+] as const
+
+export const OFFICE_LOCATIONS = [
+  "Accounts",
+  "Admin & HR",
+  "Assistant Executive Director",
+  "Business, Growth and Innovation",
+  "General Conference Room",
+  "IT and Communications",
+  "Kitchen",
+  "Legal, Regulatory and Compliance",
+  "MD Conference Room",
+  "MD Office",
+  "Operations",
+  "Reception",
+  "Technical",
+  "Technical Extension"
 ] as const
 
 export type Department = typeof DEPARTMENTS[number]
+export type OfficeLocation = typeof OFFICE_LOCATIONS[number]

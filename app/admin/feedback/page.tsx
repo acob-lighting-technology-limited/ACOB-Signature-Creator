@@ -66,8 +66,8 @@ export default async function AdminFeedbackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
-      <div className="mx-auto max-w-7xl space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 w-full overflow-x-hidden">
+      <div className="mx-auto max-w-7xl space-y-8 p-4 md:p-8">
         {/* Header */}
         <div>
           <div className="flex items-center gap-3 mb-2">

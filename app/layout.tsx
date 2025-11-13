@@ -1,5 +1,5 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
@@ -16,6 +16,13 @@ import "./globals.css"
 export const metadata: Metadata = {
   title: "ACOB Lighting Technology Limited Signature Creator",
   description: "Create professional email signatures for ACOB Lighting Technology Limited",
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 async function HeaderWrapperWithData() {
@@ -52,7 +59,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} overflow-x-hidden`}>
         <Suspense fallback={null}>
           {/* Theme follows system preference automatically (light/dark mode) */}
           <ThemeProvider 

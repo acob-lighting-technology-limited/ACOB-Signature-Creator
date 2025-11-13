@@ -123,6 +123,32 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Mobile responsiveness fixes */
+  html {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  body {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+  }
+
+  /* Prevent horizontal scroll on all containers */
+  * {
+    max-width: 100%;
+  }
+
+  /* Ensure images and media don't cause overflow */
+  img,
+  video,
+  canvas,
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
 }
 
 /* Text selection styling */
@@ -153,4 +179,53 @@
 
 .dark #nprogress .peg {
   box-shadow: 0 0 10px oklch(0.65 0.15 142), 0 0 5px oklch(0.65 0.15 142);
+}
+
+/* Table responsive scrolling */
+@layer utilities {
+  .table-responsive {
+    @apply w-full overflow-x-auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-responsive table {
+    @apply min-w-full;
+  }
+
+  /* Better scrollbar styling for tables on mobile */
+  .table-responsive::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .table-responsive::-webkit-scrollbar-track {
+    @apply bg-muted rounded-lg;
+  }
+
+  .table-responsive::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-lg;
+  }
+
+  .table-responsive::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+
+  /* Mobile-specific fixes */
+  @media (max-width: 768px) {
+    .mobile-stack {
+      @apply flex flex-col gap-2;
+    }
+
+    .mobile-text-xs {
+      @apply text-xs;
+    }
+
+    .mobile-hidden {
+      @apply hidden;
+    }
+
+    /* Ensure buttons don't wrap badly on mobile */
+    .button-group-mobile {
+      @apply flex flex-wrap gap-1;
+    }
+  }
 }

@@ -3,13 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import Link from "next/link"
 import {
   Users,
-  Laptop,
+  Package,
   ClipboardList,
   FileText,
   MessageSquare,
   ScrollText,
   Briefcase,
-  TrendingUp,
   ArrowRight,
   Shield,
 } from "lucide-react"
@@ -30,13 +29,13 @@ export default async function AdminDashboardPage() {
   // Fetch stats
   const [
     { count: staffCount },
-    { count: deviceCount },
+    { count: assetCount },
     { count: taskCount },
     { count: docCount },
     { count: feedbackCount },
   ] = await Promise.all([
     supabase.from("profiles").select("*", { count: "exact", head: true }),
-    supabase.from("devices").select("*", { count: "exact", head: true }),
+    supabase.from("assets").select("*", { count: "exact", head: true }),
     supabase.from("tasks").select("*", { count: "exact", head: true }),
     supabase.from("user_documentation").select("*", { count: "exact", head: true }),
     supabase.from("feedback").select("*", { count: "exact", head: true }),
@@ -211,10 +210,10 @@ export default async function AdminDashboardPage() {
       roles: ["super_admin", "admin"],
     },
     {
-      title: "Device Management",
-      description: "Manage device inventory and assignments",
-      href: "/admin/devices",
-      icon: Laptop,
+      title: "Asset Management",
+      description: "Manage asset inventory and assignments",
+      href: "/admin/assets",
+      icon: Package,
       color: "bg-purple-500",
       roles: ["super_admin", "admin"],
     },
@@ -323,11 +322,11 @@ export default async function AdminDashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Devices</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">{deviceCount || 0}</p>
+                  <p className="text-xs text-muted-foreground font-medium">Assets</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">{assetCount || 0}</p>
                 </div>
                 <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                  <Laptop className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                  <Package className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
             </CardContent>

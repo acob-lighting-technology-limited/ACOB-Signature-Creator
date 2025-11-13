@@ -24,7 +24,7 @@ import { SearchableSelect } from "@/components/ui/searchable-select"
 import { Building2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
-import { ScrollText, Search, Filter, Calendar, User, FileText, LayoutGrid, List, Eye } from "lucide-react"
+import { ScrollText, Search, Filter, Calendar, User, FileText, LayoutGrid, List, Eye, Download } from "lucide-react"
 import { formatName } from "@/lib/utils"
 import {
   Dialog,
@@ -494,14 +494,31 @@ export default function AuditLogsPage() {
       return "-"
     }
     
-    // Handle asset-related logs with asset_info
-    if ((entityType === 'asset' || entityType === 'asset_assignment') && log.asset_info) {
-      if (log.asset_info.assigned_to_user) {
-        const name = `${formatName(log.asset_info.assigned_to_user.first_name)} ${formatName(log.asset_info.assigned_to_user.last_name)}`
-        return name
+    // Handle asset-related logs - show WHO it's assigned to (the target person)
+    if ((entityType === 'asset' || entityType === 'asset_assignment')) {
+      // For assignment actions, show the assigned person
+      if (action === 'assign' || action === 'reassign') {
+        // Check new_values for assigned user
+        if (log.new_values?.assigned_to && log.target_user) {
+          return `${formatName(log.target_user.first_name)} ${formatName(log.target_user.last_name)}`
+        }
+        // Check for department assignment
+        if (log.new_values?.department) {
+          return `${log.new_values.department} (Department)`
+        }
+        // Check for office assignment
+        if (log.new_values?.office_location) {
+          return `${log.new_values.office_location} (Office)`
+        }
       }
-      // Assets can be unassigned
-      return "-"
+
+      // For non-assignment actions (create, update, delete), show the asset code
+      const uniqueCode = log.new_values?.unique_code || log.old_values?.unique_code
+      if (uniqueCode) {
+        return uniqueCode
+      }
+
+      return "Asset"
     }
     
     // Handle user-related logs
@@ -567,6 +584,167 @@ export default function AuditLogsPage() {
     }
   }
 
+  // Export functions
+  const exportToExcel = async () => {
+    try {
+      if (filteredLogs.length === 0) {
+        toast.error("No audit logs to export")
+        return
+      }
+
+      const XLSX = await import("xlsx")
+      const { default: saveAs } = await import("file-saver")
+
+      const dataToExport = filteredLogs.map((log, index) => ({
+        "#": index + 1,
+        "Action": log.action,
+        "Entity Type": log.entity_type,
+        "Target/Affected": getTargetDescription(log),
+        "Performed By": log.user ? `${formatName(log.user.first_name)} ${formatName(log.user.last_name)}` : "N/A",
+        "Date": formatDate(log.created_at),
+        "Email": log.user?.company_email || "N/A",
+      }))
+
+      const ws = XLSX.utils.json_to_sheet(dataToExport)
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, "Audit Logs")
+
+      const maxWidth = 50
+      const cols = Object.keys(dataToExport[0] || {}).map((key) => ({
+        wch: Math.min(
+          Math.max(
+            key.length,
+            ...dataToExport.map((row) => String(row[key as keyof typeof row]).length)
+          ),
+          maxWidth
+        ),
+      }))
+      ws["!cols"] = cols
+
+      const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" })
+      const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
+      saveAs(data, `audit-logs-export-${new Date().toISOString().split("T")[0]}.xlsx`)
+      toast.success("Audit logs exported to Excel successfully")
+    } catch (error: any) {
+      console.error("Error exporting to Excel:", error)
+      toast.error("Failed to export to Excel")
+    }
+  }
+
+  const exportToPDF = async () => {
+    try {
+      if (filteredLogs.length === 0) {
+        toast.error("No audit logs to export")
+        return
+      }
+
+      const jsPDF = (await import("jspdf")).default
+      const autoTable = (await import("jspdf-autotable")).default
+
+      const doc = new jsPDF({ orientation: "landscape" })
+      doc.setFontSize(16)
+      doc.text("Audit Logs Report", 14, 15)
+      doc.setFontSize(10)
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 22)
+      doc.text(`Total Logs: ${filteredLogs.length}`, 14, 28)
+
+      const dataToExport = filteredLogs.map((log, index) => [
+        index + 1,
+        log.action,
+        log.entity_type,
+        getTargetDescription(log),
+        log.user ? `${formatName(log.user.first_name)} ${formatName(log.user.last_name)}` : "N/A",
+        formatDate(log.created_at),
+      ])
+
+      autoTable(doc, {
+        head: [["#", "Action", "Entity Type", "Target/Affected", "Performed By", "Date"]],
+        body: dataToExport,
+        startY: 35,
+        styles: { fontSize: 8, cellPadding: 2 },
+        headStyles: { fillColor: [59, 130, 246], textColor: 255 },
+        alternateRowStyles: { fillColor: [245, 247, 250] },
+      })
+
+      doc.save(`audit-logs-export-${new Date().toISOString().split("T")[0]}.pdf`)
+      toast.success("Audit logs exported to PDF successfully")
+    } catch (error: any) {
+      console.error("Error exporting to PDF:", error)
+      toast.error("Failed to export to PDF")
+    }
+  }
+
+  const exportToWord = async () => {
+    try {
+      if (filteredLogs.length === 0) {
+        toast.error("No audit logs to export")
+        return
+      }
+
+      const { Document, Packer, Paragraph, Table, TableCell, TableRow, WidthType, AlignmentType, HeadingLevel } = await import("docx")
+      const { default: saveAs } = await import("file-saver")
+
+      const tableRows = [
+        new TableRow({
+          children: [
+            new TableCell({ children: [new Paragraph({ text: "#", bold: true })] }),
+            new TableCell({ children: [new Paragraph({ text: "Action", bold: true })] }),
+            new TableCell({ children: [new Paragraph({ text: "Entity Type", bold: true })] }),
+            new TableCell({ children: [new Paragraph({ text: "Target/Affected", bold: true })] }),
+            new TableCell({ children: [new Paragraph({ text: "Performed By", bold: true })] }),
+            new TableCell({ children: [new Paragraph({ text: "Date", bold: true })] }),
+          ],
+        }),
+        ...filteredLogs.map((log, index) =>
+          new TableRow({
+            children: [
+              new TableCell({ children: [new Paragraph((index + 1).toString())] }),
+              new TableCell({ children: [new Paragraph(log.action)] }),
+              new TableCell({ children: [new Paragraph(log.entity_type)] }),
+              new TableCell({ children: [new Paragraph(getTargetDescription(log))] }),
+              new TableCell({ children: [new Paragraph(log.user ? `${formatName(log.user.first_name)} ${formatName(log.user.last_name)}` : "N/A")] }),
+              new TableCell({ children: [new Paragraph(formatDate(log.created_at))] }),
+            ],
+          })
+        ),
+      ]
+
+      const doc = new Document({
+        sections: [
+          {
+            children: [
+              new Paragraph({
+                text: "Audit Logs Report",
+                heading: HeadingLevel.HEADING_1,
+                alignment: AlignmentType.CENTER,
+              }),
+              new Paragraph({
+                text: `Generated on: ${new Date().toLocaleDateString()}`,
+                alignment: AlignmentType.CENTER,
+              }),
+              new Paragraph({
+                text: `Total Logs: ${filteredLogs.length}`,
+                alignment: AlignmentType.CENTER,
+              }),
+              new Paragraph({ text: "" }),
+              new Table({
+                width: { size: 100, type: WidthType.PERCENTAGE },
+                rows: tableRows,
+              }),
+            ],
+          },
+        ],
+      })
+
+      const blob = await Packer.toBlob(doc)
+      saveAs(blob, `audit-logs-export-${new Date().toISOString().split("T")[0]}.docx`)
+      toast.success("Audit logs exported to Word successfully")
+    } catch (error: any) {
+      console.error("Error exporting to Word:", error)
+      toast.error("Failed to export to Word")
+    }
+  }
+
   const stats = {
     total: logs.length,
     creates: logs.filter((l) => l.action === "create").length,
@@ -575,8 +753,8 @@ export default function AuditLogsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
-      <div className="mx-auto max-w-7xl space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 w-full overflow-x-hidden">
+      <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -809,11 +987,55 @@ export default function AuditLogsPage() {
           </CardContent>
         </Card>
 
+        {/* Export Filtered Data */}
+        <Card className="border-2">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-2">
+                <Download className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">Export Filtered Data:</span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exportToExcel}
+                  className="gap-2"
+                  disabled={filteredLogs.length === 0}
+                >
+                  <FileText className="h-4 w-4" />
+                  Excel (.xlsx)
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exportToPDF}
+                  className="gap-2"
+                  disabled={filteredLogs.length === 0}
+                >
+                  <FileText className="h-4 w-4" />
+                  PDF
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exportToWord}
+                  className="gap-2"
+                  disabled={filteredLogs.length === 0}
+                >
+                  <FileText className="h-4 w-4" />
+                  Word (.docx)
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Audit Logs List */}
         {filteredLogs.length > 0 ? (
           viewMode === "list" ? (
             <Card className="border-2">
-              <div className="overflow-x-auto">
+              <div className="table-responsive">
                 <Table>
                   <TableHeader>
                     <TableRow>

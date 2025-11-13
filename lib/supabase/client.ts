@@ -7,12 +7,20 @@ export function createClient() {
     {
       cookies: {
         getAll() {
+          // Check if we're in the browser before accessing document
+          if (typeof document === "undefined") {
+            return []
+          }
           return document.cookie.split("; ").map((cookie) => {
             const [name, ...rest] = cookie.split("=")
             return { name, value: decodeURIComponent(rest.join("=")) }
           })
         },
         setAll(cookiesToSet) {
+          // Check if we're in the browser before accessing document
+          if (typeof document === "undefined") {
+            return
+          }
           cookiesToSet.forEach(({ name, value, options }) => {
             const cookieString = `${name}=${encodeURIComponent(value)}; path=${options?.path || "/"}; ${
               options?.maxAge ? `max-age=${options.maxAge}; ` : ""

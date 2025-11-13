@@ -247,8 +247,8 @@ export default function AdminDocumentationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
-      <div className="mx-auto max-w-7xl space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 w-full overflow-x-hidden">
+      <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -431,7 +431,7 @@ export default function AdminDocumentationPage() {
           viewMode === "list" ? (
             <Card className="border-2">
               <CardContent className="p-6">
-                <div className="overflow-x-auto">
+                <div className="table-responsive">
                   <Table>
                     <TableHeader>
                       <TableRow>

@@ -528,7 +528,7 @@ export function AdminDashboard({ users, currentUserId, feedbackByUserId = {} }: 
                         {(user.company_email || "").toLowerCase()}
                       </button>
                     </TableCell>
-                    <TableCell>{properCase(user.department)}</TableCell>
+                    <TableCell>{user.department ? properCase(user.department) : "-"}</TableCell>
                     <TableCell>{cleanPhoneNumber(user.phone_number)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">

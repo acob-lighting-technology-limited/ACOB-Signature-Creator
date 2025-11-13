@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge"
 import {
   LayoutDashboard,
   Users,
-  Laptop,
   Package,
   ClipboardList,
   FileText,
@@ -51,7 +50,6 @@ interface AdminSidebarProps {
 const adminNavigation = [
   { name: "Admin Dashboard", href: "/admin", icon: LayoutDashboard, roles: ["super_admin", "admin", "lead"] },
   { name: "Staff Management", href: "/admin/staff", icon: Users, roles: ["super_admin", "admin", "lead"] },
-  { name: "Device Management", href: "/admin/devices", icon: Laptop, roles: ["super_admin", "admin", "lead"] },
   { name: "Asset Management", href: "/admin/assets", icon: Package, roles: ["super_admin", "admin", "lead"] },
   { name: "Project Management", href: "/admin/projects", icon: FolderKanban, roles: ["super_admin", "admin", "lead"] },
   { name: "Task Management", href: "/admin/tasks", icon: ClipboardList, roles: ["super_admin", "admin", "lead"] },
