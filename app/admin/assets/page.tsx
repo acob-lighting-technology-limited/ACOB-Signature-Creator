@@ -665,7 +665,7 @@ export default function AdminAssetsPage() {
         }
 
         if (latestAsset && assetForm.acquisition_year < latestAsset.acquisition_year) {
-          const assetTypeName = ASSET_TYPES[assetForm.asset_type]?.name || assetForm.asset_type
+          const assetTypeName = ASSET_TYPE_MAP[assetForm.asset_type]?.label || assetForm.asset_type
           toast.error(
             `Cannot create ${assetTypeName} with year ${assetForm.acquisition_year}. ` +
             `Latest ${assetTypeName} was acquired in ${latestAsset.acquisition_year}. ` +
@@ -953,7 +953,7 @@ export default function AdminAssetsPage() {
           })
 
           if (hasHigherNumber) {
-            const assetTypeName = ASSET_TYPES[assetType]?.name || assetType
+            const assetTypeName = ASSET_TYPE_MAP[assetType]?.label || assetType
             toast.error(
               `Cannot delete ${assetToDelete.unique_code}. ` +
               `Higher-numbered ${assetTypeName} assets exist (serial number ${currentSerialNumber + 1} or higher). ` +
