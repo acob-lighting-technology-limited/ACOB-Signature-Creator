@@ -2404,14 +2404,17 @@ export default function AdminAssetsPage() {
                   assetForm.serial_number === originalAssetForm.serial_number &&
                   assetForm.status === originalAssetForm.status &&
                   assetForm.notes === originalAssetForm.notes) ||
-                // For "assigned" status: validate assignment fields
-                (assetForm.status === "assigned" &&
+                // For create with "assigned" status: validate assignment fields (only when creating, not editing)
+                (!selectedAsset &&
+                  assetForm.status === "assigned" &&
                   assetForm.assignment_type === "individual" &&
                   !assetForm.assigned_to) ||
-                (assetForm.status === "assigned" &&
+                (!selectedAsset &&
+                  assetForm.status === "assigned" &&
                   assetForm.assignment_type === "department" &&
                   !assetForm.assignment_department) ||
-                (assetForm.status === "assigned" &&
+                (!selectedAsset &&
+                  assetForm.status === "assigned" &&
                   assetForm.assignment_type === "office" &&
                   !assetForm.office_location)
               }
