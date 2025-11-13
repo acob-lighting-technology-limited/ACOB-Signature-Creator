@@ -163,6 +163,7 @@ export default function AdminAssetsPage() {
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
+  const [isIssuesDialogOpen, setIsIssuesDialogOpen] = useState(false)
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null)
   const [assetToDelete, setAssetToDelete] = useState<Asset | null>(null)
   const [isAssigning, setIsAssigning] = useState(false)
@@ -172,6 +173,17 @@ export default function AdminAssetsPage() {
   const [assetIssues, setAssetIssues] = useState<AssetIssue[]>([])
   const [newIssueDescription, setNewIssueDescription] = useState("")
   const [issueStatusFilter, setIssueStatusFilter] = useState("all")
+
+  // Track original form values for change detection
+  const [originalAssetForm, setOriginalAssetForm] = useState({
+    asset_type: "",
+    acquisition_year: currentYear,
+    asset_model: "",
+    serial_number: "",
+    unique_code: "",
+    status: "available",
+    notes: "",
+  })
 
   // Form states
   const [assetForm, setAssetForm] = useState({
@@ -521,7 +533,7 @@ export default function AdminAssetsPage() {
   const handleOpenAssetDialog = async (asset?: Asset) => {
     if (asset) {
       setSelectedAsset(asset)
-      setAssetForm({
+      const formData = {
         asset_type: asset.asset_type,
         acquisition_year: asset.acquisition_year,
         asset_model: asset.asset_model || "",
@@ -529,14 +541,23 @@ export default function AdminAssetsPage() {
         unique_code: asset.unique_code,
         status: asset.status,
         notes: asset.notes || "",
-        assignment_type: "individual",
+        assignment_type: "individual" as "individual" | "department" | "office",
         assigned_to: "",
         assignment_department: "",
         office_location: "",
         assignment_notes: "",
+      }
+      setAssetForm(formData)
+      // Store original values for change detection
+      setOriginalAssetForm({
+        asset_type: asset.asset_type,
+        acquisition_year: asset.acquisition_year,
+        asset_model: asset.asset_model || "",
+        serial_number: asset.serial_number || "",
+        unique_code: asset.unique_code,
+        status: asset.status,
+        notes: asset.notes || "",
       })
-      // Load issues for this asset
-      await loadAssetIssues(asset.id)
     } else {
       setSelectedAsset(null)
       setAssetForm({
@@ -553,10 +574,24 @@ export default function AdminAssetsPage() {
         office_location: "",
         assignment_notes: "",
       })
-      setAssetIssues([])
+      setOriginalAssetForm({
+        asset_type: "",
+        acquisition_year: currentYear,
+        asset_model: "",
+        serial_number: "",
+        unique_code: "",
+        status: "available",
+        notes: "",
+      })
     }
-    setNewIssueDescription("")
     setIsAssetDialogOpen(true)
+  }
+
+  const handleOpenIssuesDialog = async (asset: Asset) => {
+    setSelectedAsset(asset)
+    await loadAssetIssues(asset.id)
+    setNewIssueDescription("")
+    setIsIssuesDialogOpen(true)
   }
 
   const handleOpenAssignDialog = async (asset: Asset) => {
@@ -1917,6 +1952,15 @@ export default function AdminAssetsPage() {
                             <Button
                               variant="outline"
                               size="sm"
+                              onClick={() => handleOpenIssuesDialog(asset)}
+                              title={`Asset Issues (${asset.unresolved_issues_count || 0} unresolved)`}
+                              className={`h-8 w-8 p-0 ${(asset.unresolved_issues_count || 0) > 0 ? "border-orange-500 text-orange-600" : ""}`}
+                            >
+                              <AlertCircle className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
                               onClick={() => loadAssetHistory(asset)}
                               title="View assignment history"
                               className="h-8 w-8 p-0"
@@ -2080,6 +2124,15 @@ export default function AdminAssetsPage() {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => handleOpenIssuesDialog(asset)}
+                        title={`Asset Issues (${asset.unresolved_issues_count || 0} unresolved)`}
+                        className={`${(asset.unresolved_issues_count || 0) > 0 ? "border-orange-500 text-orange-600" : ""}`}
+                      >
+                        <AlertCircle className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => loadAssetHistory(asset)}
                         title="View assignment history"
                       >
@@ -2236,97 +2289,6 @@ export default function AdminAssetsPage() {
               />
             </div>
 
-            {/* Issue Tracker - only show when editing existing asset */}
-            {selectedAsset && (
-              <div className="space-y-4 border-t pt-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5 text-orange-500" />
-                    <h4 className="text-foreground font-semibold">Asset Issues Tracker</h4>
-                  </div>
-                  <span className="text-muted-foreground text-xs">
-                    {assetIssues.filter((i) => !i.resolved).length} unresolved
-                  </span>
-                </div>
-
-                {/* Add new issue */}
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Describe issue (e.g., RAM not working, screen cracked)..."
-                    value={newIssueDescription}
-                    onChange={(e) => setNewIssueDescription(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault()
-                        handleAddIssue()
-                      }
-                    }}
-                  />
-                  <Button onClick={handleAddIssue} disabled={!newIssueDescription.trim()} size="sm">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* Issues list */}
-                <div className="max-h-60 space-y-2 overflow-y-auto">
-                  {assetIssues.length === 0 ? (
-                    <p className="text-muted-foreground py-4 text-center text-sm">
-                      No issues tracked. Add one above if there's a problem with this asset.
-                    </p>
-                  ) : (
-                    assetIssues.map((issue) => (
-                      <div
-                        key={issue.id}
-                        className={`flex items-start gap-2 rounded border p-2 ${
-                          issue.resolved
-                            ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/20"
-                            : "border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/20"
-                        }`}
-                      >
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleToggleIssue(issue)}
-                          className="mt-0.5 h-5 w-5 p-0"
-                        >
-                          {issue.resolved ? (
-                            <CheckCircle2 className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <div className="h-4 w-4 rounded-full border-2 border-orange-500" />
-                          )}
-                        </Button>
-                        <div className="min-w-0 flex-1">
-                          <p
-                            className={`text-sm ${issue.resolved ? "text-muted-foreground line-through" : "text-foreground"}`}
-                          >
-                            {issue.description}
-                          </p>
-                          <p className="text-muted-foreground mt-1 text-xs">
-                            {new Date(issue.created_at).toLocaleDateString()}
-                            {issue.resolved && issue.resolved_at && (
-                              <span> • Resolved {new Date(issue.resolved_at).toLocaleDateString()}</span>
-                            )}
-                          </p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteIssue(issue.id)}
-                          className="h-6 w-6 p-0"
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                <p className="text-muted-foreground text-xs">
-                  💡 Track hardware issues, faults, or needed maintenance. Check items off when resolved.
-                </p>
-              </div>
-            )}
-
             {/* Assignment section - only show when creating new asset and status is 'assigned' */}
             {!selectedAsset && assetForm.status === "assigned" && (
               <div className="space-y-4 border-t pt-4">
@@ -2434,6 +2396,14 @@ export default function AdminAssetsPage() {
               disabled={
                 // For both create and edit: asset_type is required
                 !assetForm.asset_type ||
+                // For edit: check if anything changed
+                (selectedAsset &&
+                  assetForm.asset_type === originalAssetForm.asset_type &&
+                  assetForm.acquisition_year === originalAssetForm.acquisition_year &&
+                  assetForm.asset_model === originalAssetForm.asset_model &&
+                  assetForm.serial_number === originalAssetForm.serial_number &&
+                  assetForm.status === originalAssetForm.status &&
+                  assetForm.notes === originalAssetForm.notes) ||
                 // For "assigned" status: validate assignment fields
                 (assetForm.status === "assigned" &&
                   assetForm.assignment_type === "individual" &&
@@ -2728,6 +2698,152 @@ export default function AdminAssetsPage() {
               </div>
             ))}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Asset Issues Dialog */}
+      <Dialog open={isIssuesDialogOpen} onOpenChange={setIsIssuesDialogOpen}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-6 w-6 text-orange-500" />
+              <div>
+                <DialogTitle>Asset Issues Tracker</DialogTitle>
+                <DialogDescription>
+                  {selectedAsset?.unique_code} - Track and manage asset issues, faults, or maintenance needs
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="bg-muted/50 flex items-center justify-between rounded-lg border p-3">
+              <div className="flex items-center gap-2">
+                <Package className="text-muted-foreground h-4 w-4" />
+                <span className="text-foreground text-sm font-medium">{selectedAsset?.unique_code}</span>
+                <Badge variant="outline" className="text-xs">
+                  {ASSET_TYPE_MAP[selectedAsset?.asset_type || ""]?.label || selectedAsset?.asset_type}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground text-xs">
+                  {assetIssues.filter((i) => !i.resolved).length} unresolved
+                </span>
+                <span className="text-muted-foreground text-xs">•</span>
+                <span className="text-muted-foreground text-xs">{assetIssues.length} total</span>
+              </div>
+            </div>
+
+            {/* Add new issue */}
+            <div className="space-y-2">
+              <Label>Add New Issue</Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Describe issue (e.g., RAM not working, screen cracked)..."
+                  value={newIssueDescription}
+                  onChange={(e) => setNewIssueDescription(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault()
+                      handleAddIssue()
+                    }
+                  }}
+                />
+                <Button onClick={handleAddIssue} disabled={!newIssueDescription.trim()} size="sm">
+                  <Plus className="mr-1 h-4 w-4" />
+                  Add
+                </Button>
+              </div>
+            </div>
+
+            {/* Issues list */}
+            <div className="space-y-2">
+              <Label>Issues ({assetIssues.length})</Label>
+              <div className="max-h-[400px] space-y-2 overflow-y-auto rounded-lg border p-3">
+                {assetIssues.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <CheckCircle2 className="text-muted-foreground mb-2 h-12 w-12" />
+                    <p className="text-muted-foreground text-sm font-medium">No issues tracked</p>
+                    <p className="text-muted-foreground mt-1 text-xs">
+                      Add an issue above if there's a problem with this asset
+                    </p>
+                  </div>
+                ) : (
+                  assetIssues.map((issue) => (
+                    <div
+                      key={issue.id}
+                      className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${
+                        issue.resolved
+                          ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/20"
+                          : "border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/20"
+                      }`}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleIssue(issue)}
+                        className="mt-0.5 h-6 w-6 p-0 hover:bg-transparent"
+                        title={issue.resolved ? "Mark as unresolved" : "Mark as resolved"}
+                      >
+                        {issue.resolved ? (
+                          <CheckCircle2 className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <div className="h-5 w-5 rounded-full border-2 border-orange-500" />
+                        )}
+                      </Button>
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className={`text-sm ${
+                            issue.resolved ? "text-muted-foreground line-through" : "text-foreground font-medium"
+                          }`}
+                        >
+                          {issue.description}
+                        </p>
+                        <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(issue.created_at).toLocaleDateString()}
+                          </div>
+                          {issue.resolved && issue.resolved_at && (
+                            <>
+                              <span>•</span>
+                              <div className="flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Resolved {new Date(issue.resolved_at).toLocaleDateString()}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteIssue(issue.id)}
+                        className="h-7 w-7 p-0 text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950"
+                        title="Delete issue"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="bg-muted/50 rounded-lg border p-3">
+              <p className="text-muted-foreground flex items-start gap-2 text-xs">
+                <AlertCircle className="mt-0.5 h-3 w-3 flex-shrink-0" />
+                <span>
+                  Track hardware issues, faults, or maintenance needs. Click the checkbox to mark issues as resolved
+                  when fixed.
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button onClick={() => setIsIssuesDialogOpen(false)}>Close</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
