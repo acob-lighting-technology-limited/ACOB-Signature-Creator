@@ -681,18 +681,18 @@ export default function AuditLogsPage() {
         return
       }
 
-      const { Document, Packer, Paragraph, Table, TableCell, TableRow, WidthType, AlignmentType, HeadingLevel } = await import("docx")
+      const { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, WidthType, AlignmentType, HeadingLevel } = await import("docx")
       const { default: saveAs } = await import("file-saver")
 
       const tableRows = [
         new TableRow({
           children: [
-            new TableCell({ children: [new Paragraph({ text: "#", bold: true })] }),
-            new TableCell({ children: [new Paragraph({ text: "Action", bold: true })] }),
-            new TableCell({ children: [new Paragraph({ text: "Entity Type", bold: true })] }),
-            new TableCell({ children: [new Paragraph({ text: "Target/Affected", bold: true })] }),
-            new TableCell({ children: [new Paragraph({ text: "Performed By", bold: true })] }),
-            new TableCell({ children: [new Paragraph({ text: "Date", bold: true })] }),
+            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "#", bold: true })] })] }),
+            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Action", bold: true })] })] }),
+            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Entity Type", bold: true })] })] }),
+            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Target/Affected", bold: true })] })] }),
+            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Performed By", bold: true })] })] }),
+            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Date", bold: true })] })] }),
           ],
         }),
         ...filteredLogs.map((log, index) =>

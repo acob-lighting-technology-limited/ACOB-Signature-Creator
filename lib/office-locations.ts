@@ -228,7 +228,7 @@ export function getOfficesGroupedByDepartment(): Record<string, OfficeLocation[]
 /**
  * Get all office names as a flat array (for backward compatibility)
  */
-export const OFFICE_LOCATIONS = getAllOfficeLocations().map((office) => office.name) as const
+export const OFFICE_LOCATIONS = getAllOfficeLocations().map((office) => office.name)
 
-export type OfficeLocationName = typeof OFFICE_LOCATIONS[number]
+export type OfficeLocationName = string
 

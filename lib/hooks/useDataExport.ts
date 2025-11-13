@@ -89,14 +89,14 @@ export function useDataExport<T extends Record<string, any>>() {
         return
       }
 
-      const { Document, Packer, Paragraph, Table, TableCell, TableRow, WidthType } = await import("docx")
+      const { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, WidthType } = await import("docx")
       const { default: saveAs } = await import("file-saver")
 
       const headerRow = new TableRow({
         children: columns.map(
           (col) =>
             new TableCell({
-              children: [new Paragraph({ text: col.header, bold: true })],
+              children: [new Paragraph({ children: [new TextRun({ text: col.header, bold: true })] })],
               width: { size: 100 / columns.length, type: WidthType.PERCENTAGE },
             })
         ),

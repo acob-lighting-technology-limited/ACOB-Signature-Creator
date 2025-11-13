@@ -1164,7 +1164,7 @@ export default function AdminAssetsPage() {
 
   const exportToWord = async () => {
     try {
-      const { Document, Packer, Paragraph, Table, TableCell, TableRow, WidthType, AlignmentType, HeadingLevel } = await import("docx")
+      const { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, WidthType, AlignmentType, HeadingLevel } = await import("docx")
       const { default: saveAs } = await import("file-saver")
 
       const dataToExport = getSortedAssets(filteredAssets)
@@ -1173,13 +1173,13 @@ export default function AdminAssetsPage() {
       const tableRows = [
         new TableRow({
           children: [
-            new TableCell({ children: [new Paragraph({ text: "#", bold: true })] }),
-            new TableCell({ children: [new Paragraph({ text: "Unique Code", bold: true })] }),
-            new TableCell({ children: [new Paragraph({ text: "Asset Type", bold: true })] }),
-            new TableCell({ children: [new Paragraph({ text: "Model", bold: true })] }),
-            new TableCell({ children: [new Paragraph({ text: "Year", bold: true })] }),
-            new TableCell({ children: [new Paragraph({ text: "Status", bold: true })] }),
-            new TableCell({ children: [new Paragraph({ text: "Assigned To", bold: true })] }),
+            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "#", bold: true })] })] }),
+            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Unique Code", bold: true })] })] }),
+            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Asset Type", bold: true })] })] }),
+            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Model", bold: true })] })] }),
+            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Year", bold: true })] })] }),
+            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Status", bold: true })] })] }),
+            new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Assigned To", bold: true })] })] }),
           ],
         }),
         ...dataToExport.map((asset, index) =>
@@ -1900,7 +1900,7 @@ export default function AdminAssetsPage() {
                               <div className="flex items-center gap-1 px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 rounded-full">
                                 <AlertCircle className="h-3 w-3 text-orange-600 dark:text-orange-400" />
                                 <span className="text-xs font-medium text-orange-700 dark:text-orange-300">
-                                  {asset.unresolved_issues_count} issue{asset.unresolved_issues_count > 1 ? 's' : ''}
+                                  {asset.unresolved_issues_count || 0} issue{(asset.unresolved_issues_count || 0) > 1 ? 's' : ''}
                                 </span>
                               </div>
                             )}
