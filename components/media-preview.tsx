@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Upload } from "lucide-react"
+import { Upload, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import type { WatermarkConfig } from "@/components/watermark-studio"
+import { convertImagesIfNeeded } from "@/lib/convert-image"
 
 interface MediaPreviewProps {
   mediaFile: File | null
@@ -38,6 +39,7 @@ export function MediaPreview({
   onUpload,
 }: MediaPreviewProps) {
   const [mediaUrl, setMediaUrl] = useState<string | null>(null)
+  const [isConverting, setIsConverting] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -106,7 +108,7 @@ export function MediaPreview({
   }, [mediaUrl, watermarkPath, config, mediaType, processedUrl])
 
   const handleFiles = useCallback(
-    (list: FileList | File[]) => {
+    async (list: FileList | File[]) => {
       const files = Array.from(list)
       const images = files.filter((f) => isImageFile(f))
       const videos = files.filter((f) => isVideoFile(f))
@@ -131,10 +133,27 @@ export function MediaPreview({
             description: `Only the first ${MAX} images will be attached (of ${images.length}).`,
           })
         }
-        onUpload(selected, "image")
-        toast.success("Images attached", {
-          description: `${selected.length} image${selected.length === 1 ? "" : "s"} ready to preview/process.`,
-        })
+
+        try {
+          setIsConverting(true)
+          toast.loading("Converting images...", { id: "preview-image-conversion" })
+
+          // Convert HEIC and other formats if needed
+          const convertedImages = await convertImagesIfNeeded(selected)
+
+          toast.dismiss("preview-image-conversion")
+          onUpload(convertedImages, "image")
+          toast.success("Images attached", {
+            description: `${convertedImages.length} image${convertedImages.length === 1 ? "" : "s"} ready to preview/process.`,
+          })
+        } catch (error) {
+          toast.dismiss("preview-image-conversion")
+          toast.error("Conversion failed", {
+            description: error instanceof Error ? error.message : "Failed to convert images",
+          })
+        } finally {
+          setIsConverting(false)
+        }
         return
       }
 
@@ -171,7 +190,7 @@ export function MediaPreview({
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
           className="border-border hover:border-muted-foreground relative w-full max-w-2xl cursor-pointer rounded-lg border-2 border-dashed p-12 text-center transition-colors"
-          onClick={() => document.getElementById("preview-media-upload")?.click()}
+          onClick={() => !isConverting && document.getElementById("preview-media-upload")?.click()}
         >
           <input
             id="preview-media-upload"
@@ -180,13 +199,24 @@ export function MediaPreview({
             accept="image/*,video/*"
             className="hidden"
             onChange={handleChange}
+            disabled={isConverting}
           />
-          <Upload className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
-          <h2 className="text-foreground mb-2 text-xl font-semibold">No media uploaded</h2>
-          <p className="text-muted-foreground text-sm">
-            Drag & drop or click to upload an image or video to get started
-          </p>
-          <p className="text-muted-foreground mt-2 text-xs">Supports JPG, PNG, MP4, MOV</p>
+          {isConverting ? (
+            <>
+              <Loader2 className="text-muted-foreground mx-auto mb-4 h-16 w-16 animate-spin" />
+              <h2 className="text-foreground mb-2 text-xl font-semibold">Converting images...</h2>
+              <p className="text-muted-foreground text-sm">Please wait while we process your files</p>
+            </>
+          ) : (
+            <>
+              <Upload className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
+              <h2 className="text-foreground mb-2 text-xl font-semibold">No media uploaded</h2>
+              <p className="text-muted-foreground text-sm">
+                Drag & drop or click to upload an image or video to get started
+              </p>
+              <p className="text-muted-foreground mt-2 text-xs">Supports JPG, PNG, HEIC, MP4, MOV</p>
+            </>
+          )}
         </motion.div>
       </div>
     )

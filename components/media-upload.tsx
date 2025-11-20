@@ -2,10 +2,11 @@
 
 import type React from "react"
 
-import { useCallback } from "react"
-import { Upload } from "lucide-react"
+import { useCallback, useState } from "react"
+import { Upload, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { motion } from "framer-motion"
+import { convertImagesIfNeeded } from "@/lib/convert-image"
 
 interface MediaUploadProps {
   onUpload: (files: File[], type: "image" | "video") => void
@@ -26,8 +27,10 @@ function isVideoFile(file: File): boolean {
 }
 
 export function MediaUpload({ onUpload }: MediaUploadProps) {
+  const [isConverting, setIsConverting] = useState(false)
+
   const handleFiles = useCallback(
-    (list: FileList | File[]) => {
+    async (list: FileList | File[]) => {
       const files = Array.from(list)
       const images = files.filter((f) => isImageFile(f))
       const videos = files.filter((f) => isVideoFile(f))
@@ -52,10 +55,27 @@ export function MediaUpload({ onUpload }: MediaUploadProps) {
             description: `Only the first ${MAX} images will be attached (of ${images.length}).`,
           })
         }
-        onUpload(selected, "image")
-        toast.success("Images attached", {
-          description: `${selected.length} image${selected.length === 1 ? "" : "s"} ready to preview/process.`,
-        })
+
+        try {
+          setIsConverting(true)
+          toast.loading("Converting images...", { id: "image-conversion" })
+
+          // Convert HEIC and other formats if needed
+          const convertedImages = await convertImagesIfNeeded(selected)
+
+          toast.dismiss("image-conversion")
+          onUpload(convertedImages, "image")
+          toast.success("Images attached", {
+            description: `${convertedImages.length} image${convertedImages.length === 1 ? "" : "s"} ready to preview/process.`,
+          })
+        } catch (error) {
+          toast.dismiss("image-conversion")
+          toast.error("Conversion failed", {
+            description: error instanceof Error ? error.message : "Failed to convert images",
+          })
+        } finally {
+          setIsConverting(false)
+        }
         return
       }
 
@@ -90,7 +110,7 @@ export function MediaUpload({ onUpload }: MediaUploadProps) {
       onDrop={handleDrop}
       onDragOver={(e) => e.preventDefault()}
       className="border-border hover:border-muted-foreground glass-effect relative cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors"
-      onClick={() => document.getElementById("media-upload")?.click()}
+      onClick={() => !isConverting && document.getElementById("media-upload")?.click()}
     >
       <input
         id="media-upload"
@@ -99,10 +119,21 @@ export function MediaUpload({ onUpload }: MediaUploadProps) {
         accept="image/*,video/*"
         className="hidden"
         onChange={handleChange}
+        disabled={isConverting}
       />
-      <Upload className="text-muted-foreground mx-auto mb-3 h-10 w-10" />
-      <p className="text-foreground mb-1 text-sm font-medium">Drag & drop or click to upload</p>
-      <p className="text-muted-foreground text-xs">Supports JPG, PNG, MP4, MOV</p>
+      {isConverting ? (
+        <>
+          <Loader2 className="text-muted-foreground mx-auto mb-3 h-10 w-10 animate-spin" />
+          <p className="text-foreground mb-1 text-sm font-medium">Converting images...</p>
+          <p className="text-muted-foreground text-xs">Please wait</p>
+        </>
+      ) : (
+        <>
+          <Upload className="text-muted-foreground mx-auto mb-3 h-10 w-10" />
+          <p className="text-foreground mb-1 text-sm font-medium">Drag & drop or click to upload</p>
+          <p className="text-muted-foreground text-xs">Supports JPG, PNG, HEIC, MP4, MOV</p>
+        </>
+      )}
     </motion.div>
   )
 }

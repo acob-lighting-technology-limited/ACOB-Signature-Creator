@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner"
 import { MediaPreview } from "@/components/media-preview"
 import { PositionGrid } from "@/components/position-grid"
+import { ImageGallery } from "@/components/image-gallery"
 import { processImage } from "@/lib/process-image"
 import { processVideo } from "@/lib/process-video"
 
@@ -41,6 +42,7 @@ const DEFAULT_WATERMARKS = [
 
 export function WatermarkStudio() {
   const [mediaFiles, setMediaFiles] = useState<File[]>([])
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0) // currently selected image for preview
   const [mediaFile, setMediaFile] = useState<File | null>(null) // current preview
   const [mediaType, setMediaType] = useState<"image" | "video" | null>(null)
   const [watermarks, setWatermarks] = useState(DEFAULT_WATERMARKS)
@@ -62,6 +64,7 @@ export function WatermarkStudio() {
       setMediaFiles(files)
       setMediaFile(files[0] ?? null)
       setMediaType("image")
+      setSelectedImageIndex(0)
     } else {
       const first = files[0] ?? null
       setMediaFiles(first ? [first] : [])
@@ -69,6 +72,54 @@ export function WatermarkStudio() {
       setMediaType(first ? "video" : null)
     }
     setProcessedUrl(null)
+  }, [])
+
+  const handleImageSelect = useCallback(
+    (index: number) => {
+      if (index >= 0 && index < mediaFiles.length) {
+        setSelectedImageIndex(index)
+        setMediaFile(mediaFiles[index])
+        setProcessedUrl(null)
+      }
+    },
+    [mediaFiles]
+  )
+
+  const handleRemoveImage = useCallback(
+    (index: number) => {
+      const newFiles = mediaFiles.filter((_, i) => i !== index)
+      setMediaFiles(newFiles)
+
+      if (newFiles.length === 0) {
+        setMediaFile(null)
+        setMediaType(null)
+        setSelectedImageIndex(0)
+        setProcessedUrl(null)
+      } else {
+        // Adjust selected index if necessary
+        const newIndex = index >= newFiles.length ? newFiles.length - 1 : index
+        setSelectedImageIndex(newIndex)
+        setMediaFile(newFiles[newIndex])
+        setProcessedUrl(null)
+      }
+
+      toast.success("Image removed", {
+        description: `${newFiles.length} image${newFiles.length === 1 ? "" : "s"} remaining`,
+      })
+    },
+    [mediaFiles]
+  )
+
+  const handleClearAllImages = useCallback(() => {
+    setMediaFiles([])
+    setMediaFile(null)
+    setMediaType(null)
+    setSelectedImageIndex(0)
+    setProcessedUrl(null)
+
+    toast.success("All images cleared", {
+      description: "Upload new images to get started",
+    })
   }, [])
 
   const handleWatermarkUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,7 +148,7 @@ export function WatermarkStudio() {
     })
   }, [])
 
-  const handleApplyWatermark = async () => {
+  const handleApplyWatermark = async (applyToAll = false) => {
     if ((mediaType === "image" && mediaFiles.length === 0) || (mediaType === "video" && !mediaFile) || !mediaType) {
       toast.error("No media selected", {
         description: "Please upload an image or video first.",
@@ -109,7 +160,7 @@ export function WatermarkStudio() {
 
     try {
       if (mediaType === "image") {
-        if (mediaFiles.length > 1) {
+        if (applyToAll && mediaFiles.length > 1) {
           // Batch process all images into a single ZIP
           const zip = new JSZip()
           const total = mediaFiles.length
@@ -156,6 +207,7 @@ export function WatermarkStudio() {
           })
           setProcessedUrl(null)
         } else if (mediaFile) {
+          // Process single selected image
           const result = await processImage(mediaFile, selectedWatermark, config)
           setProcessedUrl(result)
           toast.success("Success!", {
@@ -289,15 +341,38 @@ export function WatermarkStudio() {
 
           {/* Action Buttons */}
           <div className="space-y-2 pt-4">
-            <Button
-              onClick={handleApplyWatermark}
-              disabled={!mediaFile || isProcessing}
-              className="w-full"
-              size="lg"
-              variant="default"
-            >
-              {isProcessing ? "Processing..." : "Apply Watermark"}
-            </Button>
+            {mediaType === "image" && mediaFiles.length > 1 ? (
+              <>
+                <Button
+                  onClick={() => handleApplyWatermark(false)}
+                  disabled={!mediaFile || isProcessing}
+                  className="w-full"
+                  size="lg"
+                  variant="default"
+                >
+                  {isProcessing ? "Processing..." : "Apply to Current Image"}
+                </Button>
+                <Button
+                  onClick={() => handleApplyWatermark(true)}
+                  disabled={!mediaFile || isProcessing}
+                  className="w-full"
+                  size="lg"
+                  variant="outline"
+                >
+                  {isProcessing ? "Processing..." : `Apply to All ${mediaFiles.length} Images`}
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => handleApplyWatermark(false)}
+                disabled={!mediaFile || isProcessing}
+                className="w-full"
+                size="lg"
+                variant="default"
+              >
+                {isProcessing ? "Processing..." : "Apply Watermark"}
+              </Button>
+            )}
             {processedUrl && (
               <Button onClick={handleDownload} variant="outline" className="w-full bg-transparent" size="lg">
                 Download Result
@@ -309,14 +384,29 @@ export function WatermarkStudio() {
 
       {/* Right Section - Preview */}
       <main className="flex-1 overflow-auto p-6">
-        <MediaPreview
-          mediaFile={mediaFile}
-          mediaType={mediaType}
-          watermarkPath={selectedWatermark}
-          config={config}
-          processedUrl={processedUrl}
-          onUpload={handleMediaUpload}
-        />
+        <div className="flex h-full flex-col gap-4">
+          <div className="flex-1">
+            <MediaPreview
+              mediaFile={mediaFile}
+              mediaType={mediaType}
+              watermarkPath={selectedWatermark}
+              config={config}
+              processedUrl={processedUrl}
+              onUpload={handleMediaUpload}
+            />
+          </div>
+
+          {/* Image Gallery - Only show for multiple images */}
+          {mediaType === "image" && mediaFiles.length > 0 && (
+            <ImageGallery
+              images={mediaFiles}
+              selectedIndex={selectedImageIndex}
+              onSelect={handleImageSelect}
+              onRemove={handleRemoveImage}
+              onClearAll={handleClearAllImages}
+            />
+          )}
+        </div>
       </main>
     </div>
   )
